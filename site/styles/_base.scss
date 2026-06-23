@@ -1,0 +1,18 @@
+html {
+  -webkit-text-size-adjust: none;
+  touch-action: manipulation;
+}
+
+body {
+  font-family: $font-base;
+  @apply text-gray-900 dark:text-light bg-light dark:bg-dark;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.dot:before{
+  content: "\2022";
+}
