@@ -1,12 +1,11 @@
 import React from 'react';
 import PageTemplate from '@base/components/templates/PageTemplate';
-import DashboardHeader from '@base/components/organisms/DashboardHeader';
 import DashboardFooter from '@base/components/organisms/DashboardFooter';
 import ToolGrid from '../modules/dashboard/components/organisms/ToolGrid';
 
 function DashboardPage() {
   return (
-    <PageTemplate header={<DashboardHeader />} footer={<DashboardFooter />}>
+    <PageTemplate footer={<DashboardFooter />}>
       <ToolGrid />
     </PageTemplate>
   );

@@ -130,7 +130,7 @@ export default function ToolManagementTable() {
   };
 
   return (
-    <div className="flex flex-col gap-[28px] w-full max-w-[1088px]">
+    <div className="flex flex-col gap-[28px] w-full">
       {/* Title section with Create Button */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
         <div className="flex flex-col gap-[8px]">

@@ -1,14 +1,14 @@
 import React from 'react';
 import PageTemplate from '@base/components/templates/PageTemplate';
 import DashboardFooter from '@base/components/organisms/DashboardFooter';
-import DataHubView from '../modules/data-hub/components/organisms/DataHubView';
+import UserManagementTable from '../modules/users/components/organisms/UserManagementTable';
 
-function DataHubPage() {
+function UsersPage() {
   return (
     <PageTemplate footer={<DashboardFooter />}>
-      <DataHubView />
+      <UserManagementTable />
     </PageTemplate>
   );
 }
 
-export default DataHubPage;
+export default UsersPage;

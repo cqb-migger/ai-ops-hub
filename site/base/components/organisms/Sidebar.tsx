@@ -84,6 +84,26 @@ function MenuIcon() {
   );
 }
 
+function PanelLeftClose() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="m16 15-3-3 3-3" />
+    </svg>
+  );
+}
+
+function PanelLeftOpen() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="m13 9 3 3-3 3" />
+    </svg>
+  );
+}
+
 interface SidebarLinkProps {
   href: string;
   label: string;
@@ -96,7 +116,9 @@ function SidebarLink({ href, label, icon, active, collapsed }: SidebarLinkProps)
   return (
     <Link href={href}>
       <span
-        className={`flex items-center gap-[12px] h-[36px] px-[12px] rounded-[6px] cursor-pointer transition-all duration-200 ${
+        className={`flex items-center gap-[12px] h-[36px] rounded-[6px] cursor-pointer transition-all duration-200 ${
+          collapsed ? 'px-0 justify-center' : 'px-[12px]'
+        } ${
           active
             ? 'bg-[#5570f6] text-white'
             : 'text-[#565d6d] hover:text-[#5570f6] dark:text-gray-300 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800'
@@ -129,27 +151,46 @@ export default function Sidebar() {
 
   const adminItems = [
     { href: routes.path.manageTools, label: 'Manage Tools', icon: <WrenchIcon /> },
-    { href: routes.path.teamUsers, label: 'Team & Users', icon: <UsersIcon /> },
+    { href: routes.path.users, label: 'Users', icon: <UsersIcon /> },
   ];
 
   return (
     <aside
       className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col justify-between bg-[#f1f4fe] dark:bg-midnight-950 border-r border-[#dee1e6] dark:border-midnight-800 transition-all duration-300 ${
-        isSidebarCollapsed ? 'w-[64px]' : 'w-[256px]'
+        isSidebarCollapsed ? 'w-[60px]' : 'w-[215px]'
       }`}
     >
-      {/* Top Brand Logo */}
+      {/* Top Brand Logo & Toggle Button */}
       <div>
-        <div className="flex items-center h-[64px] border-b border-[#dee1e6] dark:border-midnight-800 px-[16px] gap-[10px]">
-          <div className="flex-shrink-0 w-[32px] h-[32px] flex items-center justify-center rounded-[6px] bg-[#5570f6]">
-            <CompassIcon />
+        {isSidebarCollapsed ? (
+          <div className="flex items-center justify-center h-[64px] border-b border-[#dee1e6] dark:border-midnight-800">
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="flex items-center justify-center w-[32px] h-[32px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-300 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200 cursor-pointer"
+              title="Expand Sidebar"
+            >
+              <PanelLeftOpen />
+            </button>
           </div>
-          {!isSidebarCollapsed && (
-            <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[20px] leading-[20px] text-[#5570f6] dark:text-primary-400 whitespace-nowrap">
-              AI Navigator
-            </span>
-          )}
-        </div>
+        ) : (
+          <div className="flex items-center justify-between h-[64px] border-b border-[#dee1e6] dark:border-midnight-800 px-[16px]">
+            <div className="flex items-center gap-[8px] min-w-0">
+              <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-[6px] bg-[#5570f6]">
+                <CompassIcon />
+              </div>
+              <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[17px] leading-[20px] text-[#5570f6] dark:text-primary-400 whitespace-nowrap overflow-hidden text-ellipsis">
+                AI Navigator
+              </span>
+            </div>
+            <button
+              onClick={() => setIsSidebarCollapsed(true)}
+              className="flex-shrink-0 flex items-center justify-center w-[24px] h-[24px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200 cursor-pointer"
+              title="Collapse Sidebar"
+            >
+              <PanelLeftClose />
+            </button>
+          </div>
+        )}
 
         {/* Menu Sections */}
         <div className="flex flex-col gap-[24px] p-[12px]">
@@ -197,21 +238,36 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Bottom Collapse Button */}
-      <div className="p-[12px] border-t border-[#dee1e6] dark:border-midnight-800">
-        <button
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="flex items-center justify-center lg:justify-start gap-[12px] w-full h-[36px] px-[12px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-300 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200"
-        >
-          <span className="flex-shrink-0">
-            <MenuIcon />
-          </span>
+      {/* Bottom Profile Section */}
+      <div className="border-t border-[#dee1e6] dark:border-midnight-800 flex flex-col p-[12px]">
+        {/* User Profile */}
+        <div className={`flex items-center gap-[12px] h-[48px] px-[4px] ${isSidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
+          <div className="relative flex-shrink-0 flex items-center justify-center w-[32px] h-[32px] rounded-full overflow-hidden bg-[#fce4e7] dark:bg-[#4a2e35] cursor-pointer">
+            <img
+              src="http://localhost:3845/assets/709c4e40e160703b4d5465c009c441b8854bf5d0.png"
+              alt="User Avatar"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const sibling = e.currentTarget.nextElementSibling as HTMLElement;
+                if (sibling) sibling.style.display = 'flex';
+              }}
+              className="w-full h-full object-cover"
+            />
+            <div className="hidden absolute inset-0 items-center justify-center text-[12px] font-bold text-[#b3261e] dark:text-red-300 font-base select-none">
+              AN
+            </div>
+          </div>
           {!isSidebarCollapsed && (
-            <span className="text-[14px] font-[500] leading-[22px] font-base whitespace-nowrap">
-              Collapse
-            </span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light truncate font-base leading-tight">
+                Nguyen Van An
+              </span>
+              <span className="text-[11px] text-[#565d6d] dark:text-gray-400 truncate font-base leading-tight">
+                Admin
+              </span>
+            </div>
           )}
-        </button>
+        </div>
       </div>
     </aside>
   );

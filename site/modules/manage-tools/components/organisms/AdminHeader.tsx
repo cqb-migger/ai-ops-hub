@@ -90,18 +90,6 @@ export default function AdminHeader() {
         </nav>
       </div>
 
-      {/* Right side controls (Theme switch, avatar) */}
-      <div className="flex items-center gap-[16px]">
-        <ThemeButton />
-        
-        {/* Separator line */}
-        <div className="w-0 h-[24px] border-r border-[#dee1e6] dark:border-midnight-800" />
-
-        {/* User initials avatar */}
-        <div className="flex items-center justify-center w-[32px] h-[32px] rounded-full bg-[#e9ecfc] dark:bg-[#1d3fbc] text-[#5570f6] dark:text-light font-['Inter'] font-bold text-[14px]">
-          AD
-        </div>
-      </div>
     </header>
   );
 }

@@ -3,7 +3,7 @@ import Sidebar from '../organisms/Sidebar';
 import useMenuStore from '@base/stores/useMenuStore';
 
 interface Props {
-  header: React.ReactNode;
+  header?: React.ReactNode;
   footer: React.ReactNode;
   children?: React.ReactNode;
   hideSidebar?: boolean;
@@ -23,15 +23,15 @@ export default function PageTemplate({ header, footer, children, hideSidebar = f
           hideSidebar
             ? 'pl-0'
             : isSidebarCollapsed
-            ? 'pl-[64px]'
-            : 'pl-[256px]'
+            ? 'pl-[60px]'
+            : 'pl-[215px]'
         }`}
       >
-        {/* Header bar */}
-        {header}
+        {/* Header bar (rendered if provided) */}
+        {header && header}
 
         {/* Page Content */}
-        <main className="flex-1 bg-white dark:bg-midnight-900 p-[32px] md:p-[48px]">
+        <main className="flex-1 bg-gray-100 dark:bg-midnight-900 p-[24px] w-full">
           {children}
         </main>
 

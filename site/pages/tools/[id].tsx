@@ -1,7 +1,6 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import PageTemplate from '@base/components/templates/PageTemplate';
-import DashboardHeader from '@base/components/organisms/DashboardHeader';
 import DashboardFooter from '@base/components/organisms/DashboardFooter';
 import ToolDetailView from '../../modules/tools/components/organisms/ToolDetailView';
 import { TOOLS } from '../../modules/dashboard/constants/tools';
@@ -14,7 +13,7 @@ function ToolDetailPage() {
   const tool = TOOLS.find((t) => t.id === id);
 
   return (
-    <PageTemplate header={<DashboardHeader />} footer={<DashboardFooter />}>
+    <PageTemplate footer={<DashboardFooter />}>
       {router.isReady && tool ? (
         <ToolDetailView tool={tool} />
       ) : (

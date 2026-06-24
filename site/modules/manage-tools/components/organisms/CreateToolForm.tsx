@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
+import Combobox from '@base/components/molecules/Combobox';
 
 // SVG Icons
 function SettingsIcon() {
@@ -333,27 +334,17 @@ export default function CreateToolForm() {
               />
             </div>
 
-            {/* Category Dropdown */}
+            {/* Category Combobox */}
             <div className="flex flex-col gap-[6px]">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 カテゴリ <span className="text-[#f25a5a]">*</span>
               </label>
-              <div className="relative w-full">
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full h-[40px] pl-[12px] pr-[36px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none appearance-none focus:border-[#5570f6] dark:focus:border-primary-400 transition-colors"
-                >
-                  <option value="LLM / 对话型AI">LLM / 对话型AI</option>
-                  <option value="画像生成">画像生成</option>
-                  <option value="開発支援">開発支援</option>
-                  <option value="データ分析">データ分析</option>
-                  <option value="翻訳 / ドキュメント">翻訳 / ドキュメント</option>
-                </select>
-                <div className="absolute right-[12px] top-1/2 -translate-y-1/2 pointer-events-none">
-                  <ChevronDownIcon />
-                </div>
-              </div>
+              <Combobox
+                value={category}
+                onChange={setCategory}
+                options={['LLM / 対話型AI', '画像生成', '開発支援', 'データ分析', '翻訳 / ドキュメント']}
+                widthClass="w-full"
+              />
             </div>
           </div>
 

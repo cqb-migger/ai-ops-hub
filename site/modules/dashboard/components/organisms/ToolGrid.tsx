@@ -24,20 +24,20 @@ export default function ToolGrid() {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.category.toLowerCase().includes(searchQuery.toLowerCase());
+        tool.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || tool.category === selectedCategory;
+        selectedCategory === 'すべてのカテゴリ' || tool.category[0] === selectedCategory;
 
       const matchesRole =
-        selectedRole === 'すべての役割' || tool.roles.includes(selectedRole);
+        selectedRole === 'すべての役割' || tool.category.slice(1).includes(selectedRole);
 
       return matchesSearch && matchesCategory && matchesRole;
     });
   }, [searchQuery, selectedCategory, selectedRole]);
 
   return (
-    <div className="flex flex-col gap-[28px] w-full max-w-[1088px]">
+    <div className="flex flex-col gap-[28px] w-full">
       {/* Title block */}
       <div className="flex flex-col gap-[12px]">
         <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
