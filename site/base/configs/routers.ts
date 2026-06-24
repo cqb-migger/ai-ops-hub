@@ -1,8 +1,12 @@
 const routes = {
   path: {
     home: '/',
-    profile: '/profile',
-    job: '/job',
+    complianceHub: '/compliance-hub',
+    creativeHub: '/creative-hub',
+    dataHub: '/data-hub',
+    manageTools: '/manage-tools',
+    users: '/users',
+    teamUsers: '/team-users',
   },
 };
 

@@ -2,14 +2,14 @@ import React from 'react';
 import PageTemplate from '@base/components/templates/PageTemplate';
 import DashboardHeader from '@base/components/organisms/DashboardHeader';
 import DashboardFooter from '@base/components/organisms/DashboardFooter';
-import ToolGrid from '../modules/dashboard/components/organisms/ToolGrid';
+import ComplianceHubView from '../modules/compliance-hub/components/organisms/ComplianceHubView';
 
-function DashboardPage() {
+function ComplianceHubPage() {
   return (
     <PageTemplate header={<DashboardHeader />} footer={<DashboardFooter />}>
-      <ToolGrid />
+      <ComplianceHubView />
     </PageTemplate>
   );
 }
 
-export default DashboardPage;
+export default ComplianceHubPage;

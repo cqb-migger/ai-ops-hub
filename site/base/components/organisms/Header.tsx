@@ -30,7 +30,7 @@ function Header() {
           <div className="header__buttons flex">
             <Link
               className="btn btn-primary"
-              href={routes.path.profile}
+              href="#"
               onClick={() => setIsMobileMenuActive(false)}
             >
               ZIK Profile

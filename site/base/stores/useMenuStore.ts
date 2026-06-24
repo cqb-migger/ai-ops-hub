@@ -9,6 +9,10 @@ const useMenuStore = create<MenuState>()(
       setIsMobileMenuActive: (newVal) => {
         set({ isMobileMenuActive: newVal });
       },
+      isSidebarCollapsed: false,
+      setIsSidebarCollapsed: (newVal) => {
+        set({ isSidebarCollapsed: newVal });
+      },
     }),
     { name: 'menu' }
   )

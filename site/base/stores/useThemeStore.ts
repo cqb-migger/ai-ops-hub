@@ -34,10 +34,15 @@ const useThemeStore = ((selector, compare) => {
   useEffect(() => setHydrated(true), []);
 
   if (hydrated) {
-    setTheme(
-      JSON.parse(localStorage.getItem('theme-storage') ?? '')?.state
-        ?.theme as ThemeTypes
-    );
+    try {
+      const stored = localStorage.getItem('theme-storage');
+      const themeVal = stored
+        ? JSON.parse(stored)?.state?.theme
+        : ThemeTypes.light;
+      setTheme(themeVal || ThemeTypes.light);
+    } catch (e) {
+      setTheme(ThemeTypes.light);
+    }
   }
 
   return hydrated

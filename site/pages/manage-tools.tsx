@@ -2,14 +2,14 @@ import React from 'react';
 import PageTemplate from '@base/components/templates/PageTemplate';
 import DashboardHeader from '@base/components/organisms/DashboardHeader';
 import DashboardFooter from '@base/components/organisms/DashboardFooter';
-import ToolGrid from '../modules/dashboard/components/organisms/ToolGrid';
+import ToolManagementTable from '../modules/manage-tools/components/organisms/ToolManagementTable';
 
-function DashboardPage() {
+function ManageToolsPage() {
   return (
     <PageTemplate header={<DashboardHeader />} footer={<DashboardFooter />}>
-      <ToolGrid />
+      <ToolManagementTable />
     </PageTemplate>
   );
 }
 
-export default DashboardPage;
+export default ManageToolsPage;

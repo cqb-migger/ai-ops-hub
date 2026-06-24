@@ -16,13 +16,6 @@ function Menu() {
         isActive: false,
       },
       {
-        key: 'jobs',
-        text: 'Job',
-        to: routes.path.job,
-        isOutside: true,
-        isActive: false,
-      },
-      {
         key: 'marketplace',
         text: 'Marketplace',
         to: '#',

@@ -9,4 +9,6 @@ export interface MenuItem {
 export interface MenuState {
   isMobileMenuActive: boolean;
   setIsMobileMenuActive: (newVal: boolean) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (newVal: boolean) => void;
 }

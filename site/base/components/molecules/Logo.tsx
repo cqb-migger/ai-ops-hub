@@ -1,11 +1,10 @@
 import routes from '@base/configs/routers';
-import { LogoSVG } from '@public/assets/svg';
 import Link from 'next/link';
 
 function Logo() {
   return (
     <Link href={routes.path.home}>
-      <LogoSVG className="w-[134px] lg:w-[197px] text-primary dark:text-light" />
+      <span className="text-xl font-bold text-primary dark:text-light cursor-pointer">Logo</span>
     </Link>
   );
 }

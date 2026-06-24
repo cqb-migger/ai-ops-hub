@@ -1,5 +1,4 @@
 import useMenuStore from '@base/stores/useMenuStore';
-import { IconCancel, IconMenu } from '@public/assets/svg';
 
 function MobileMenuButton() {
   const [isMobileMenuActive, setIsMobileMenuActive] = useMenuStore((state) => [
@@ -17,11 +16,11 @@ function MobileMenuButton() {
       }`}
       onClick={clickMobileMenu}
     >
-      <strong className="fs-nav-open">
-        <IconMenu className="text-primary dark:text-light" />
+      <strong className="fs-nav-open text-primary dark:text-light">
+        ☰
       </strong>
-      <strong className="fs-nav-close">
-        <IconCancel className="fill-gray-900 dark:fill-light" />
+      <strong className="fs-nav-close text-gray-900 dark:text-light">
+        ✕
       </strong>
     </button>
   );
