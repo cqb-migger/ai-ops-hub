@@ -50,8 +50,8 @@ export default function FilterBar({
 
   return (
     <div className="w-full h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[16px]">
-      {/* Search Input Box */}
-      <div className="relative flex-1 max-w-[638px] h-[40px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] flex items-center gap-[8px]">
+      {/* Search Input Box — always fills remaining space */}
+      <div className="relative flex-1 h-[40px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] flex items-center gap-[8px]">
         <SearchIcon />
         <input
           type="text"
@@ -90,5 +90,3 @@ export default function FilterBar({
     </div>
   );
 }
-
-

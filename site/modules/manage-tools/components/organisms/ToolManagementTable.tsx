@@ -227,19 +227,18 @@ export default function ToolManagementTable() {
                     </span>
                   </td>
 
-                  {/* Actions */}
                   <td className="py-[16px] px-[20px] text-right">
-                    <div className="flex items-center justify-end gap-[8px]">
+                    <div className="flex items-center justify-end gap-[4px]">
                       <button
                         onClick={() => handleEdit(tool.name)}
-                        className="w-[40px] h-[40px] flex items-center justify-center rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-300 transition-colors duration-200"
+                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-300 transition-colors duration-200"
                         title="編集"
                       >
                         <PenIcon />
                       </button>
                       <button
                         onClick={() => handleDelete(tool.id, tool.name)}
-                        className="w-[40px] h-[40px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
+                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
                         title="削除"
                       >
                         <TrashIcon />

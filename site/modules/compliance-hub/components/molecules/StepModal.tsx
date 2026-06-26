@@ -77,26 +77,37 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
             </div>
           )}
 
-          {/* Icon Selection */}
+          {/* Icon Selection - Emoji Picker */}
           <div className="flex flex-col gap-[8px]">
             <label className="text-[14px] font-bold text-[#171a1f] dark:text-light">
               アイコン
             </label>
-            <div className="grid grid-cols-8 gap-[8px] p-2 bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px]">
-              {STEP_ICON_OPTIONS.map((icon) => (
-                <button
-                  key={icon}
-                  type="button"
-                  onClick={() => setSelectedIcon(icon)}
-                  className={`w-[36px] h-[36px] flex items-center justify-center text-[20px] rounded-[6px] transition-all hover:scale-110 ${
-                    selectedIcon === icon
-                      ? 'bg-[#5570f6] text-white shadow-md scale-105'
-                      : 'hover:bg-[#dee1e6] dark:hover:bg-midnight-800'
-                  }`}
-                >
-                  {icon}
-                </button>
-              ))}
+            <div className="p-[12px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[12px]">
+              {/* Selected Preview */}
+              <div className="flex items-center gap-[10px] mb-[12px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
+                <div className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-[#f1f4fe] dark:bg-midnight-900 border-2 border-[#5570f6] dark:border-[#7c91eb] shadow-sm">
+                  <span className="text-[24px]">{selectedIcon}</span>
+                </div>
+                <span className="text-[13px] text-[#565d6d] dark:text-gray-400">選択中のアイコン</span>
+              </div>
+              {/* Emoji Grid */}
+              <div className="grid grid-cols-8 gap-[6px]">
+                {STEP_ICON_OPTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setSelectedIcon(emoji)}
+                    className={`w-full aspect-square flex items-center justify-center rounded-[8px] text-[20px] transition-all duration-150 hover:scale-110 ${
+                      selectedIcon === emoji
+                        ? 'bg-[#5570f6]/15 dark:bg-[#5570f6]/20 ring-2 ring-[#5570f6] dark:ring-[#7c91eb]'
+                        : 'bg-white dark:bg-midnight-900 hover:bg-[#f1f4fe] dark:hover:bg-midnight-800'
+                    }`}
+                    title={emoji}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
