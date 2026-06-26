@@ -5,7 +5,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky install"
+    "prepare": "node -e \"try { if (require('fs').existsSync('../.git') || require('fs').existsSync('.git')) { require('child_process').execSync('husky install', {stdio: 'inherit'}); } } catch (e) { console.warn('Husky install failed, skipping:', e.message); }\""
   },
   "dependencies": {
     "next": "^13.1.1",
