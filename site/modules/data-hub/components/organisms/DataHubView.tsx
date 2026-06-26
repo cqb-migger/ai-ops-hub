@@ -8,24 +8,6 @@ const dataTools = (toolsData as unknown as Tool[]).filter((t) => t.hubs.includes
 
 export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
-  const [selectedRole, setSelectedRole] = useState('すべての役割');
-
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    dataTools.forEach((t) => {
-      if (t.category[0]) cats.add(t.category[0]);
-    });
-    return ['すべてのカテゴリ', ...Array.from(cats)];
-  }, []);
-
-  const roles = useMemo(() => {
-    const rls = new Set<string>();
-    dataTools.forEach((t) => {
-      t.category.slice(1).forEach((role) => rls.add(role));
-    });
-    return ['すべての役割', ...Array.from(rls)];
-  }, []);
 
   const filteredTools = useMemo(() => {
     return dataTools.filter((tool) => {
@@ -34,15 +16,9 @@ export default function DataHubView() {
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.category.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || tool.category[0] === selectedCategory;
-
-      const matchesRole =
-        selectedRole === 'すべての役割' || tool.category.slice(1).includes(selectedRole);
-
-      return matchesSearch && matchesCategory && matchesRole;
+      return matchesSearch;
     });
-  }, [searchQuery, selectedCategory, selectedRole]);
+  }, [searchQuery]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
@@ -64,12 +40,7 @@ export default function DataHubView() {
       <FilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedRole={selectedRole}
-        onRoleChange={setSelectedRole}
-        categories={categories}
-        roles={roles}
+        showFilters={false}
       />
 
       {filteredTools.length > 0 ? (
@@ -96,8 +67,6 @@ export default function DataHubView() {
           <button
             onClick={() => {
               setSearchQuery('');
-              setSelectedCategory('すべてのカテゴリ');
-              setSelectedRole('すべての役割');
             }}
             className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
           >

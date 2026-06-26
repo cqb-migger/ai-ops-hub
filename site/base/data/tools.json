@@ -4,117 +4,117 @@
     "name": "ChatGPT (GPT-4o)",
     "category": ["テキスト生成・推論", "全般", "マーケティング"],
     "description": "新製品ランディングページ（LP）の構成案作成 のための最適なセットアップをガイドします。",
-    "hubs": ["dashboard"],
+    "hubs": [],
     "url": "https://chatgpt.com/",
-    "icon": ""
+    "icon": "🤖"
   },
   {
     "id": "chatpro-enterprise",
     "name": "ChatPro Enterprise",
     "category": ["テキスト処理", "全般", "画像生成", "+1"],
     "description": "社内データに基づいた高精度な文章生成、要約、翻訳を安全に行えるエンタープライズ向け対話型AI。",
-    "hubs": ["dashboard", "creative"],
+    "hubs": ["creative"],
     "url": "",
-    "icon": ""
+    "icon": "💬"
   },
   {
     "id": "designgenius-ai",
     "name": "DesignGenius AI",
     "category": ["画像生成", "マーケティング", "デザイン"],
     "description": "プロンプトから高品質なマーケティング用バナーやSNS向け画像を数秒で生成するクリエイティブツール。",
-    "hubs": ["dashboard", "creative"],
+    "hubs": ["creative"],
     "url": "",
-    "icon": ""
+    "icon": "🎨"
   },
   {
     "id": "datainsight-predictor",
     "name": "DataInsight Predictor",
     "category": ["データ分析", "データサイエンス", "経営企画", "+1"],
     "description": "膨大な売上データや顧客データから将来のトレンドを予測し、視覚的なレポートを自動生成します。",
-    "hubs": ["dashboard", "creative"],
+    "hubs": ["creative"],
     "url": "",
-    "icon": ""
+    "icon": "📊"
   },
   {
     "id": "codeassistant-pro",
     "name": "CodeAssistant Pro",
     "category": ["コーディング", "エンジニアリング"],
     "description": "開発環境に統合され、リアルタイムでコード補完やバグ検出、リファクタリング提案を行う開発者向けAI。",
-    "hubs": ["dashboard"],
+    "hubs": [],
     "url": "",
-    "icon": ""
+    "icon": "💻"
   },
   {
     "id": "legaldoc-analyzer",
     "name": "LegalDoc Analyzer",
     "category": ["コンプライアンス", "法務", "経営企画"],
     "description": "契約書や利用規約を瞬時にスキャンし、リスクのある条項や矛盾点を指摘する法務特化型AIツール。",
-    "hubs": ["dashboard"],
+    "hubs": [],
     "url": "",
-    "icon": ""
+    "icon": "⚖️"
   },
   {
     "id": "videoforge-create",
     "name": "VideoForge Create",
     "category": ["画像生成", "マーケティング", "広報"],
     "description": "テキスト原稿からナレーション付きのプレゼン動画やプロモーションビデオを自動生成する service。",
-    "hubs": ["dashboard"],
+    "hubs": [],
     "url": "",
-    "icon": ""
+    "icon": "🎬"
   },
   {
     "id": "hr-talentmatcher",
     "name": "HR TalentMatcher",
     "category": ["テキスト処理", "人事"],
     "description": "応募者のレジュメと募集要項を自然言語処理で自然言語でスコアリングする採用支援。",
-    "hubs": ["dashboard"],
+    "hubs": [],
     "url": "",
-    "icon": ""
+    "icon": "👥"
   },
   {
     "id": "salespitch-optimizer",
     "name": "SalesPitch Optimizer",
     "category": ["テキスト処理", "営業"],
     "description": "顧客の過去の対応履歴を分析し、パーソナライズされた最適な営業メールの文面を提案します。",
-    "hubs": ["dashboard"],
+    "hubs": [],
     "url": "",
-    "icon": ""
+    "icon": "📧"
   },
   {
     "id": "yakuhou-checker",
     "name": "薬機法チェッカー",
     "category": ["コンプライアンス", "法務", "経営企画"],
     "description": "NotebookLMを活用した一次スクリーニングツール。作成した原稿をペーストして判定。",
-    "hubs": ["dashboard", "compliance"],
+    "hubs": ["compliance"],
     "url": "",
-    "icon": ""
+    "icon": "💊"
   },
   {
     "id": "keihyohou-guidelines",
     "name": "景表法ガイドライン2024",
     "category": ["コンプライアンス", "マーケティング"],
-    "description": "最新の景品表示法に関する社内解釈と、優良誤認・有利誤認の基準をまとめた公式文書。",
-    "hubs": ["dashboard", "compliance"],
+    "description": "最新 of 景品表示法に関する社内解釈と、優良誤認・有利誤認の基準をまとめた公式文書。",
+    "hubs": ["compliance"],
     "url": "",
-    "icon": ""
+    "icon": "📋"
   },
   {
     "id": "ng-expression-dictionary",
     "name": "NG表現・言い換え辞典",
     "category": ["コンプライアンス"],
     "description": "過去に指摘を受けたNG表現のデータベースと、推奨される安全な言い換え例のリスト。",
-    "hubs": ["dashboard", "compliance"],
+    "hubs": ["compliance"],
     "url": "",
-    "icon": ""
+    "icon": "🚫"
   },
   {
     "id": "approval-flow-system",
     "name": "承認フロー申請システム",
     "category": ["コンプライアンス"],
     "description": "法務部門への最終レビュー依頼と、証跡を残すための社内申請ワークフロー。",
-    "hubs": ["dashboard", "compliance"],
+    "hubs": ["compliance"],
     "url": "",
-    "icon": ""
+    "icon": "✅"
   },
   {
     "id": "google-analytics",
@@ -123,7 +123,7 @@
     "description": "ウェブサイトのトラフィック、ユーザー行動、コンバージョン率を詳細に分析し、サイト改善のヒントを得ます。",
     "hubs": ["data"],
     "url": "https://analytics.google.com",
-    "icon": ""
+    "icon": "📈"
   },
   {
     "id": "meta-ads-manager",
@@ -132,7 +132,7 @@
     "description": "FacebookおよびInstagram全体での広告キャンペーンのパフォーマンスを追跡、管理、最適化します。",
     "hubs": ["data"],
     "url": "https://adsmanager.facebook.com",
-    "icon": ""
+    "icon": "📱"
   },
   {
     "id": "tiktok-ads",
@@ -141,7 +141,7 @@
     "description": "若年層を中心とした動画広告の効果測定。エンゲージメント率や動画視聴完了率を詳細に確認できます。",
     "hubs": ["data"],
     "url": "https://ads.tiktok.com",
-    "icon": ""
+    "icon": "🎵"
   },
   {
     "id": "shopify-analytics",
@@ -150,6 +150,6 @@
     "description": "ECサイトの売上動向、顧客単価、カゴ落ち率、在庫状況を一元管理し、販売戦略を立てます。",
     "hubs": ["data"],
     "url": "https://shopify.com",
-    "icon": ""
+    "icon": "🛒"
   }
 ]

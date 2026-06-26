@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
+import toolsData from '@base/data/tools.json';
+import { Tool } from '../../../dashboard/constants/tools';
+import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 
 interface ManagedTool {
   id: string;
@@ -11,38 +14,19 @@ interface ManagedTool {
   extraTeamCount?: number;
   status: string;
   imageUrl: string;
+  hubs: string[];
 }
 
-const INITIAL_TOOLS: ManagedTool[] = [
-  {
-    id: 'chatpro-enterprise',
-    name: 'ChatPro Enterprise',
-    description: '汎用的なテキスト生成、コード作成、データ分析をサポートする高度なAIアシスタント。',
-    category: 'LLM / 对话型AI',
-    teams: ['全社', '開発'],
-    extraTeamCount: 1,
-    status: '公開中',
-    imageUrl: 'http://localhost:3845/assets/48bb8541d7c0769e311742688649f4c8bd0e0b29.png',
-  },
-  {
-    id: 'midjourney',
-    name: 'Midjourney',
-    description: '高品質なコンセプトアートやマーケティング用ビジュアルを生成するAIツール。',
-    category: '画像生成',
-    teams: ['デザイン', 'マーケティング'],
-    status: '公開中',
-    imageUrl: 'http://localhost:3845/assets/3cbb79e7bb9709e7da467c53d555258f2fa56af6.png',
-  },
-  {
-    id: 'designgenius-ai',
-    name: 'DesignGenius AI',
-    description: 'エディタ内でリアルタイムにコード補完やテストコード生成を行うAIペアプログラマー。',
-    category: '開発支援',
-    teams: ['開発'],
-    status: '公開中',
-    imageUrl: 'http://localhost:3845/assets/efb4c35a8fdab57789ecd52490543dadb4a3a3c0.png',
-  },
-];
+const INITIAL_TOOLS: ManagedTool[] = (toolsData as unknown as Tool[]).map((t) => ({
+  id: t.id,
+  name: t.name,
+  description: t.description,
+  category: t.category[0] || '',
+  teams: t.category.slice(1),
+  status: '公開中',
+  imageUrl: t.icon || '',
+  hubs: t.hubs,
+}));
 
 // Icons
 function PlusIcon() {
@@ -50,23 +34,6 @@ function PlusIcon() {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
       <line x1="12" x2="12" y1="5" y2="19" />
       <line x1="5" x2="19" y1="12" y2="12" />
-    </svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#565d6d] dark:text-gray-400">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" x2="16.65" y1="21" y2="16.65" />
-    </svg>
-  );
-}
-
-function FunnelIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#565d6d] dark:text-gray-400">
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
     </svg>
   );
 }
@@ -105,14 +72,25 @@ export default function ToolManagementTable() {
   const router = useRouter();
   const [tools, setTools] = useState<ManagedTool[]>(INITIAL_TOOLS);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
+  const [selectedHub, setSelectedHub] = useState('すべてのハブ');
 
   const filteredTools = useMemo(() => {
-    return tools.filter((tool) =>
-      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [tools, searchQuery]);
+    return tools.filter((tool) => {
+      const matchesSearch =
+        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategory =
+        selectedCategory === 'すべてのカテゴリ' || tool.category === selectedCategory;
+
+      const matchesHub =
+        selectedHub === 'すべてのハブ' || tool.hubs.includes(selectedHub);
+
+      return matchesSearch && matchesCategory && matchesHub;
+    });
+  }, [tools, searchQuery, selectedCategory, selectedHub]);
 
   const handleAddNew = () => {
     router.push('/manage-tools/new');
@@ -150,25 +128,15 @@ export default function ToolManagementTable() {
         </button>
       </div>
 
-      {/* Search & filter row */}
-      <div className="flex items-center gap-[16px]">
-        {/* Search input */}
-        <div className="relative flex items-center w-[319px] h-[39px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] gap-[8px]">
-          <SearchIcon />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ツール名や説明で検索..."
-            className="w-full bg-transparent border-none outline-none text-[14px] leading-[22px] text-[#171a1f] dark:text-light placeholder-[#565d6d] dark:placeholder-gray-500 font-base"
-          />
-        </div>
-
-        {/* Funnel button */}
-        <button className="flex items-center justify-center w-[40px] h-[40px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-800 transition-colors duration-200">
-          <FunnelIcon />
-        </button>
-      </div>
+      {/* Filter Bar */}
+      <FilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        selectedHub={selectedHub}
+        onHubChange={setSelectedHub}
+      />
 
       {/* Table Container */}
       <div className="w-full overflow-x-auto bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px]">
@@ -204,20 +172,16 @@ export default function ToolManagementTable() {
                 >
                   {/* Tool name & image */}
                   <td className="py-[16px] px-[20px] flex items-start gap-[12px]">
-                    <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-[4px] overflow-hidden bg-gray-100 dark:bg-midnight-800 border border-[#dee1e6] dark:border-midnight-700 flex items-center justify-center">
-                      <img
-                        src={tool.imageUrl}
-                        alt={tool.name}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="hidden absolute inset-0 items-center justify-center text-[14px] font-bold text-[#5570f6] dark:text-primary-400 font-base select-none">
-                        {tool.name.charAt(0)}
-                      </div>
+                    <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-[4px] overflow-hidden bg-gray-50 dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
+                      {tool.imageUrl && (tool.imageUrl.startsWith('http') || tool.imageUrl.startsWith('/')) ? (
+                        <img
+                          src={tool.imageUrl}
+                          alt={tool.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{tool.imageUrl || '🔧'}</span>
+                      )}
                     </div>
                     <div className="flex flex-col gap-[4px] min-w-0">
                       <span className="text-[14px] font-medium leading-[20px] text-[#171a1f] dark:text-light font-base truncate">

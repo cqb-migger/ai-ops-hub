@@ -16,7 +16,7 @@ function SparklesIcon() {
 export default function ToolGrid() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
-  const [selectedRole, setSelectedRole] = useState('すべての役割');
+  const [selectedHub, setSelectedHub] = useState('すべてのハブ');
 
   // Filter tools logic
   const filteredTools = useMemo(() => {
@@ -29,12 +29,12 @@ export default function ToolGrid() {
       const matchesCategory =
         selectedCategory === 'すべてのカテゴリ' || tool.category[0] === selectedCategory;
 
-      const matchesRole =
-        selectedRole === 'すべての役割' || tool.category.slice(1).includes(selectedRole);
+      const matchesHub =
+        selectedHub === 'すべてのハブ' || tool.hubs.includes(selectedHub);
 
-      return matchesSearch && matchesCategory && matchesRole;
+      return matchesSearch && matchesCategory && matchesHub;
     });
-  }, [searchQuery, selectedCategory, selectedRole]);
+  }, [searchQuery, selectedCategory, selectedHub]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full">
@@ -54,8 +54,8 @@ export default function ToolGrid() {
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
-        selectedRole={selectedRole}
-        onRoleChange={setSelectedRole}
+        selectedHub={selectedHub}
+        onHubChange={setSelectedHub}
       />
 
       {/* Grid count header */}
@@ -82,7 +82,7 @@ export default function ToolGrid() {
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('すべてのカテゴリ');
-              setSelectedRole('すべての役割');
+              setSelectedHub('すべてのハブ');
             }}
             className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
           >

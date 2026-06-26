@@ -1,75 +1,23 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
 import toolsData from '@base/data/tools.json';
 import { Tool } from '../../../dashboard/constants/tools';
+import { INITIAL_STEPS, Step } from '../../constants/steps';
+import StepCard from '../molecules/StepCard';
+import StepModal from '../molecules/StepModal';
+import StepConnector from '../molecules/StepConnector';
 
-// SVG Icons for the Step Diagram
-function PenToolIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[28px] h-[28px] text-[#5570f6] dark:text-[#7c91eb]">
-      <path d="m12 22 1-1c1.4-1.4 2.3-3.2 2.7-5.2l.3-1.8H12v-4h4.8l.3-1.8c.4-2 1.3-3.8 2.7-5.2l1-1" />
-      <path d="m18 14-4-4" />
-      <path d="M4 22h14" />
-      <path d="M7 17a5 5 0 0 0 5-5" />
-    </svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[28px] h-[28px] text-[#5570f6] dark:text-[#7c91eb]">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" x2="16.65" y1="21" y2="16.65" />
-    </svg>
-  );
-}
-
-function ScaleIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[28px] h-[28px] text-[#5570f6] dark:text-[#7c91eb]">
-      <line x1="9" x2="15" y1="22" y2="22" />
-      <line x1="12" x2="12" y1="2" y2="22" />
-      <line x1="12" x2="3" y1="7" y2="12" />
-      <line x1="12" x2="21" y1="7" y2="12" />
-      <path d="M3 12c0 2.2 4 4 4 4s4-1.8 4-4" />
-      <path d="M13 12c0 2.2 4 4 4 4s4-1.8 4-4" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[28px] h-[28px] text-[#5570f6] dark:text-[#7c91eb]">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  );
-}
 
 const complianceTools = (toolsData as unknown as Tool[]).filter(t => t.hubs.includes("compliance"));
 const GRID_RESOURCES = [...complianceTools, ...complianceTools];
 
 export default function ComplianceHubView() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
-  const [selectedRole, setSelectedRole] = useState('すべての役割');
-
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    GRID_RESOURCES.forEach((r) => {
-      if (r.category[0]) cats.add(r.category[0]);
-    });
-    return ['すべてのカテゴリ', ...Array.from(cats)];
-  }, []);
-
-  const roles = useMemo(() => {
-    const rls = new Set<string>();
-    GRID_RESOURCES.forEach((r) => {
-      r.category.slice(1).forEach((role) => rls.add(role));
-    });
-    return ['すべての役割', ...Array.from(rls)];
-  }, []);
+  const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStep, setEditingStep] = useState<Step | null>(null);
+  const [insertAtIndex, setInsertAtIndex] = useState<number | null>(null);
 
   const filteredResources = useMemo(() => {
     return GRID_RESOURCES.filter((resource) => {
@@ -78,15 +26,103 @@ export default function ComplianceHubView() {
         resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         resource.category.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || resource.category[0] === selectedCategory;
-
-      const matchesRole =
-        selectedRole === 'すべての役割' || resource.category.slice(1).includes(selectedRole);
-
-      return matchesSearch && matchesCategory && matchesRole;
+      return matchesSearch;
     });
-  }, [searchQuery, selectedCategory, selectedRole]);
+  }, [searchQuery]);
+
+  // Load steps on mount
+  useEffect(() => {
+    fetch('/api/steps')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setSteps(data);
+        }
+      })
+      .catch((err) => console.error('Failed to load steps:', err));
+  }, []);
+
+  // Helper to persist steps to the JSON file
+  const saveStepsToServer = async (newSteps: Step[]) => {
+    try {
+      const res = await fetch('/api/steps', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newSteps),
+      });
+      if (res.ok) {
+        setSteps(newSteps);
+      } else {
+        alert('ステップの保存に失敗しました。');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('ステップの保存に失敗しました。');
+    }
+  };
+
+  const handleDeleteStep = async (id: string) => {
+    if (steps.length <= 1) {
+      alert('最後のステップは削除できません。少なくとも1つのステップが必要です。');
+      return;
+    }
+    if (window.confirm('このステップを削除してもよろしいですか？')) {
+      const remaining = steps.filter(s => s.id !== id);
+      // Re-map orders
+      const updated = remaining.map((s, idx) => ({
+        ...s,
+        order: idx + 1
+      }));
+      await saveStepsToServer(updated);
+    }
+  };
+
+  const handleAddStepAt = (index: number) => {
+    setEditingStep(null);
+    setInsertAtIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveStep = async (data: { title: string; description: string; icon: string }) => {
+    let updatedSteps: Step[] = [];
+    if (editingStep) {
+      // Edit mode
+      updatedSteps = steps.map(s => s.id === editingStep.id ? { ...s, ...data } : s);
+    } else {
+      // Add mode
+      if (steps.length >= 6) {
+        alert('ステップは最大6つまでです。');
+        return;
+      }
+      const newStep: Step = {
+        id: `step-${Date.now()}`,
+        order: 0,
+        icon: data.icon,
+        title: data.title,
+        description: data.description,
+      };
+      
+      if (insertAtIndex !== null) {
+        const temp = [...steps];
+        temp.splice(insertAtIndex, 0, newStep);
+        updatedSteps = temp;
+      } else {
+        updatedSteps = [...steps, newStep];
+      }
+
+      // Re-map orders
+      updatedSteps = updatedSteps.map((s, idx) => ({
+        ...s,
+        order: idx + 1
+      }));
+    }
+    await saveStepsToServer(updatedSteps);
+    setIsModalOpen(false);
+    setEditingStep(null);
+    setInsertAtIndex(null);
+  };
 
   return (
     <div className="flex flex-col gap-[36px] w-full text-[#171a1f] dark:text-light font-base">
@@ -97,90 +133,67 @@ export default function ComplianceHubView() {
         <h2 className="text-[36px] font-extrabold leading-[40px] text-[#171a1f] dark:text-light tracking-[-0.9px] font-base">
           法務・規制チェック プロセス
         </h2>
-        <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal max-w-[893px]">
+        <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
           薬機法（医薬品医療機器等法）および景表法（景品表示法）に準拠した安全なコンテンツ発信のためのガイドラインとツールを提供します。すべての外部公開コンテンツ is 以下のステップに従って確認を行ってください。
         </p>
       </div>
 
       {/* Section 1: Review Flow */}
       <section className="flex flex-col gap-[20px] mt-[12px]">
-        <div>
-          <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
-            標準レビューフロー
-          </h3>
-          <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
-            コンテンツ作成から公開までの必須手順
-          </p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[12px]">
+          <div>
+            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+              標準レビューフロー
+            </h3>
+            <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
+              コンテンツ作成から公開までの必須手順
+            </p>
+          </div>
+          {steps.length < 6 && (
+            <button
+              onClick={() => {
+                setEditingStep(null);
+                setInsertAtIndex(null);
+                setIsModalOpen(true);
+              }}
+              className="flex items-center gap-[6px] px-[14px] py-[8px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-all shadow-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              ステップを追加
+            </button>
+          )}
         </div>
 
-        {/* 4-Step Diagram */}
+        {/* Dynamic Step Diagram */}
         <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[16px] isolate">
-          {/* Connector line running behind circles */}
-          <div className="hidden md:block absolute top-[56px] left-[12%] right-[12%] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
+          {/* Connector line running behind circles on desktop */}
+          {steps.length > 1 && (
+            <div className="hidden md:block absolute top-[56px] left-[12%] right-[12%] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
+          )}
 
-          {/* Step 1 */}
-          <div className="flex flex-col items-center text-center max-w-[200px]">
-            <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10">
-              <PenToolIcon />
-            </div>
-            <span className="mt-[16px] text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
-              Step 1
-            </span>
-            <span className="mt-[4px] text-[14px] font-bold text-[#171a1f] dark:text-light">
-              コンテンツの作成
-            </span>
-            <p className="mt-[8px] text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal">
-              ブランドガイドラインに従い、初期原稿やクリエイティブを作成します。
-            </p>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex flex-col items-center text-center max-w-[200px]">
-            <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10">
-              <SearchIcon />
-            </div>
-            <span className="mt-[16px] text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
-              Step 2
-            </span>
-            <span className="mt-[4px] text-[14px] font-bold text-[#171a1f] dark:text-light">
-              AI事前チェック
-            </span>
-            <p className="mt-[8px] text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal">
-              専用のNotebookLMを用いて、薬機法・景表法のリスクを自己点検します。
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex flex-col items-center text-center max-w-[200px]">
-            <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10">
-              <ScaleIcon />
-            </div>
-            <span className="mt-[16px] text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
-              Step 3
-            </span>
-            <span className="mt-[4px] text-[14px] font-bold text-[#171a1f] dark:text-light">
-              法務部門レビュー
-            </span>
-            <p className="mt-[8px] text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal">
-              AIチェック済みの原稿と判定結果を添えて、法務部門へ申請します。
-            </p>
-          </div>
-
-          {/* Step 4 */}
-          <div className="flex flex-col items-center text-center max-w-[200px]">
-            <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10">
-              <CheckCircleIcon />
-            </div>
-            <span className="mt-[16px] text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
-              Step 4
-            </span>
-            <span className="mt-[4px] text-[14px] font-bold text-[#171a1f] dark:text-light">
-              承認と公開
-            </span>
-            <p className="mt-[8px] text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal">
-              法務の最終承認（証跡）を得た後、コンテンツを公開できます。
-            </p>
-          </div>
+          {steps.map((step, index) => (
+            <React.Fragment key={step.id}>
+              <StepCard
+                step={step}
+                onEdit={() => {
+                  setEditingStep(step);
+                  setInsertAtIndex(null);
+                  setIsModalOpen(true);
+                }}
+                onDelete={() => handleDeleteStep(step.id)}
+                canDelete={steps.length > 1}
+              />
+              {index < steps.length - 1 && (
+                <StepConnector
+                  onClick={() => handleAddStepAt(index + 1)}
+                  disabled={steps.length >= 6}
+                />
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </section>
 
@@ -199,12 +212,7 @@ export default function ComplianceHubView() {
         <FilterBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedRole={selectedRole}
-          onRoleChange={setSelectedRole}
-          categories={categories}
-          roles={roles}
+          showFilters={false}
         />
 
         {/* Cards Grid */}
@@ -222,8 +230,6 @@ export default function ComplianceHubView() {
             <button
               onClick={() => {
                 setSearchQuery('');
-                setSelectedCategory('すべてのカテゴリ');
-                setSelectedRole('すべての役割');
               }}
               className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
             >
@@ -232,6 +238,17 @@ export default function ComplianceHubView() {
           </div>
         )}
       </section>
+
+      {/* Step Add/Edit Modal */}
+      <StepModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingStep(null);
+        }}
+        onSave={handleSaveStep}
+        initialData={editingStep}
+      />
     </div>
   );
 }

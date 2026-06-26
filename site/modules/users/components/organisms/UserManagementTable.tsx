@@ -1,79 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import usersData from '@base/data/users.json';
+import FilterBar from '../../../dashboard/components/molecules/FilterBar';
+
 
 interface SSOUser {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Member' | 'Viewer';
+  role: 'Admin' | 'Member';
   department: string;
   provider: 'Google' | 'Okta' | 'Microsoft';
   lastLogin: string;
   isActive: boolean;
 }
 
-const INITIAL_USERS: SSOUser[] = [
-  {
-    id: '1',
-    name: 'Nguyen Van An',
-    email: 'an.nguyen@company.com',
-    role: 'Admin',
-    department: 'Engineering',
-    provider: 'Google',
-    lastLogin: '2分前',
-    isActive: true,
-  },
-  {
-    id: '2',
-    name: 'Tran Thi Binh',
-    email: 'binh.tran@company.com',
-    role: 'Member',
-    department: 'Engineering',
-    provider: 'Google',
-    lastLogin: '1時間前',
-    isActive: true,
-  },
-  {
-    id: '3',
-    name: 'Le Hoang Chi',
-    email: 'chi.le@company.com',
-    role: 'Member',
-    department: 'Marketing',
-    provider: 'Okta',
-    lastLogin: '1日前',
-    isActive: true,
-  },
-  {
-    id: '4',
-    name: 'Pham Minh Duy',
-    email: 'duy.pham@company.com',
-    role: 'Viewer',
-    department: 'Design',
-    provider: 'Google',
-    lastLogin: '3日前',
-    isActive: false,
-  },
-  {
-    id: '5',
-    name: 'Hoang Quoc Em',
-    email: 'em.hoang@company.com',
-    role: 'Member',
-    department: 'Operations',
-    provider: 'Okta',
-    lastLogin: 'たった今',
-    isActive: true,
-  },
-  {
-    id: '6',
-    name: 'Vu Thu Giang',
-    email: 'giang.vu@company.com',
-    role: 'Viewer',
-    department: 'Finance',
-    provider: 'Microsoft',
-    lastLogin: '1週間前',
-    isActive: false,
-  },
-];
+const INITIAL_USERS: SSOUser[] = usersData as unknown as SSOUser[];
+
 
 // Helper to extract initials
 const getInitials = (name: string) => {
@@ -105,22 +48,7 @@ const getAvatarBg = (name: string) => {
 };
 
 // Icons
-function SearchIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#565d6d] dark:text-gray-400">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" x2="16.65" y1="21" y2="16.65" />
-    </svg>
-  );
-}
 
-function FunnelIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#565d6d] dark:text-gray-400">
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-    </svg>
-  );
-}
 
 function CircleCheckIcon() {
   return (
@@ -143,14 +71,21 @@ function InactiveIcon() {
 export default function UserManagementTable() {
   const [users, setUsers] = useState<SSOUser[]>(INITIAL_USERS);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState('すべての役割');
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.department.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [users, searchQuery]);
+    return users.filter((user) => {
+      const matchesSearch =
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.department.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesRole =
+        selectedRole === 'すべての役割' || user.role === selectedRole;
+
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchQuery, selectedRole]);
 
   const handleToggleActive = (id: string, name: string, currentStatus: boolean) => {
     const actionText = currentStatus ? '無効化' : '有効化';
@@ -164,14 +99,12 @@ export default function UserManagementTable() {
     }
   };
 
-  const getRoleBadgeStyle = (role: 'Admin' | 'Member' | 'Viewer') => {
+  const getRoleBadgeStyle = (role: 'Admin' | 'Member') => {
     switch (role) {
       case 'Admin':
         return 'bg-[#eff6ff] text-[#1e40af] dark:bg-[#1e3a8a]/40 dark:text-[#93c5fd]';
       case 'Member':
         return 'bg-[#f3f4f6] text-[#374151] dark:bg-[#374151]/40 dark:text-[#d1d5db]';
-      case 'Viewer':
-        return 'bg-[#faf5ff] text-[#6b21a8] dark:bg-[#581c87]/40 dark:text-[#e9d5ff]';
       default:
         return 'bg-[#f3f4f6] text-[#374151]';
     }
@@ -203,24 +136,14 @@ export default function UserManagementTable() {
       </div>
 
       {/* Search & filter row */}
-      <div className="flex items-center gap-[16px]">
-        {/* Search input */}
-        <div className="relative flex items-center w-[319px] h-[39px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] gap-[8px]">
-          <SearchIcon />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ユーザー名、メール、部門で検索..."
-            className="w-full bg-transparent border-none outline-none text-[14px] leading-[22px] text-[#171a1f] dark:text-light placeholder-[#565d6d] dark:placeholder-gray-500 font-base"
-          />
-        </div>
-
-        {/* Funnel button */}
-        <button className="flex items-center justify-center w-[40px] h-[40px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-800 transition-colors duration-200">
-          <FunnelIcon />
-        </button>
-      </div>
+      <FilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedRole={selectedRole}
+        onRoleChange={setSelectedRole}
+        showRoleFilterOnly={true}
+        placeholder="ユーザー名、メール、部門で検索..."
+      />
 
       {/* Table Container */}
       <div className="w-full overflow-x-auto bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px]">

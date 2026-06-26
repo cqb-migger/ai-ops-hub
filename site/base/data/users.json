@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "name": "Nguyen Van An",
+    "email": "an.nguyen@company.com",
+    "role": "Admin",
+    "department": "Engineering",
+    "provider": "Google",
+    "lastLogin": "2分前",
+    "isActive": true
+  },
+  {
+    "id": "2",
+    "name": "Tran Thi Binh",
+    "email": "binh.tran@company.com",
+    "role": "Member",
+    "department": "Engineering",
+    "provider": "Google",
+    "lastLogin": "1時間前",
+    "isActive": true
+  },
+  {
+    "id": "3",
+    "name": "Le Hoang Chi",
+    "email": "chi.le@company.com",
+    "role": "Member",
+    "department": "Marketing",
+    "provider": "Okta",
+    "lastLogin": "1日前",
+    "isActive": true
+  },
+  {
+    "id": "4",
+    "name": "Pham Minh Duy",
+    "email": "duy.pham@company.com",
+    "role": "Member",
+    "department": "Design",
+    "provider": "Google",
+    "lastLogin": "3日前",
+    "isActive": false
+  },
+  {
+    "id": "5",
+    "name": "Hoang Quoc Em",
+    "email": "em.hoang@company.com",
+    "role": "Member",
+    "department": "Operations",
+    "provider": "Okta",
+    "lastLogin": "たった今",
+    "isActive": true
+  },
+  {
+    "id": "6",
+    "name": "Vu Thu Giang",
+    "email": "giang.vu@company.com",
+    "role": "Member",
+    "department": "Finance",
+    "provider": "Microsoft",
+    "lastLogin": "1週間前",
+    "isActive": false
+  }
+]

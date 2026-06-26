@@ -1,16 +1,22 @@
 import React from 'react';
-import { CATEGORIES, ROLES } from '../../constants/tools';
+import { CATEGORIES, HUBS } from '../../constants/tools';
 import Combobox from '@base/components/molecules/Combobox';
 
 interface FilterBarProps {
   searchQuery: string;
   onSearchChange: (val: string) => void;
-  selectedCategory: string;
-  onCategoryChange: (val: string) => void;
-  selectedRole: string;
-  onRoleChange: (val: string) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (val: string) => void;
+  selectedHub?: string;
+  onHubChange?: (val: string) => void;
+  selectedRole?: string;
+  onRoleChange?: (val: string) => void;
   categories?: string[];
+  hubs?: string[];
   roles?: string[];
+  showFilters?: boolean;
+  showRoleFilterOnly?: boolean;
+  placeholder?: string;
 }
 
 function SearchIcon() {
@@ -25,18 +31,25 @@ function SearchIcon() {
 export default function FilterBar({
   searchQuery,
   onSearchChange,
-  selectedCategory,
-  onCategoryChange,
-  selectedRole,
-  onRoleChange,
+  selectedCategory = '',
+  onCategoryChange = () => {},
+  selectedHub = '',
+  onHubChange = () => {},
+  selectedRole = '',
+  onRoleChange = () => {},
   categories,
+  hubs,
   roles,
+  showFilters = true,
+  showRoleFilterOnly = false,
+  placeholder = 'ツール名、キーワードで検索...',
 }: FilterBarProps) {
   const categoriesList = categories || CATEGORIES;
-  const rolesList = roles || ROLES;
+  const hubsList = hubs || HUBS;
+  const rolesList = roles || ['すべての役割', 'Admin', 'Member'];
 
   return (
-    <div className="w-full max-w-[1088px] h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[16px]">
+    <div className="w-full h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[16px]">
       {/* Search Input Box */}
       <div className="relative flex-1 max-w-[638px] h-[40px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] flex items-center gap-[8px]">
         <SearchIcon />
@@ -44,24 +57,38 @@ export default function FilterBar({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="ツール名、キーワードで検索..."
+          placeholder={placeholder}
           className="w-full bg-transparent border-none outline-none text-[14px] leading-[22px] text-[#171a1f] dark:text-light placeholder-[#565d6d] dark:placeholder-gray-500 font-base"
         />
       </div>
 
-      {/* Category Dropdown */}
-      <Combobox
-        value={selectedCategory}
-        onChange={onCategoryChange}
-        options={categoriesList}
-      />
+      {showFilters && !showRoleFilterOnly && (
+        <>
+          {/* Category Dropdown */}
+          <Combobox
+            value={selectedCategory}
+            onChange={onCategoryChange}
+            options={categoriesList}
+          />
 
-      {/* Role Dropdown */}
-      <Combobox
-        value={selectedRole}
-        onChange={onRoleChange}
-        options={rolesList}
-      />
+          {/* Hub Dropdown */}
+          <Combobox
+            value={selectedHub}
+            onChange={onHubChange}
+            options={hubsList}
+          />
+        </>
+      )}
+
+      {showRoleFilterOnly && (
+        <Combobox
+          value={selectedRole}
+          onChange={onRoleChange}
+          options={rolesList}
+        />
+      )}
     </div>
   );
 }
+
+

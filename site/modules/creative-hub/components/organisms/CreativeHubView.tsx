@@ -9,24 +9,6 @@ const toolCards = [...creativeTools, ...creativeTools, ...creativeTools];
 
 export default function CreativeHubView() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
-  const [selectedRole, setSelectedRole] = useState('すべての役割');
-
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    toolCards.forEach((c) => {
-      if (c.category[0]) cats.add(c.category[0]);
-    });
-    return ['すべてのカテゴリ', ...Array.from(cats)];
-  }, []);
-
-  const roles = useMemo(() => {
-    const rls = new Set<string>();
-    toolCards.forEach((c) => {
-      c.category.slice(1).forEach((r) => rls.add(r));
-    });
-    return ['すべての役割', ...Array.from(rls)];
-  }, []);
 
   const filteredCards = useMemo(() => {
     return toolCards.filter((card) => {
@@ -35,15 +17,9 @@ export default function CreativeHubView() {
         card.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         card.category.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || card.category[0] === selectedCategory;
-
-      const matchesRole =
-        selectedRole === 'すべての役割' || card.category.slice(1).includes(selectedRole);
-
-      return matchesSearch && matchesCategory && matchesRole;
+      return matchesSearch;
     });
-  }, [searchQuery, selectedCategory, selectedRole]);
+  }, [searchQuery]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
@@ -61,12 +37,7 @@ export default function CreativeHubView() {
       <FilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedRole={selectedRole}
-        onRoleChange={setSelectedRole}
-        categories={categories}
-        roles={roles}
+        showFilters={false}
       />
 
       {/* Tool Cards Grid */}
@@ -84,8 +55,6 @@ export default function CreativeHubView() {
           <button
             onClick={() => {
               setSearchQuery('');
-              setSelectedCategory('すべてのカテゴリ');
-              setSelectedRole('すべての役割');
             }}
             className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
           >

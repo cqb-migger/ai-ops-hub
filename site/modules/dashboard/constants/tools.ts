@@ -28,9 +28,7 @@ export interface Tool {
 const rawTools = toolsData as unknown as Tool[];
 
 // Filter tools that belong to the dashboard hub
-export const TOOLS: Tool[] = rawTools.filter((tool) =>
-  tool.hubs.includes('dashboard')
-);
+export const TOOLS: Tool[] = rawTools;
 
 export const CATEGORIES = [
   'すべてのカテゴリ',
@@ -42,16 +40,10 @@ export const CATEGORIES = [
   'コンプライアンス',
 ];
 
-export const ROLES = [
-  'すべての役割',
-  '全般',
-  'マーケティング',
-  'デザイン',
-  'データサイエンス',
-  '経営企画',
-  'エンジニアリング',
-  '法務',
-  '広報',
-  '人事',
-  '営業',
+export const HUBS = [
+  'すべてのハブ',
+  'creative',
+  'compliance',
+  'data',
 ];
+
