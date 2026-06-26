@@ -81,9 +81,17 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
       </span>
 
       {/* Step Description */}
-      <p className="mt-[8px] text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal">
-        {step.description}
-      </p>
+      <div className="relative group/desc w-full mt-[8px]">
+        {/* Tooltip */}
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[8px] hidden group-hover/desc:block w-[240px] p-[12px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-30 text-left font-normal border border-[#dee1e6] dark:border-midnight-800">
+          {step.description}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
+        </div>
+        
+        <p className="text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal line-clamp-2">
+          {step.description}
+        </p>
+      </div>
     </div>
   );
 }
