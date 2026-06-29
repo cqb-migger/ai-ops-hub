@@ -1,16 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
-import toolsData from '@base/data/tools.json';
-import { Tool } from '../../../dashboard/constants/tools';
-
-const dataTools = (toolsData as unknown as Tool[]).filter((t) => t.hubs.includes('data'));
+import { useTools } from '../../../../base/hooks/useTools';
 
 export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { tools, loading } = useTools({ hub: 'data' });
 
   const filteredTools = useMemo(() => {
-    return dataTools.filter((tool) => {
+    return tools.filter((tool) => {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -18,7 +16,7 @@ export default function DataHubView() {
 
       return matchesSearch;
     });
-  }, [searchQuery]);
+  }, [tools, searchQuery]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
@@ -43,7 +41,11 @@ export default function DataHubView() {
         showFilters={false}
       />
 
-      {filteredTools.length > 0 ? (
+      {loading ? (
+        <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+          読み込み中...
+        </div>
+      ) : filteredTools.length > 0 ? (
         <>
           {/* Tool Cards Grid — Row 1 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[24px]">

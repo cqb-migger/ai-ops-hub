@@ -1,26 +1,26 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
-import toolsData from '@base/data/tools.json';
-import { Tool } from '../../../dashboard/constants/tools';
-import { INITIAL_STEPS, Step } from '../../constants/steps';
+import { useTools } from '../../../../base/hooks/useTools';
+import { useSteps } from '../../../../base/hooks/useSteps';
+import { Step } from '../../constants/steps';
 import StepCard from '../molecules/StepCard';
 import StepModal from '../molecules/StepModal';
 import StepConnector from '../molecules/StepConnector';
 
 
-const complianceTools = (toolsData as unknown as Tool[]).filter(t => t.hubs.includes("compliance"));
-const GRID_RESOURCES = [...complianceTools, ...complianceTools];
-
 export default function ComplianceHubView() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStep, setEditingStep] = useState<Step | null>(null);
   const [insertAtIndex, setInsertAtIndex] = useState<number | null>(null);
 
+  const { tools, loading: toolsLoading } = useTools({ hub: 'compliance' });
+  const { steps, saveSteps, loading: stepsLoading } = useSteps();
+
   const filteredResources = useMemo(() => {
-    return GRID_RESOURCES.filter((resource) => {
+    const complianceTools = [...tools, ...tools];
+    return complianceTools.filter((resource) => {
       const matchesSearch =
         resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -28,40 +28,7 @@ export default function ComplianceHubView() {
 
       return matchesSearch;
     });
-  }, [searchQuery]);
-
-  // Load steps on mount
-  useEffect(() => {
-    fetch('/api/steps')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setSteps(data);
-        }
-      })
-      .catch((err) => console.error('Failed to load steps:', err));
-  }, []);
-
-  // Helper to persist steps to the JSON file
-  const saveStepsToServer = async (newSteps: Step[]) => {
-    try {
-      const res = await fetch('/api/steps', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newSteps),
-      });
-      if (res.ok) {
-        setSteps(newSteps);
-      } else {
-        alert('ステップの保存に失敗しました。');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('ステップの保存に失敗しました。');
-    }
-  };
+  }, [tools, searchQuery]);
 
   const handleDeleteStep = async (id: string) => {
     if (steps.length <= 1) {
@@ -75,7 +42,7 @@ export default function ComplianceHubView() {
         ...s,
         order: idx + 1
       }));
-      await saveStepsToServer(updated);
+      await saveSteps(updated);
     }
   };
 
@@ -118,7 +85,7 @@ export default function ComplianceHubView() {
         order: idx + 1
       }));
     }
-    await saveStepsToServer(updatedSteps);
+    await saveSteps(updatedSteps);
     setIsModalOpen(false);
     setEditingStep(null);
     setInsertAtIndex(null);
@@ -169,31 +136,39 @@ export default function ComplianceHubView() {
 
         {/* Dynamic Step Diagram */}
         <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[16px] isolate">
-          {/* Connector line running behind circles on desktop */}
-          {steps.length > 1 && (
-            <div className="hidden md:block absolute top-[56px] left-[12%] right-[12%] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
-          )}
-
-          {steps.map((step, index) => (
-            <React.Fragment key={step.id}>
-              <StepCard
-                step={step}
-                onEdit={() => {
-                  setEditingStep(step);
-                  setInsertAtIndex(null);
-                  setIsModalOpen(true);
-                }}
-                onDelete={() => handleDeleteStep(step.id)}
-                canDelete={steps.length > 1}
-              />
-              {index < steps.length - 1 && (
-                <StepConnector
-                  onClick={() => handleAddStepAt(index + 1)}
-                  disabled={steps.length >= 6}
-                />
+          {stepsLoading ? (
+            <div className="py-[16px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
+              読み込み中...
+            </div>
+          ) : (
+            <>
+              {/* Connector line running behind circles on desktop */}
+              {steps.length > 1 && (
+                <div className="hidden md:block absolute top-[56px] left-[12%] right-[12%] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
               )}
-            </React.Fragment>
-          ))}
+
+              {steps.map((step, index) => (
+                <React.Fragment key={step.id}>
+                  <StepCard
+                    step={step}
+                    onEdit={() => {
+                      setEditingStep(step);
+                      setInsertAtIndex(null);
+                      setIsModalOpen(true);
+                    }}
+                    onDelete={() => handleDeleteStep(step.id)}
+                    canDelete={steps.length > 1}
+                  />
+                  {index < steps.length - 1 && (
+                    <StepConnector
+                      onClick={() => handleAddStepAt(index + 1)}
+                      disabled={steps.length >= 6}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </>
+          )}
         </div>
       </section>
 
@@ -216,7 +191,11 @@ export default function ComplianceHubView() {
         />
 
         {/* Cards Grid */}
-        {filteredResources.length > 0 ? (
+        {toolsLoading ? (
+          <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
+            読み込み中...
+          </div>
+        ) : filteredResources.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px] mt-[12px]">
             {filteredResources.map((resource, index) => (
               <ToolCard key={`${resource.id}-${index}`} tool={resource} />

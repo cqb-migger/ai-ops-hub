@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
-import toolsData from '@base/data/tools.json';
-import { Tool } from '../../../dashboard/constants/tools';
+import { useTools } from '../../../../base/hooks/useTools';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 
 interface ManagedTool {
@@ -16,17 +15,6 @@ interface ManagedTool {
   imageUrl: string;
   hubs: string[];
 }
-
-const INITIAL_TOOLS: ManagedTool[] = (toolsData as unknown as Tool[]).map((t) => ({
-  id: t.id,
-  name: t.name,
-  description: t.description,
-  category: t.category[0] || '',
-  teams: t.category.slice(1),
-  status: '公開中',
-  imageUrl: t.icon || '',
-  hubs: t.hubs,
-}));
 
 // Icons
 function PlusIcon() {
@@ -70,13 +58,26 @@ function TrashIcon() {
 
 export default function ToolManagementTable() {
   const router = useRouter();
-  const [tools, setTools] = useState<ManagedTool[]>(INITIAL_TOOLS);
+  const { tools, loading, deleteTool } = useTools();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
   const [selectedHub, setSelectedHub] = useState('すべてのハブ');
 
+  const managedTools = useMemo<ManagedTool[]>(() => {
+    return tools.map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      category: t.category[0] || '',
+      teams: t.category.slice(1),
+      status: t.status || '公開中',
+      imageUrl: t.icon || '',
+      hubs: t.hubs,
+    }));
+  }, [tools]);
+
   const filteredTools = useMemo(() => {
-    return tools.filter((tool) => {
+    return managedTools.filter((tool) => {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,7 +91,7 @@ export default function ToolManagementTable() {
 
       return matchesSearch && matchesCategory && matchesHub;
     });
-  }, [tools, searchQuery, selectedCategory, selectedHub]);
+  }, [managedTools, searchQuery, selectedCategory, selectedHub]);
 
   const handleAddNew = () => {
     router.push('/manage-tools/new');
@@ -100,10 +101,14 @@ export default function ToolManagementTable() {
     toast.success(`${name} の編集画面を開きます (シミュレーション)`);
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (confirm(`${name} を削除してもよろしいですか？`)) {
-      setTools(tools.filter((t) => t.id !== id));
-      toast.success(`${name} を削除しました`);
+      try {
+        await deleteTool(id);
+        toast.success(`${name} を削除しました`);
+      } catch (err: any) {
+        toast.error(err.message || 'ツールの削除に失敗しました。');
+      }
     }
   };
 
@@ -164,7 +169,13 @@ export default function ToolManagementTable() {
 
           {/* Table Body */}
           <tbody>
-            {filteredTools.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                  読み込み中...
+                </td>
+              </tr>
+            ) : filteredTools.length > 0 ? (
               filteredTools.map((tool) => (
                 <tr
                   key={tool.id}

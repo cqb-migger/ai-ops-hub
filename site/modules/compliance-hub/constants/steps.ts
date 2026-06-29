@@ -1,5 +1,3 @@
-import stepsData from '@base/data/steps.json';
-
 export interface Step {
   id: string;
   order: number;
@@ -7,8 +5,6 @@ export interface Step {
   title: string;
   description: string;
 }
-
-export const INITIAL_STEPS: Step[] = stepsData as unknown as Step[];
 
 export const STEP_ICON_OPTIONS = [
   '✏️',

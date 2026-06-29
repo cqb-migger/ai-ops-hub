@@ -1,21 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
-import usersData from '@base/data/users.json';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
-
-
-interface SSOUser {
-  id: string;
-  name: string;
-  email: string;
-  role: 'Admin' | 'Member';
-  department: string;
-  provider: 'Google' | 'Okta' | 'Microsoft';
-  lastLogin: string;
-  isActive: boolean;
-}
-
-const INITIAL_USERS: SSOUser[] = usersData as unknown as SSOUser[];
+import { useUsers } from '../../../../base/hooks/useUsers';
 
 
 // Helper to extract initials
@@ -69,7 +55,7 @@ function InactiveIcon() {
 }
 
 export default function UserManagementTable() {
-  const [users, setUsers] = useState<SSOUser[]>(INITIAL_USERS);
+  const { users, loading, toggleUserActive } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('すべての役割');
 
@@ -87,15 +73,15 @@ export default function UserManagementTable() {
     });
   }, [users, searchQuery, selectedRole]);
 
-  const handleToggleActive = (id: string, name: string, currentStatus: boolean) => {
+  const handleToggleActive = async (id: number, name: string, currentStatus: boolean) => {
     const actionText = currentStatus ? '無効化' : '有効化';
     if (confirm(`本当に「${name}」のアカウントを${actionText}しますか？`)) {
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === id ? { ...user, isActive: !user.isActive } : user
-        )
-      );
-      toast.success(`「${name}」のアカウントを${actionText}しました。`);
+      try {
+        await toggleUserActive(id, currentStatus);
+        toast.success(`「${name}」のアカウントを${actionText}しました。`);
+      } catch (err: any) {
+        toast.error(err.message || 'アカウント状態の更新に失敗しました。');
+      }
     }
   };
 
@@ -177,7 +163,13 @@ export default function UserManagementTable() {
 
           {/* Table Body */}
           <tbody>
-            {filteredUsers.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                  読み込み中...
+                </td>
+              </tr>
+            ) : filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
                 <tr
                   key={user.id}

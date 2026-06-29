@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import FilterBar from '../molecules/FilterBar';
 import ToolCard from '../molecules/ToolCard';
-import { TOOLS } from '../../constants/tools';
+import { useTools } from '../../../../base/hooks/useTools';
 
 function SparklesIcon() {
   return (
@@ -18,23 +18,25 @@ export default function ToolGrid() {
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
   const [selectedHub, setSelectedHub] = useState('すべてのハブ');
 
+  const { tools, loading } = useTools();
+
   // Filter tools logic
   const filteredTools = useMemo(() => {
-    return TOOLS.filter((tool) => {
+    return tools.filter((tool) => {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || tool.category[0] === selectedCategory;
+        selectedCategory === 'すべてのカテゴリ' || tool.category.includes(selectedCategory);
 
       const matchesHub =
         selectedHub === 'すべてのハブ' || tool.hubs.includes(selectedHub);
 
       return matchesSearch && matchesCategory && matchesHub;
     });
-  }, [searchQuery, selectedCategory, selectedHub]);
+  }, [tools, searchQuery, selectedCategory, selectedHub]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full">
@@ -67,7 +69,11 @@ export default function ToolGrid() {
       </div>
 
       {/* Cards Grid */}
-      {filteredTools.length > 0 ? (
+      {loading ? (
+        <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+          読み込み中...
+        </div>
+      ) : filteredTools.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[24px]">
           {filteredTools.map((tool) => (
             <ToolCard key={tool.id} tool={tool} />

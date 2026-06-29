@@ -17,3 +17,6 @@ wheels/
 
 # Environment variables
 .env
+
+# Local logs
+logs/

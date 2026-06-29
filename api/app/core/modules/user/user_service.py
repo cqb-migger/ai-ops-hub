@@ -1,6 +1,4 @@
-import uuid
 from typing import List, Optional
-
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -10,10 +8,8 @@ from app.api.v1.public.users.schemas.user_request import UserCreate, UserUpdate
 from app.core.modules.auth.auth_securities import get_password_hash
 from app.core.modules.user.models.user import User
 
-
 async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
     """Creates a new user in the database."""
-    # Check if email already exists (optional but good practice)
     result = await db.execute(select(User).where(User.email == user_in.email))
     existing_user = result.scalars().first()
     if existing_user:
@@ -26,14 +22,19 @@ async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
     db_user = User(
         email=user_in.email,
         password=hashed_password,
+        name=user_in.name,
         first_name=user_in.first_name,
         last_name=user_in.last_name,
+        role=user_in.role or 'Member',
+        department=user_in.department,
+        provider=user_in.provider,
+        is_active=user_in.is_active if user_in.is_active is not None else True,
     )
     db.add(db_user)
     try:
-        await db.flush()  # Use flush to get potential errors before commit
-        await db.refresh(db_user)  # Refresh to get DB-generated defaults like id, created_at
-    except IntegrityError:  # Catch potential unique constraint violations
+        await db.flush()
+        await db.refresh(db_user)
+    except IntegrityError:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -44,26 +45,23 @@ async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
         raise
     return db_user
 
-
-async def get_user_service(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
+async def get_user_service(db: AsyncSession, user_id: int) -> Optional[User]:
     """Gets a single user by ID."""
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     return user
 
-
 async def get_users_service(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
     """Gets a list of users with pagination."""
-    result = await db.execute(select(User).offset(skip).limit(limit))
+    result = await db.execute(select(User).order_by(User.id).offset(skip).limit(limit))
     users = result.scalars().all()
     return list(users)
 
-
-async def update_user_service(db: AsyncSession, user_id: uuid.UUID, user_in: UserUpdate) -> Optional[User]:
+async def update_user_service(db: AsyncSession, user_id: int, user_in: UserUpdate) -> Optional[User]:
     """Updates an existing user."""
     db_user = await get_user_service(db, user_id)
     if not db_user:
-        return None  # Let endpoint handle 404
+        return None
 
     update_data = user_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -77,7 +75,7 @@ async def update_user_service(db: AsyncSession, user_id: uuid.UUID, user_in: Use
     try:
         await db.flush()
         await db.refresh(db_user)
-    except IntegrityError:  # Handle potential unique constraint violations during update
+    except IntegrityError:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -88,13 +86,12 @@ async def update_user_service(db: AsyncSession, user_id: uuid.UUID, user_in: Use
         raise
     return db_user
 
-
-async def delete_user_service(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
+async def delete_user_service(db: AsyncSession, user_id: int) -> Optional[User]:
     """Deletes a user by ID."""
     db_user = await get_user_service(db, user_id)
     if not db_user:
-        return None  # Let endpoint handle 404
+        return None
 
     await db.delete(db_user)
-    await db.flush()  # Use flush to confirm deletion before commit
-    return db_user  # Return the deleted object for confirmation if desired
+    await db.flush()
+    return db_user

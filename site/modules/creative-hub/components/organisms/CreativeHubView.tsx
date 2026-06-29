@@ -1,16 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
-import toolsData from '@base/data/tools.json';
-import { Tool } from '../../../dashboard/constants/tools';
-
-const creativeTools = (toolsData as unknown as Tool[]).filter(t => t.hubs.includes("creative"));
-const toolCards = [...creativeTools, ...creativeTools, ...creativeTools];
+import { useTools } from '../../../../base/hooks/useTools';
 
 export default function CreativeHubView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { tools, loading } = useTools({ hub: 'creative' });
 
   const filteredCards = useMemo(() => {
+    const toolCards = [...tools, ...tools, ...tools];
     return toolCards.filter((card) => {
       const matchesSearch =
         card.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -19,7 +17,7 @@ export default function CreativeHubView() {
 
       return matchesSearch;
     });
-  }, [searchQuery]);
+  }, [tools, searchQuery]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
@@ -41,7 +39,11 @@ export default function CreativeHubView() {
       />
 
       {/* Tool Cards Grid */}
-      {filteredCards.length > 0 ? (
+      {loading ? (
+        <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+          読み込み中...
+        </div>
+      ) : filteredCards.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[24px]">
           {filteredCards.map((card, idx) => (
             <ToolCard key={`${card.id}-${idx}`} tool={card} />

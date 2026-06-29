@@ -1,4 +1,4 @@
-import toolsData from '@base/data/tools.json';
+// Static types and categories for tools
 
 export interface ToolPrompt {
   title: string;
@@ -21,14 +21,11 @@ export interface Tool {
   hubs: string[];
   url?: string;
   icon?: string;
+  status?: string;
   details?: ToolDetails;
 }
 
-// Cast JSON data to Tool[] interface
-const rawTools = toolsData as unknown as Tool[];
 
-// Filter tools that belong to the dashboard hub
-export const TOOLS: Tool[] = rawTools;
 
 export const CATEGORIES = [
   'すべてのカテゴリ',

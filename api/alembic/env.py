@@ -35,6 +35,8 @@ from app.core.db.database import Base  # noqa: E402
 
 # Import all models here so Base knows about them
 from app.core.modules.user.models.user import User  # noqa: E402, F401
+from app.core.modules.tool.models.tool import Tool  # noqa: E402, F401
+from app.core.modules.step.models.step import Step  # noqa: E402, F401
 
 target_metadata = Base.metadata  # noqa: E402
 

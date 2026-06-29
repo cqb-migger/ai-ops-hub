@@ -101,8 +101,11 @@ interface TemplateItem {
   content: string;
 }
 
+import { useTools } from '../../../../base/hooks/useTools';
+
 export default function CreateToolForm() {
   const router = useRouter();
+  const { createTool } = useTools();
   
   // Alert banner state
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -214,7 +217,7 @@ export default function CreateToolForm() {
     toast.success('テンプレートを削除しました');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!toolName.trim()) {
       toast.error('ツール名称を入力してください');
       return;
@@ -228,11 +231,49 @@ export default function CreateToolForm() {
       return;
     }
 
-    setShowSuccessAlert(true);
-    toast.success('設定が正常に保存されました。');
-    
-    // Smooth scroll to top to see success banner
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      const categoryList = [category];
+      if (targetTeam && targetTeam !== '全社（制限なし）') {
+        categoryList.push(targetTeam);
+      }
+
+      await createTool({
+        name: toolName,
+        description: description,
+        url: redirectUrl,
+        icon: thumbnailUrl || '🔧',
+        status: visibility === 'public' ? '公開中' : '下書き',
+        category: categoryList,
+        hubs: [],
+        details: {
+          inputs: ['製品名', 'データ'],
+          outputDescription: '受注確度とネクストアクション',
+          prompts: [
+            {
+              title: '基本プロンプト',
+              description: 'デフォルト',
+              content: basePrompt
+            },
+            ...additionalTemplates.filter(t => t.name.trim()).map(t => ({
+              title: t.name,
+              description: t.language,
+              content: t.content
+            }))
+          ]
+        }
+      });
+
+      setShowSuccessAlert(true);
+      toast.success('設定が正常に保存されました。');
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      setTimeout(() => {
+        router.push('/manage-tools');
+      }, 1500);
+    } catch (err: any) {
+      toast.error(err.message || 'ツールの保存に失敗しました。');
+    }
   };
 
   const handleCancel = () => {

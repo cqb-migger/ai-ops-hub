@@ -9,8 +9,13 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
+    name = Column(String, nullable=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
+    role = Column(String, default='Member', nullable=False)
+    department = Column(String, nullable=True)
+    provider = Column(String, nullable=True)
+    last_login = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean(), default=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
