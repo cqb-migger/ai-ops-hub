@@ -102,7 +102,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
 
         {/* Custom Ellipsis Trigger for Tooltip */}
         {step.description.length > 25 && (
-          <div className="absolute bottom-0 right-0 bg-gray-100 dark:bg-midnight-900 pl-[4px] flex items-center group/dots cursor-pointer select-none z-20">
+          <div className="absolute bottom-0 right-0 bg-[#fafafb] dark:bg-[#151c2c] pl-[4px] flex items-center group/dots cursor-pointer select-none z-20">
             {/* The Ellipsis span */}
             <span className="text-[12px] font-bold text-[#565d6d] dark:text-gray-400 group-hover/dots:text-[#5570f6] dark:group-hover/dots:text-[#7c91eb] transition-colors leading-[17px]">
               ...
