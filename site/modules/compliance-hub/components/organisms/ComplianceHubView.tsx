@@ -185,6 +185,11 @@ export default function ComplianceHubView() {
             </div>
           ) : (
             <>
+              {/* Continuous horizontal line behind circles on desktop */}
+              {steps.length > 1 && (
+                <div className="hidden md:block absolute top-[60px] left-[91px] right-[91px] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
+              )}
+
               {steps.map((step, index) => (
                 <React.Fragment key={step.id}>
                   <div

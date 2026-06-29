@@ -11,9 +11,6 @@ export default function StepConnector({ onClick, disabled }: StepConnectorProps)
       <div className="relative flex-1 md:h-[64px] h-[48px] w-full md:w-auto flex items-center justify-center select-none pointer-events-none">
         {/* Vertical Line on Mobile only, still visible when disabled */}
         <div className="block md:hidden absolute left-1/2 top-0 bottom-0 w-[2px] bg-[#dee1e6] dark:bg-midnight-800 -translate-x-1/2 -z-10" />
-        
-        {/* Horizontal Line on Desktop only when disabled */}
-        <div className="hidden md:block absolute top-1/2 left-0 right-0 h-[2px] bg-[#dee1e6] dark:bg-midnight-800 -translate-y-1/2 -z-10" />
       </div>
     );
   }
@@ -25,9 +22,6 @@ export default function StepConnector({ onClick, disabled }: StepConnectorProps)
     >
       {/* Vertical Line on Mobile only */}
       <div className="block md:hidden absolute left-1/2 top-0 bottom-0 w-[2px] bg-[#dee1e6] dark:bg-midnight-800 -translate-x-1/2 -z-10 group-hover:bg-[#5570f6] transition-colors" />
-
-      {/* Horizontal Line on Desktop only */}
-      <div className="hidden md:block absolute top-1/2 left-0 right-0 h-[2px] bg-[#dee1e6] dark:bg-midnight-800 -translate-y-1/2 -z-10 group-hover:bg-[#5570f6] transition-colors" />
 
       {/* Plus Button (centered in the gap container) */}
       <div className="w-[24px] h-[24px] rounded-full bg-[#5570f6] text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95 transition-all duration-200 shadow-md z-10">
