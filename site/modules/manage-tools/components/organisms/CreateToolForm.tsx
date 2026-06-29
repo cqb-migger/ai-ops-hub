@@ -93,6 +93,17 @@ function ImageUploadIcon() {
   );
 }
 
+function DocumentUploadIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px] text-gray-400 dark:text-gray-500">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" x2="12" y1="18" y2="12" />
+      <polyline points="9 15 12 12 15 15" />
+    </svg>
+  );
+}
+
 interface PromptItem {
   id: string;
   name: string;
@@ -480,7 +491,7 @@ export default function CreateToolForm() {
             <div className="flex flex-row items-center gap-[16px] mt-[4px]">
               {/* Image Preview Box */}
               <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden">
-                <ImageUploadIcon />
+                <DocumentUploadIcon />
               </div>
               {/* Upload Button & Text */}
               <div className="flex flex-col gap-[6px]">
