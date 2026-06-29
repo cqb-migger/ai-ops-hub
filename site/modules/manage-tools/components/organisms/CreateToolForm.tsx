@@ -434,7 +434,7 @@ export default function CreateToolForm() {
             <button
               type="button"
               onClick={handleAddPrompt}
-              className="flex items-center gap-[6px] h-[36px] px-[16px] bg-[#5570f6] hover:bg-[#395ce0] text-white rounded-[6px] text-[14px] font-medium transition-colors"
+              className="flex items-center gap-[6px] h-[36px] px-[16px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[14px] font-semibold transition-colors"
             >
               <PlusIcon />
               <span>プロンプト追加</span>
@@ -455,7 +455,7 @@ export default function CreateToolForm() {
           </div>
           <button
             type="button"
-            className="h-[26px] px-[10px] bg-[#5570f6] text-white rounded-full text-[12px] font-semibold flex items-center justify-center select-none"
+            className="h-[26px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 hover:bg-[#fafafb] dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light rounded-full text-[12px] font-semibold flex items-center justify-center select-none transition-colors"
           >
             Markdown プレビュー
           </button>
