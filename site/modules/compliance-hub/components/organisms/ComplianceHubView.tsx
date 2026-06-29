@@ -136,7 +136,7 @@ export default function ComplianceHubView() {
   };
 
   return (
-    <div className="flex flex-col gap-[36px] w-full text-[#171a1f] dark:text-light font-base">
+    <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
       
       {/* Category Pill Badge & Header title */}
       <div className="flex flex-col items-start gap-[12px]">
@@ -249,7 +249,7 @@ export default function ComplianceHubView() {
       </section>
 
       {/* Section 2: Tools & References */}
-      <section className="flex flex-col gap-[20px] mt-[12px]">
+      <section className="flex flex-col gap-[28px]">
         <div>
           <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
             ツール & リファレンス
