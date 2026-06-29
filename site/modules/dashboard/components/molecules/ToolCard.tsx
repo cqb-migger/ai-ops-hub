@@ -40,7 +40,11 @@ export default function ToolCard({ tool }: ToolCardProps) {
           <div className="flex items-center gap-[12px] min-w-0">
             {/* Tool Icon — large circle with pale blue background & border */}
             <div className="flex-shrink-0 w-[48px] h-[48px] rounded-full overflow-hidden flex items-center justify-center bg-[#f3f6fd] dark:bg-midnight-900 border border-[#dbe2f9] dark:border-midnight-700 text-[24px]">
-              {tool.icon || '🔧'}
+              {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
+                <img src={tool.icon} alt={tool.name} className="w-full h-full object-cover" />
+              ) : (
+                tool.icon || '🔧'
+              )}
             </div>
 
             {/* Tool Name — Deep Navy blue */}
