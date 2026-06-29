@@ -128,9 +128,7 @@ function SidebarLink({ href, label, icon, active, collapsed }: SidebarLinkProps)
             : 'text-[#565d6d] dark:text-gray-300'
         }`}
         style={
-          active
-            ? { backgroundColor: '#5570f6' }
-            : isHovered
+          active || isHovered
             ? { background: 'linear-gradient(to right, #2563eb, #60a5fa)' }
             : undefined
         }
