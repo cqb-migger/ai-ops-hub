@@ -55,7 +55,7 @@ export default function ToolGrid() {
       />
 
       {/* Grid count header */}
-      <div className="flex items-center gap-[8px] mt-[12px]">
+      <div className="flex items-center gap-[8px]">
         <SparklesIcon />
         <h3 className="text-[20px] font-semibold leading-[30px] text-[#171a1f] dark:text-light font-base">
           利用可能なツール ({filteredTools.length})
