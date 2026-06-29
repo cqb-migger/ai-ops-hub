@@ -47,17 +47,10 @@ export default function DataHubView() {
         </div>
       ) : filteredTools.length > 0 ? (
         <>
-          {/* Tool Cards Grid — Row 1 */}
+          {/* Tool Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
             {filteredTools.map((tool) => (
-              <ToolCard key={`row1-${tool.id}`} tool={tool} />
-            ))}
-          </div>
-
-          {/* Tool Cards Grid — Row 2 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
-            {filteredTools.map((tool) => (
-              <ToolCard key={`row2-${tool.id}`} tool={tool} />
+              <ToolCard key={tool.id} tool={tool} />
             ))}
           </div>
         </>

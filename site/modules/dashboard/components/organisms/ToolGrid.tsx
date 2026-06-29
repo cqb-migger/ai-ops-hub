@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../molecules/FilterBar';
 import ToolCard from '../molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
@@ -16,8 +16,14 @@ function SparklesIcon() {
 export default function ToolGrid() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { tools, loading } = useTools();
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
 
   // Filter tools logic
   const filteredTools = useMemo(() => {
@@ -33,6 +39,15 @@ export default function ToolGrid() {
       return matchesSearch && matchesCategory;
     });
   }, [tools, searchQuery, selectedCategory]);
+
+  const ITEMS_PER_PAGE = 16;
+  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
+  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
+
+  const paginatedTools = useMemo(() => {
+    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
+    return filteredTools.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [filteredTools, currentPageSafe]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full">
@@ -68,10 +83,62 @@ export default function ToolGrid() {
           読み込み中...
         </div>
       ) : filteredTools.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
-          {filteredTools.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
-          ))}
+        <div className="flex flex-col gap-[28px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
+            {paginatedTools.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-[8px] mt-[12px]">
+              {/* Previous Page Button */}
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPageSafe === 1}
+                className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] border transition-colors ${
+                  currentPageSafe === 1
+                    ? 'border-[#dee1e6] text-[#bcc1ca] dark:border-midnight-800 dark:text-gray-600 cursor-not-allowed'
+                    : 'border-[#dee1e6] hover:bg-[#fafafb] text-[#565d6d] dark:border-midnight-800 dark:hover:bg-midnight-900 dark:text-light'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              {/* Page numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-[36px] h-[36px] rounded-[8px] text-[14px] font-semibold transition-all duration-150 ${
+                    currentPageSafe === page
+                      ? 'bg-[#5570f6] text-white shadow-sm'
+                      : 'border border-[#dee1e6] hover:bg-[#fafafb] text-[#565d6d] dark:border-midnight-800 dark:hover:bg-midnight-900 dark:text-light'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* Next Page Button */}
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPageSafe === totalPages}
+                className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] border transition-colors ${
+                  currentPageSafe === totalPages
+                    ? 'border-[#dee1e6] text-[#bcc1ca] dark:border-midnight-800 dark:text-gray-600 cursor-not-allowed'
+                    : 'border-[#dee1e6] hover:bg-[#fafafb] text-[#565d6d] dark:border-midnight-800 dark:hover:bg-midnight-900 dark:text-light'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">

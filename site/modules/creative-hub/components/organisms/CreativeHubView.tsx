@@ -8,8 +8,7 @@ export default function CreativeHubView() {
   const { tools, loading } = useTools({ category: 'creative' });
 
   const filteredCards = useMemo(() => {
-    const toolCards = [...tools, ...tools, ...tools];
-    return toolCards.filter((card) => {
+    return tools.filter((card) => {
       const matchesSearch =
         card.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         card.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
