@@ -21,7 +21,7 @@ export default function DataHubView() {
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
       {/* Page Header */}
-      <div className="flex flex-col gap-[12px] pb-[20px] border-b border-[#dee1e6] dark:border-midnight-700">
+      <div className="flex flex-col gap-[12px]">
         {/* Title */}
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-extrabold text-[30px] leading-[36px] tracking-[-0.75px] text-[#171a1f] dark:text-light">
           データハブ
