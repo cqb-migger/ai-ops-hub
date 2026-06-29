@@ -488,30 +488,27 @@ export default function CreateToolForm() {
             <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
               ガイド資料
             </span>
-            <div className="flex flex-row items-center gap-[16px] mt-[4px]">
-              {/* Image Preview Box */}
-              <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden">
+            <div
+              className="flex flex-col items-center justify-center w-full py-[32px] px-[20px] mt-[4px] border-2 border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[8px] bg-[#fafafb] hover:bg-[#f3f4f6] dark:bg-midnight-900 dark:hover:bg-midnight-850 cursor-pointer transition-colors group"
+              onClick={handleTriggerGuideUpload}
+            >
+              <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 mb-[12px] group-hover:scale-105 transition-transform shadow-sm">
                 <DocumentUploadIcon />
               </div>
-              {/* Upload Button & Text */}
-              <div className="flex flex-col gap-[6px]">
-                <input
-                  type="file"
-                  ref={guideFileInputRef}
-                  accept=".jpg,.png,.pdf"
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={handleTriggerGuideUpload}
-                  className="h-[32px] px-[12px] w-fit bg-white dark:bg-midnight-900 border border-[#171a1f] dark:border-gray-500 hover:bg-[#fafafb] dark:hover:bg-midnight-800 rounded-[6px] text-[12px] font-medium transition-colors"
-                >
-                  アップロード
-                </button>
-                <span className="text-[11px] text-[#565d6d] dark:text-gray-400">
-                  JPG/PNG/PDF形式
-                </span>
+              <div className="flex flex-col items-center gap-[4px] text-center">
+                <p className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                  クリックしてアップロード<span className="font-normal text-[#565d6d] dark:text-gray-400">、またはファイルをドラッグ＆ドロップ</span>
+                </p>
+                <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
+                  JPG, PNG, PDF形式 (最大 10MB)
+                </p>
               </div>
+              <input
+                type="file"
+                ref={guideFileInputRef}
+                accept=".jpg,.png,.pdf"
+                className="hidden"
+              />
             </div>
           </div>
         </div>
