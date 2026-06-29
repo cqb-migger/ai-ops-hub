@@ -64,13 +64,13 @@ export default function ToolCard({ tool }: ToolCardProps) {
           {visibleTags.map((tag) => (
             <span
               key={tag}
-              className="bg-[#f0f4ff] dark:bg-midnight-900/60 border border-[#dbe2f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[10px] h-[22px] flex items-center justify-center whitespace-nowrap"
+              className="bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-medium text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[12px] h-[22px] flex items-center justify-center whitespace-nowrap"
             >
               {tag}
             </span>
           ))}
           {hiddenCount > 0 && (
-            <span className="bg-[#f0f4ff] dark:bg-midnight-900/60 border border-[#dbe2f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[8px] h-[22px] flex items-center justify-center whitespace-nowrap">
+            <span className="bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-medium text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[22px] flex items-center justify-center whitespace-nowrap">
               +{hiddenCount}
             </span>
           )}
