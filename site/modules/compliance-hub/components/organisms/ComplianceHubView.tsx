@@ -17,6 +17,7 @@ export default function ComplianceHubView() {
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isFlowExpanded, setIsFlowExpanded] = useState(true);
 
   const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
@@ -149,85 +150,102 @@ export default function ComplianceHubView() {
       </div>
 
       {/* Section 1: Review Flow */}
-      <section className="flex flex-col gap-[20px] mt-[12px]">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[12px]">
-          <div>
-            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+      <section className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_3px_rgba(23,26,31,0.05)] p-[20px] sm:p-[24px]">
+        {/* Card Header (Collapsible trigger) */}
+        <div 
+          onClick={() => setIsFlowExpanded(!isFlowExpanded)}
+          className="flex justify-between items-center cursor-pointer select-none"
+        >
+          <div className="flex flex-col gap-[4px]">
+            <h3 className="text-[20px] sm:text-[22px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px]">
               標準レビューフロー
             </h3>
-            <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
+            <p className="text-[13px] sm:text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
               コンテンツ作成から公開までの必須手順 (ドラッグ＆ドロップで並び替え可能)
             </p>
           </div>
-          {steps.length < 6 && (
-            <button
-              onClick={() => {
-                setEditingStep(null);
-                setInsertAtIndex(null);
-                setIsModalOpen(true);
-              }}
-              className="flex items-center gap-[6px] px-[14px] py-[8px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-all shadow-sm"
-            >
+          
+          <div className="flex items-center gap-[12px]">
+            {isFlowExpanded && steps.length < 6 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingStep(null);
+                  setInsertAtIndex(null);
+                  setIsModalOpen(true);
+                }}
+                className="flex items-center gap-[6px] px-[14px] py-[8px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-all shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                ステップを追加
+              </button>
+            )}
+            
+            {/* Collapse / Expand Arrow Icon */}
+            <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center border border-[#dee1e6] dark:border-midnight-800 text-[#565d6d] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-midnight-900 transition-all ${isFlowExpanded ? 'rotate-180' : ''}`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="6 9 12 15 18 9" />
               </svg>
-              ステップを追加
-            </button>
-          )}
+            </div>
+          </div>
         </div>
 
-        {/* Dynamic Step Diagram */}
-        <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[16px] isolate">
-          {stepsLoading ? (
-            <div className="py-[16px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
-              読み込み中...
-            </div>
-          ) : (
-            <>
-              {/* Continuous horizontal line behind circles on desktop */}
-              {steps.length > 1 && (
-                <div className="hidden md:block absolute top-[60px] left-[91px] right-[91px] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
-              )}
+        {/* Collapsible Content */}
+        {isFlowExpanded && (
+          <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 isolate overflow-x-auto min-h-[220px]">
+            {stepsLoading ? (
+              <div className="py-[32px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
+                読み込み中...
+              </div>
+            ) : (
+              <>
+                {/* Continuous horizontal line behind circles on desktop */}
+                {steps.length > 1 && (
+                  <div className="hidden md:block absolute top-[60px] left-[91px] right-[91px] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
+                )}
 
-              {steps.map((step, index) => (
-                <React.Fragment key={step.id}>
-                  <div
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragEnd={handleDragEnd}
-                    className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[200px] md:w-[150px] md:max-w-none md:flex-shrink-0 ${
-                      draggedIndex === index ? 'opacity-40 scale-95' : ''
-                    } ${
-                      dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
-                    }`}
-                  >
-                    <StepCard
-                      step={step}
-                      onEdit={() => {
-                        setEditingStep(step);
-                        setInsertAtIndex(null);
-                        setIsModalOpen(true);
-                      }}
-                      onDelete={() => handleDeleteStep(step.id)}
-                      canDelete={steps.length > 1}
-                    />
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className="flex-1 w-full md:w-auto md:mt-[4px] flex items-center">
-                      <StepConnector
-                        onClick={() => handleAddStepAt(index + 1)}
-                        disabled={steps.length >= 6}
+                {steps.map((step, index) => (
+                  <React.Fragment key={step.id}>
+                    <div
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[200px] md:w-[150px] md:max-w-none md:flex-shrink-0 ${
+                        draggedIndex === index ? 'opacity-40 scale-95' : ''
+                      } ${
+                        dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
+                      }`}
+                    >
+                      <StepCard
+                        step={step}
+                        onEdit={() => {
+                          setEditingStep(step);
+                          setInsertAtIndex(null);
+                          setIsModalOpen(true);
+                        }}
+                        onDelete={() => handleDeleteStep(step.id)}
+                        canDelete={steps.length > 1}
                       />
                     </div>
-                  )}
-                </React.Fragment>
-              ))}
-            </>
-          )}
-        </div>
+                    {index < steps.length - 1 && (
+                      <div className="flex-1 w-full md:w-auto md:mt-[4px] flex items-center justify-center">
+                        <StepConnector
+                          onClick={() => handleAddStepAt(index + 1)}
+                          disabled={steps.length >= 6}
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Section 2: Tools & References */}
