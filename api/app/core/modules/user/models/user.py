@@ -13,10 +13,7 @@ class User(Base):
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     role = Column(String, default='Member', nullable=False)
-    department = Column(String, nullable=True)
-    provider = Column(String, nullable=True)
     last_login = Column(DateTime(timezone=True), nullable=True)
-    is_active = Column(Boolean(), default=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

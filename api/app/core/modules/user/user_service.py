@@ -26,9 +26,6 @@ async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
         first_name=user_in.first_name,
         last_name=user_in.last_name,
         role=user_in.role or 'Member',
-        department=user_in.department,
-        provider=user_in.provider,
-        is_active=user_in.is_active if user_in.is_active is not None else True,
     )
     db.add(db_user)
     try:
@@ -64,6 +61,15 @@ async def update_user_service(db: AsyncSession, user_id: int, user_in: UserUpdat
         return None
 
     update_data = user_in.model_dump(exclude_unset=True)
+    if 'role' in update_data and update_data['role'] == 'Member' and db_user.role == 'Admin':
+        result = await db.execute(select(User).where(User.role == 'Admin'))
+        admins = result.scalars().all()
+        if len(admins) <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='少なくとも1人の管理者アカウントが必要です。',
+            )
+
     for field, value in update_data.items():
         if field == 'password':
             hashed_password = get_password_hash(value)
@@ -91,6 +97,15 @@ async def delete_user_service(db: AsyncSession, user_id: int) -> Optional[User]:
     db_user = await get_user_service(db, user_id)
     if not db_user:
         return None
+
+    if db_user.role == 'Admin':
+        result = await db.execute(select(User).where(User.role == 'Admin'))
+        admins = result.scalars().all()
+        if len(admins) <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='少なくとも1人の管理者アカウントが必要です。',
+            )
 
     await db.delete(db_user)
     await db.flush()

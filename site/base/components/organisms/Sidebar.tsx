@@ -113,16 +113,27 @@ interface SidebarLinkProps {
 }
 
 function SidebarLink({ href, label, icon, active, collapsed }: SidebarLinkProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <Link href={href}>
       <span
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={`flex items-center gap-[12px] h-[36px] rounded-[6px] cursor-pointer transition-all duration-200 ${
           collapsed ? 'px-0 justify-center' : 'px-[12px]'
         } ${
-          active
-            ? 'bg-[#5570f6] text-white'
-            : 'text-[#565d6d] hover:text-[#5570f6] dark:text-gray-300 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800'
+          active || isHovered
+            ? 'text-white'
+            : 'text-[#565d6d] dark:text-gray-300'
         }`}
+        style={
+          active
+            ? { backgroundColor: '#5570f6' }
+            : isHovered
+            ? { background: 'linear-gradient(to right, #2563eb, #60a5fa)' }
+            : undefined
+        }
       >
         <span className="flex-shrink-0">{icon}</span>
         {!collapsed && (
@@ -134,6 +145,7 @@ function SidebarLink({ href, label, icon, active, collapsed }: SidebarLinkProps)
     </Link>
   );
 }
+
 
 export default function Sidebar() {
   const router = useRouter();

@@ -43,10 +43,7 @@ async def seed_users_async():
                 first_name=u['name'].split(' ')[0] if ' ' in u['name'] else u['name'],
                 last_name=u['name'].split(' ')[-1] if ' ' in u['name'] else "",
                 role=u.get('role', 'Member'),
-                department=u.get('department'),
-                provider=u.get('provider'),
-                last_login=datetime.now(),
-                is_active=u.get('isActive', True)
+                last_login=datetime.now()
             )
             session.add(db_user)
         await session.commit()

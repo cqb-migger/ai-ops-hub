@@ -82,7 +82,4 @@ async def get_current_user(token_data: TokenData = Depends(jwt_auth), db: AsyncS
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
 
-    if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
-
     return user

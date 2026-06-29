@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { useUsers } from '../../../../base/hooks/useUsers';
 
-
 // Helper to extract initials
 const getInitials = (name: string) => {
   const parts = name.trim().split(/\s+/);
@@ -33,29 +32,8 @@ const getAvatarBg = (name: string) => {
   return colors[index];
 };
 
-// Icons
-
-
-function CircleCheckIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[12px] h-[12px]">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  );
-}
-
-function InactiveIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[12px] h-[12px]">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-    </svg>
-  );
-}
-
 export default function UserManagementTable() {
-  const { users, loading, toggleUserActive } = useUsers();
+  const { users, loading, toggleUserRole } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('すべての役割');
 
@@ -63,8 +41,7 @@ export default function UserManagementTable() {
     return users.filter((user) => {
       const matchesSearch =
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.department.toLowerCase().includes(searchQuery.toLowerCase());
+        user.email.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesRole =
         selectedRole === 'すべての役割' || user.role === selectedRole;
@@ -73,14 +50,15 @@ export default function UserManagementTable() {
     });
   }, [users, searchQuery, selectedRole]);
 
-  const handleToggleActive = async (id: number, name: string, currentStatus: boolean) => {
-    const actionText = currentStatus ? '無効化' : '有効化';
-    if (confirm(`本当に「${name}」のアカウントを${actionText}しますか？`)) {
+  const handleToggleRole = async (id: number, name: string, currentRole: 'Admin' | 'Member') => {
+    const nextRole = currentRole === 'Admin' ? 'Member' : 'Admin';
+    const actionText = nextRole === 'Admin' ? '管理者 (Admin) に変更' : '一般ユーザー (Member) に変更';
+    if (confirm(`本当に「${name}」の権限を${actionText}しますか？`)) {
       try {
-        await toggleUserActive(id, currentStatus);
-        toast.success(`「${name}」のアカウントを${actionText}しました。`);
+        await toggleUserRole(id, currentRole);
+        toast.success(`「${name}」の権限を変更しました。`);
       } catch (err: any) {
-        toast.error(err.message || 'アカウント状態の更新に失敗しました。');
+        toast.error(err.message || '権限の更新に失敗しました。');
       }
     }
   };
@@ -96,19 +74,6 @@ export default function UserManagementTable() {
     }
   };
 
-  const getProviderBadgeStyle = (provider: 'Google' | 'Okta' | 'Microsoft') => {
-    switch (provider) {
-      case 'Google':
-        return 'border-[#dee1e6] dark:border-midnight-800 text-[#ea4335] dark:text-[#f87171]';
-      case 'Okta':
-        return 'border-[#dee1e6] dark:border-midnight-800 text-[#007dc1] dark:text-[#38bdf8]';
-      case 'Microsoft':
-        return 'border-[#dee1e6] dark:border-midnight-800 text-[#00a4ef] dark:text-[#60a5fa]';
-      default:
-        return 'border-[#dee1e6] dark:border-midnight-800 text-[#565d6d]';
-    }
-  };
-
   return (
     <div className="flex flex-col gap-[28px] w-full">
       {/* Title section without Create Button */}
@@ -117,7 +82,7 @@ export default function UserManagementTable() {
           ユーザー管理
         </h2>
         <p className="text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
-          SSO経由でログインするユーザーのアクセス状態を管理します。
+          ログインするユーザーの権限とアクセス状態を管理します。
         </p>
       </div>
 
@@ -128,35 +93,26 @@ export default function UserManagementTable() {
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
         showRoleFilterOnly={true}
-        placeholder="ユーザー名、メール、部門で検索..."
+        placeholder="ユーザー名、メールで検索..."
       />
 
       {/* Table Container */}
       <div className="w-full overflow-x-auto bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px]">
-        <table className="w-full min-w-[1000px] border-collapse text-left">
+        <table className="w-full min-w-[700px] border-collapse text-left">
           {/* Table Header */}
           <thead>
             <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[320px]">
+              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[400px]">
                 ユーザー
               </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[140px]">
+              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[160px]">
                 役割
               </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[180px]">
-                部門
-              </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[140px]">
-                SSOプロバイダー
-              </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[160px]">
+              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[220px]">
                 最終ログイン
               </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-center w-[120px]">
-                ステータス
-              </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[100px]">
-                有効化
+              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[120px]">
+                管理者権限
               </th>
             </tr>
           </thead>
@@ -165,95 +121,74 @@ export default function UserManagementTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   読み込み中...
                 </td>
               </tr>
             ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
-                >
-                  {/* User Profile */}
-                  <td className="py-[16px] px-[20px] flex items-center gap-[12px]">
-                    <div className={`flex-shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] font-bold font-base select-none ${getAvatarBg(user.name)}`}>
-                      {getInitials(user.name)}
-                    </div>
-                    <div className="flex flex-col gap-[2px] min-w-0">
-                      <span className="text-[14px] font-medium leading-[20px] text-[#171a1f] dark:text-light font-base truncate">
-                        {user.name}
+              filteredUsers.map((user) => {
+                const isAdmin = user.role === 'Admin';
+                return (
+                  <tr
+                    key={user.id}
+                    className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
+                  >
+                    {/* User Profile */}
+                    <td className="py-[16px] px-[20px] flex items-center gap-[12px]">
+                      <div className={`flex-shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] font-bold font-base select-none ${getAvatarBg(user.name)}`}>
+                        {getInitials(user.name)}
+                      </div>
+                      <div className="flex flex-col gap-[2px] min-w-0">
+                        <span className="text-[14px] font-medium leading-[20px] text-[#171a1f] dark:text-light font-base truncate">
+                          {user.name}
+                        </span>
+                        <span className="text-[12px] font-normal leading-[16px] text-[#565d6d] dark:text-gray-400 font-base truncate">
+                          {user.email}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Role */}
+                    <td className="py-[16px] px-[20px]">
+                      <span className={`inline-flex items-center justify-center text-[12px] font-semibold rounded-[11px] px-[10px] h-[22px] font-base ${getRoleBadgeStyle(user.role)}`}>
+                        {user.role}
                       </span>
-                      <span className="text-[12px] font-normal leading-[16px] text-[#565d6d] dark:text-gray-400 font-base truncate">
-                        {user.email}
+                    </td>
+
+                    {/* Last Login */}
+                    <td className="py-[16px] px-[20px]">
+                      <span className="text-[13px] font-normal text-[#565d6d] dark:text-gray-400 font-base">
+                        {user.lastLogin}
                       </span>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Role */}
-                  <td className="py-[16px] px-[20px]">
-                    <span className={`inline-flex items-center justify-center text-[12px] font-semibold rounded-[11px] px-[10px] h-[22px] font-base ${getRoleBadgeStyle(user.role)}`}>
-                      {user.role}
-                    </span>
-                  </td>
-
-                  {/* Department */}
-                  <td className="py-[16px] px-[20px]">
-                    <span className="text-[14px] font-normal text-[#171a1f] dark:text-light font-base">
-                      {user.department}
-                    </span>
-                  </td>
-
-                  {/* SSO Provider */}
-                  <td className="py-[16px] px-[20px]">
-                    <span className={`inline-flex items-center justify-center text-[11px] font-medium border rounded-[4px] px-[8px] py-[2px] font-base ${getProviderBadgeStyle(user.provider)}`}>
-                      {user.provider} SSO
-                    </span>
-                  </td>
-
-                  {/* Last Login */}
-                  <td className="py-[16px] px-[20px]">
-                    <span className="text-[13px] font-normal text-[#565d6d] dark:text-gray-400 font-base">
-                      {user.lastLogin}
-                    </span>
-                  </td>
-
-                  {/* Status */}
-                  <td className="py-[16px] px-[20px] text-center">
-                    <span className={`inline-flex items-center justify-center gap-[6px] text-[12px] font-semibold font-base ${
-                      user.isActive ? 'text-[#22c55e]' : 'text-[#9ca3af]'
-                    }`}>
-                      {user.isActive ? <CircleCheckIcon /> : <InactiveIcon />}
-                      <span>{user.isActive ? 'Active' : 'Inactive'}</span>
-                    </span>
-                  </td>
-
-                  {/* Action: Toggle Switch */}
-                  <td className="py-[16px] px-[20px] text-right">
-                    <div className="flex items-center justify-end">
-                      <button
-                        role="switch"
-                        aria-checked={user.isActive}
-                        onClick={() => handleToggleActive(user.id, user.name, user.isActive)}
-                        className={`relative inline-flex h-[24px] w-[44px] flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          user.isActive ? 'bg-[#5570f6]' : 'bg-[#dee1e6] dark:bg-midnight-800'
-                        }`}
-                        title={user.isActive ? 'アカウントを無効化する' : 'アカウントを有効化する'}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={`pointer-events-none inline-block h-[20px] w-[20px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                            user.isActive ? 'translate-x-[20px]' : 'translate-x-0'
+                    {/* Action: Toggle Switch */}
+                    <td className="py-[16px] px-[20px] text-right">
+                      <div className="flex items-center justify-end">
+                        <button
+                          role="switch"
+                          aria-checked={isAdmin}
+                          onClick={() => handleToggleRole(user.id, user.name, user.role)}
+                          className={`relative inline-flex h-[24px] w-[44px] flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            isAdmin ? 'bg-[#5570f6]' : 'bg-[#dee1e6] dark:bg-midnight-800'
                           }`}
-                        />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                          title={isAdmin ? '管理者権限を無効にする' : '管理者権限を有効にする'}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={`pointer-events-none inline-block h-[20px] w-[20px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                              isAdmin ? 'translate-x-[20px]' : 'translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={7} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   該当するユーザーが見つかりませんでした。
                 </td>
               </tr>

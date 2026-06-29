@@ -15,8 +15,51 @@ export default function ComplianceHubView() {
   const [editingStep, setEditingStep] = useState<Step | null>(null);
   const [insertAtIndex, setInsertAtIndex] = useState<number | null>(null);
 
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   const { tools, loading: toolsLoading } = useTools({ hub: 'compliance' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const updated = [...steps];
+    const [removed] = updated.splice(draggedIndex, 1);
+    updated.splice(index, 0, removed);
+
+    // Re-map orders
+    const reordered = updated.map((s, idx) => ({
+      ...s,
+      order: idx + 1
+    }));
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    await saveSteps(reordered);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   const filteredResources = useMemo(() => {
     const complianceTools = [...tools, ...tools];
@@ -113,7 +156,7 @@ export default function ComplianceHubView() {
               標準レビューフロー
             </h3>
             <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
-              コンテンツ作成から公開までの必須手順
+              コンテンツ作成から公開までの必須手順 (ドラッグ＆ドロップで並び替え可能)
             </p>
           </div>
           {steps.length < 6 && (
@@ -149,16 +192,29 @@ export default function ComplianceHubView() {
 
               {steps.map((step, index) => (
                 <React.Fragment key={step.id}>
-                  <StepCard
-                    step={step}
-                    onEdit={() => {
-                      setEditingStep(step);
-                      setInsertAtIndex(null);
-                      setIsModalOpen(true);
-                    }}
-                    onDelete={() => handleDeleteStep(step.id)}
-                    canDelete={steps.length > 1}
-                  />
+                  <div
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] ${
+                      draggedIndex === index ? 'opacity-40 scale-95' : ''
+                    } ${
+                      dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
+                    }`}
+                  >
+                    <StepCard
+                      step={step}
+                      onEdit={() => {
+                        setEditingStep(step);
+                        setInsertAtIndex(null);
+                        setIsModalOpen(true);
+                      }}
+                      onDelete={() => handleDeleteStep(step.id)}
+                      canDelete={steps.length > 1}
+                    />
+                  </div>
                   {index < steps.length - 1 && (
                     <StepConnector
                       onClick={() => handleAddStepAt(index + 1)}

@@ -23,10 +23,6 @@ async def login_for_access_token(form_data: LoginRequest, db: AsyncSession = Dep
             detail='Incorrect username or password',
             headers={'WWW-Authenticate': 'Bearer'},
         )
-    # Check if user is active (optional but recommended)
-    if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
-
     # Assuming subject should be user ID
     subject = str(user.id)
 

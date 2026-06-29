@@ -9,10 +9,7 @@ class UserResponse(BaseModel):
     first_name: Optional[str] = Field(None, description='The first name of the user')
     last_name: Optional[str] = Field(None, description='The last name of the user')
     role: str = Field(..., description='The role of the user')
-    department: Optional[str] = Field(None, description='The department of the user')
-    provider: Optional[str] = Field(None, description='The SSO provider of the user')
     last_login: Optional[datetime] = Field(None, description='The last login date and time')
-    is_active: bool = Field(..., description='Whether the user is active')
     created_at: datetime = Field(..., description='The date and time the user was created')
     updated_at: datetime = Field(..., description='The date and time the user was last updated')
 

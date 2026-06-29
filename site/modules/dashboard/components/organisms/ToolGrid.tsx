@@ -45,7 +45,7 @@ export default function ToolGrid() {
         <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           AIツールダッシュボード
         </h2>
-        <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base max-w-[800px]">
+        <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
           業務を効率化するための最適なAIツールを検索・発見できます。役割やカテゴリから絞り込みましょう。
         </p>
       </div>
