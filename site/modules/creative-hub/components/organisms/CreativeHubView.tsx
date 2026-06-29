@@ -44,7 +44,7 @@ export default function CreativeHubView() {
           読み込み中...
         </div>
       ) : filteredCards.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[24px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
           {filteredCards.map((card, idx) => (
             <ToolCard key={`${card.id}-${idx}`} tool={card} />
           ))}
