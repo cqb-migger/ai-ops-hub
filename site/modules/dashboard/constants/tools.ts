@@ -18,7 +18,6 @@ export interface Tool {
   name: string;
   category: string[];
   description: string;
-  hubs: string[];
   url?: string;
   icon?: string;
   status?: string;
@@ -29,18 +28,9 @@ export interface Tool {
 
 export const CATEGORIES = [
   'すべてのカテゴリ',
-  'テキスト生成・推論',
-  'テキスト処理',
-  '画像生成',
-  'データ分析',
-  'コーディング',
-  'コンプライアンス',
-];
-
-export const HUBS = [
-  'すべてのハブ',
   'creative',
   'compliance',
   'data',
 ];
+
 

@@ -137,9 +137,11 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
             <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
               {tool.name}
             </h2>
-            <span className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
-              {tool.category}
-            </span>
+            {tool.category.map((cat) => (
+              <span key={cat} className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
+                {cat}
+              </span>
+            ))}
           </div>
           <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
             {tool.description}

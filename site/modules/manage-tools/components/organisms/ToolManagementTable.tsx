@@ -8,12 +8,9 @@ interface ManagedTool {
   id: string;
   name: string;
   description: string;
-  category: string;
-  teams: string[];
-  extraTeamCount?: number;
+  category: string[];
   status: string;
   imageUrl: string;
-  hubs: string[];
 }
 
 // Icons
@@ -61,18 +58,15 @@ export default function ToolManagementTable() {
   const { tools, loading, deleteTool } = useTools();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
-  const [selectedHub, setSelectedHub] = useState('すべてのハブ');
 
   const managedTools = useMemo<ManagedTool[]>(() => {
     return tools.map((t) => ({
       id: t.id,
       name: t.name,
       description: t.description,
-      category: t.category[0] || '',
-      teams: t.category.slice(1),
+      category: t.category,
       status: t.status || '公開中',
       imageUrl: t.icon || '',
-      hubs: t.hubs,
     }));
   }, [tools]);
 
@@ -81,17 +75,14 @@ export default function ToolManagementTable() {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.category.toLowerCase().includes(searchQuery.toLowerCase());
+        tool.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || tool.category === selectedCategory;
+        selectedCategory === 'すべてのカテゴリ' || tool.category.includes(selectedCategory);
 
-      const matchesHub =
-        selectedHub === 'すべてのハブ' || tool.hubs.includes(selectedHub);
-
-      return matchesSearch && matchesCategory && matchesHub;
+      return matchesSearch && matchesCategory;
     });
-  }, [managedTools, searchQuery, selectedCategory, selectedHub]);
+  }, [managedTools, searchQuery, selectedCategory]);
 
   const handleAddNew = () => {
     router.push('/manage-tools/new');
@@ -139,24 +130,19 @@ export default function ToolManagementTable() {
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
-        selectedHub={selectedHub}
-        onHubChange={setSelectedHub}
       />
 
       {/* Table Container */}
       <div className="w-full overflow-x-auto bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px]">
-        <table className="w-full min-w-[1000px] border-collapse text-left">
+        <table className="w-full min-w-[800px] border-collapse text-left">
           {/* Table Header */}
           <thead>
             <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
               <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[400px]">
                 ツール名
               </th>
-              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[180px]">
-                カテゴリ
-              </th>
               <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[220px]">
-                対象チーム
+                カテゴリ
               </th>
               <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-center w-[120px]">
                 ステータス
@@ -171,7 +157,7 @@ export default function ToolManagementTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   読み込み中...
                 </td>
               </tr>
@@ -206,27 +192,12 @@ export default function ToolManagementTable() {
 
                   {/* Category */}
                   <td className="py-[16px] px-[20px]">
-                    <span className="inline-flex items-center justify-center bg-[#f3f4f6] dark:bg-midnight-800 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] font-base whitespace-nowrap">
-                      {tool.category}
-                    </span>
-                  </td>
-
-                  {/* Teams */}
-                  <td className="py-[16px] px-[20px]">
                     <div className="flex flex-wrap gap-[6px] items-center">
-                      {tool.teams.map((team) => (
-                        <span
-                          key={team}
-                          className="bg-[#f3f4f6] dark:bg-midnight-800 text-[12px] font-normal text-[#565d6d] dark:text-gray-300 rounded-[6px] px-[8px] h-[24px] flex items-center justify-center font-base"
-                        >
-                          {team}
+                      {tool.category.map((cat) => (
+                        <span key={cat} className="inline-flex items-center justify-center bg-[#f3f4f6] dark:bg-midnight-800 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] font-base whitespace-nowrap">
+                          {cat}
                         </span>
                       ))}
-                      {tool.extraTeamCount && tool.extraTeamCount > 0 && (
-                        <span className="bg-[#f3f4f6] dark:bg-midnight-800 text-[12px] font-normal text-[#565d6d] dark:text-gray-300 rounded-[6px] px-[8px] h-[24px] flex items-center justify-center font-base">
-                          +{tool.extraTeamCount}
-                        </span>
-                      )}
                     </div>
                   </td>
 
@@ -260,7 +231,7 @@ export default function ToolManagementTable() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   条件に一致するツールが見つかりませんでした。
                 </td>
               </tr>

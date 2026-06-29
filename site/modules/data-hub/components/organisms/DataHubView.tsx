@@ -5,7 +5,7 @@ import { useTools } from '../../../../base/hooks/useTools';
 
 export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { tools, loading } = useTools({ hub: 'data' });
+  const { tools, loading } = useTools({ category: 'data' });
 
   const filteredTools = useMemo(() => {
     return tools.filter((tool) => {

@@ -16,7 +16,6 @@ function SparklesIcon() {
 export default function ToolGrid() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
-  const [selectedHub, setSelectedHub] = useState('すべてのハブ');
 
   const { tools, loading } = useTools();
 
@@ -31,12 +30,9 @@ export default function ToolGrid() {
       const matchesCategory =
         selectedCategory === 'すべてのカテゴリ' || tool.category.includes(selectedCategory);
 
-      const matchesHub =
-        selectedHub === 'すべてのハブ' || tool.hubs.includes(selectedHub);
-
-      return matchesSearch && matchesCategory && matchesHub;
+      return matchesSearch && matchesCategory;
     });
-  }, [tools, searchQuery, selectedCategory, selectedHub]);
+  }, [tools, searchQuery, selectedCategory]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full">
@@ -56,8 +52,6 @@ export default function ToolGrid() {
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
-        selectedHub={selectedHub}
-        onHubChange={setSelectedHub}
       />
 
       {/* Grid count header */}
@@ -88,7 +82,6 @@ export default function ToolGrid() {
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('すべてのカテゴリ');
-              setSelectedHub('すべてのハブ');
             }}
             className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
           >

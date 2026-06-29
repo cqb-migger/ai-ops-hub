@@ -9,7 +9,6 @@ class ToolBase(BaseModel):
     url: Optional[str] = None
     status: Optional[str] = '公開中'
     category: List[str] = Field(default_factory=list)
-    hubs: List[str] = Field(default_factory=list)
     details: Optional[Dict[str, Any]] = None
 
 class ToolCreate(ToolBase):
@@ -22,7 +21,6 @@ class ToolUpdate(BaseModel):
     url: Optional[str] = None
     status: Optional[str] = None
     category: Optional[List[str]] = None
-    hubs: Optional[List[str]] = None
     details: Optional[Dict[str, Any]] = None
 
 class ToolResponse(ToolBase):

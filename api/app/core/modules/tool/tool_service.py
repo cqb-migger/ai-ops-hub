@@ -14,11 +14,10 @@ async def get_tools_service(
     """Retrieve all tools with optional filtering."""
     query = select(Tool).where(Tool.deleted_at.is_(None)).order_by(Tool.name)
     
-    if hub:
-        query = query.where(Tool.hubs.contains([hub]))
-        
-    if category:
-        query = query.where(Tool.category.contains([category]))
+    # Since hubs was renamed to category in database, both inputs query the category column
+    filter_val = category or hub
+    if filter_val:
+        query = query.where(Tool.category.contains([filter_val]))
         
     if search:
         search_filter = f"%{search}%"
@@ -46,7 +45,6 @@ async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> Tool:
         url=tool_in.url,
         status=tool_in.status or '公開中',
         category=tool_in.category,
-        hubs=tool_in.hubs,
         details=tool_in.details
     )
     db.add(db_tool)

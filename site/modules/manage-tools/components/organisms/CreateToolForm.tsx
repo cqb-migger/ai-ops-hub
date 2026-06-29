@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
-import Combobox from '@base/components/molecules/Combobox';
 
 // SVG Icons
 function SettingsIcon() {
@@ -116,8 +115,7 @@ export default function CreateToolForm() {
     '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。'
   );
   const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
-  const [category, setCategory] = useState('LLM / 対話型AI');
-  const [targetTeam, setTargetTeam] = useState('全社（制限なし）');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['creative']);
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
@@ -230,24 +228,22 @@ export default function CreateToolForm() {
       toast.error('遷移先URLを入力してください');
       return;
     }
+    if (selectedCategories.length === 0) {
+      toast.error('少なくとも1つのカテゴリを選択してください');
+      return;
+    }
 
     try {
-      const categoryList = [category];
-      if (targetTeam && targetTeam !== '全社（制限なし）') {
-        categoryList.push(targetTeam);
-      }
-
       await createTool({
         name: toolName,
         description: description,
         url: redirectUrl,
         icon: thumbnailUrl || '🔧',
         status: visibility === 'public' ? '公開中' : '下書き',
-        category: categoryList,
-        hubs: [],
+        category: selectedCategories,
         details: {
           inputs: ['製品名', 'データ'],
-          outputDescription: '受注確度とネクストアクション',
+          outputDescription: '受注確度 và ネクストアクション',
           prompts: [
             {
               title: '基本プロンプト',
@@ -375,36 +371,35 @@ export default function CreateToolForm() {
               />
             </div>
 
-            {/* Category Combobox */}
+            {/* Category checkboxes */}
             <div className="flex flex-col gap-[6px]">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                カテゴリ <span className="text-[#f25a5a]">*</span>
-              </label>
-              <Combobox
-                value={category}
-                onChange={setCategory}
-                options={['LLM / 対話型AI', '画像生成', '開発支援', 'データ分析', '翻訳 / ドキュメント']}
-                widthClass="w-full"
-              />
+              <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                カテゴリ (Hubs) <span className="text-[#f25a5a]">*</span>
+              </span>
+              <div className="flex items-center gap-[16px] h-[40px]">
+                {['creative', 'compliance', 'data'].map((hub) => (
+                  <label key={hub} className="flex items-center gap-[6px] cursor-pointer text-[14px] select-none text-[#171a1f] dark:text-light font-medium">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(hub)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCategories([...selectedCategories, hub]);
+                        } else {
+                          setSelectedCategories(selectedCategories.filter((h) => h !== hub));
+                        }
+                      }}
+                      className="w-[16px] h-[16px] accent-[#5570f6] cursor-pointer"
+                    />
+                    <span className="capitalize">{hub}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Target Teams & Visibility */}
+          {/* Visibility Settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-            {/* Target Teams */}
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                表示対象チーム
-              </label>
-              <input
-                type="text"
-                value={targetTeam}
-                onChange={(e) => setTargetTeam(e.target.value)}
-                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] dark:focus:border-primary-400 transition-colors"
-                placeholder="例: 全社, 開発部, 営業部"
-              />
-            </div>
-
             {/* Visibility Settings */}
             <div className="flex flex-col gap-[6px]">
               <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">

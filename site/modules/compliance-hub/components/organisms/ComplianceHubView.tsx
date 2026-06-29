@@ -18,7 +18,7 @@ export default function ComplianceHubView() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const { tools, loading: toolsLoading } = useTools({ hub: 'compliance' });
+  const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
 
   const handleDragStart = (e: React.DragEvent, index: number) => {

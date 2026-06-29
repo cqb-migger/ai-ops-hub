@@ -5,7 +5,7 @@ import { useTools } from '../../../../base/hooks/useTools';
 
 export default function CreativeHubView() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { tools, loading } = useTools({ hub: 'creative' });
+  const { tools, loading } = useTools({ category: 'creative' });
 
   const filteredCards = useMemo(() => {
     const toolCards = [...tools, ...tools, ...tools];

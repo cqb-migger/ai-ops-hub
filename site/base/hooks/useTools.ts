@@ -19,8 +19,10 @@ export function useTools(options: UseToolsOptions = {}) {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (hub && hub !== 'すべてのハブ') params.append('hub', hub);
-      if (category && category !== 'すべてのカテゴリ') params.append('category', category);
+      const selectedFilter = category || hub;
+      if (selectedFilter && selectedFilter !== 'すべてのカテゴリ' && selectedFilter !== 'すべてのハブ') {
+        params.append('category', selectedFilter);
+      }
       if (search) params.append('search', search);
 
       const queryString = params.toString() ? `?${params.toString()}` : '';

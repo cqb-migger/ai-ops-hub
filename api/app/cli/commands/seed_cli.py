@@ -66,7 +66,6 @@ async def seed_tools_async():
                 url=t.get('url'),
                 status='公開中',
                 category=t.get('category', []),
-                hubs=t.get('hubs', []),
                 details=t.get('details')
             )
             session.add(db_tool)

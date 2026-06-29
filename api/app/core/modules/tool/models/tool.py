@@ -13,7 +13,6 @@ class Tool(Base):
     url = Column(String, nullable=True)
     status = Column(String, default='公開中', nullable=False)
     category = Column(ARRAY(String), default=list, nullable=False)
-    hubs = Column(ARRAY(String), default=list, nullable=False)
     details = Column(JSON, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

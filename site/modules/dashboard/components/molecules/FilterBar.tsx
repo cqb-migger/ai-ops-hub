@@ -1,5 +1,5 @@
 import React from 'react';
-import { CATEGORIES, HUBS } from '../../constants/tools';
+import { CATEGORIES } from '../../constants/tools';
 import Combobox from '@base/components/molecules/Combobox';
 
 interface FilterBarProps {
@@ -7,12 +7,9 @@ interface FilterBarProps {
   onSearchChange: (val: string) => void;
   selectedCategory?: string;
   onCategoryChange?: (val: string) => void;
-  selectedHub?: string;
-  onHubChange?: (val: string) => void;
   selectedRole?: string;
   onRoleChange?: (val: string) => void;
   categories?: string[];
-  hubs?: string[];
   roles?: string[];
   showFilters?: boolean;
   showRoleFilterOnly?: boolean;
@@ -33,19 +30,15 @@ export default function FilterBar({
   onSearchChange,
   selectedCategory = '',
   onCategoryChange = () => {},
-  selectedHub = '',
-  onHubChange = () => {},
   selectedRole = '',
   onRoleChange = () => {},
   categories,
-  hubs,
   roles,
   showFilters = true,
   showRoleFilterOnly = false,
   placeholder = 'ツール名、キーワードで検索...',
 }: FilterBarProps) {
   const categoriesList = categories || CATEGORIES;
-  const hubsList = hubs || HUBS;
   const rolesList = roles || ['すべての役割', 'Admin', 'Member'];
 
   return (
@@ -69,13 +62,6 @@ export default function FilterBar({
             value={selectedCategory}
             onChange={onCategoryChange}
             options={categoriesList}
-          />
-
-          {/* Hub Dropdown */}
-          <Combobox
-            value={selectedHub}
-            onChange={onHubChange}
-            options={hubsList}
           />
         </>
       )}
