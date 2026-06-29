@@ -6,21 +6,13 @@ interface ToolCardProps {
   tool: Tool;
 }
 
+const MAX_VISIBLE_TAGS = 3;
+
 function ArrowRightIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
       <line x1="5" x2="19" y1="12" y2="12" />
       <polyline points="12 5 19 12 12 19" />
-    </svg>
-  );
-}
-
-function QuestionIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px] text-[#5570f6] dark:text-[#5570f6] hover:opacity-80 transition-opacity">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-      <line x1="12" x2="12.01" y1="17" y2="17" />
     </svg>
   );
 }
@@ -36,59 +28,66 @@ export default function ToolCard({ tool }: ToolCardProps) {
     }
   };
 
+  const visibleTags = tool.category.slice(0, MAX_VISIBLE_TAGS);
+  const hiddenCount = Math.max(0, tool.category.length - MAX_VISIBLE_TAGS);
+
   return (
-    <div className="w-full h-[250px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_2.5px_0px_rgba(23,26,31,0.07)] p-[20px] flex flex-col justify-between hover:shadow-md transition-shadow duration-200">
+    <div className="w-full h-[300px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[20px] shadow-[0px_2px_8px_0px_rgba(23,26,31,0.06)] p-[24px] flex flex-col justify-between hover:shadow-lg transition-shadow duration-200">
       {/* Upper part */}
-      <div className="flex flex-col gap-[8px]">
+      <div className="flex flex-col gap-[10px]">
         {/* Tool Icon, Title & Help Icon Row */}
-        <div className="flex items-center justify-between gap-[8px] min-w-0">
-          <div className="flex items-center gap-[8px] min-w-0">
-            {/* Tool Icon */}
-            <div className="flex-shrink-0 w-[24px] h-[24px] rounded-full overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-midnight-900 border border-gray-100 dark:border-midnight-800 text-[14px]">
+        <div className="flex items-start justify-between gap-[12px] min-w-0">
+          <div className="flex items-center gap-[12px] min-w-0">
+            {/* Tool Icon — large circle with blue-tinted border */}
+            <div className="flex-shrink-0 w-[48px] h-[48px] rounded-full overflow-hidden flex items-center justify-center bg-[#f0f3ff] dark:bg-midnight-900 border-2 border-[#d6defe] dark:border-midnight-700 text-[24px]">
               {tool.icon || '🔧'}
             </div>
 
             {/* Tool Name */}
-            <h3 className="text-[15px] font-semibold leading-[22px] text-[#171a1f] dark:text-light tracking-[-0.4px] font-base truncate">
+            <h3 className="text-[18px] font-bold leading-[24px] text-[#171a1f] dark:text-light tracking-[-0.3px] font-base truncate">
               {tool.name}
             </h3>
           </div>
 
-          {/* Help Icon Link */}
-          <Link href={`/tools/${tool.id}`} className="flex-shrink-0" title={`${tool.name}の詳細情報`}>
-            <QuestionIcon />
+          {/* Help Icon Link — circle container */}
+          <Link
+            href={`/tools/${tool.id}`}
+            className="flex-shrink-0 w-[32px] h-[32px] rounded-full border border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-midnight-800 transition-colors"
+            title={`${tool.name}の詳細情報`}
+          >
+            <span className="text-[14px] font-semibold text-[#9ea4b0] dark:text-gray-400 leading-none select-none">?</span>
           </Link>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-[6px] items-center overflow-hidden h-[19px]">
-          {/* Category (Outlined) */}
-          <span className="border border-[#dee1e6] dark:border-midnight-800 text-[10px] font-semibold text-[#565d6d] dark:text-gray-300 rounded-[10px] px-[8px] h-[19px] flex items-center justify-center whitespace-nowrap">
-            {tool.category[0]}
-          </span>
-
-          {/* Roles (Solid) */}
-          {tool.category.slice(1).map((tag) => (
+        {/* Tags — blue outline pills */}
+        <div className="flex flex-wrap gap-[6px] items-center">
+          {visibleTags.map((tag) => (
             <span
               key={tag}
-              className="bg-[#f3f4f6] dark:bg-midnight-850 text-[10px] font-medium text-[#565d6d] dark:text-gray-300 rounded-[6px] px-[6px] h-[19px] flex items-center justify-center whitespace-nowrap"
+              className="border border-[#c4d0f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[10px] h-[22px] flex items-center justify-center whitespace-nowrap"
             >
               {tag}
             </span>
           ))}
+          {hiddenCount > 0 && (
+            <span className="border border-[#c4d0f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[8px] h-[22px] flex items-center justify-center whitespace-nowrap">
+              +{hiddenCount}
+            </span>
+          )}
         </div>
 
         {/* Description */}
-        <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal font-base line-clamp-3 mt-[4px]">
+        <p className="text-[15px] leading-[22px] text-[#323842] dark:text-gray-300 font-normal font-base line-clamp-3 mt-[2px]">
           {tool.description}
         </p>
       </div>
 
-      {/* Bottom Action */}
-      <div className="flex flex-col gap-[12px]">
+      {/* Bottom Action — gradient button */}
+      <div>
         <button
           onClick={handleLaunch}
-          className="flex items-center justify-center gap-[8px] w-full h-[36px] bg-[#5570f6] text-white hover:bg-primary-600 rounded-[6px] font-base font-medium text-[14px] shadow-sm transition-all duration-200"
+          className="flex items-center justify-center gap-[8px] w-full h-[48px] text-white rounded-[14px] font-base font-semibold text-[16px] shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow-md active:scale-[0.98]"
+          style={{ background: 'linear-gradient(to right, #7b9cf7, #4a6cf7)' }}
         >
           <span>ツールを起動</span>
           <ArrowRightIcon />
@@ -97,4 +96,3 @@ export default function ToolCard({ tool }: ToolCardProps) {
     </div>
   );
 }
-
