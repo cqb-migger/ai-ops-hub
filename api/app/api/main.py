@@ -12,10 +12,14 @@ from app.core.db.database import engine
 from app.core.logging.logger import error_logger
 
 
+from fastapi.staticfiles import StaticFiles
+
 # Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print('Application startup: Lifespan started.')
+    import os
+    os.makedirs(os.path.join("static", "uploads", "icons"), exist_ok=True)
     yield
     print('Application shutdown: Disposing database engine.')
     await engine.dispose()
@@ -29,6 +33,9 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
 )
+
+# Serve uploaded static images/icons
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 setup_middlewares(app)
 

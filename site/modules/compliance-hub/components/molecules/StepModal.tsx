@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { STEP_ICON_OPTIONS, Step } from '../../constants/steps';
+import { Step } from '../../constants/steps';
 import { toast } from 'react-hot-toast';
+import { API_BASE } from '../../../../base/utils/api';
 
 interface StepModalProps {
   isOpen: boolean;
@@ -12,31 +13,20 @@ interface StepModalProps {
 export default function StepModal({ isOpen, onClose, onSave, initialData }: StepModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState('✏️');
-  const [iconType, setIconType] = useState<'emoji' | 'upload'>('emoji');
+  const [selectedIcon, setSelectedIcon] = useState('');
   const [error, setError] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const isImageUrl = (iconStr: string) => {
-    return iconStr && (iconStr.startsWith('data:image/') || iconStr.startsWith('http') || iconStr.startsWith('/'));
-  };
 
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title);
       setDescription(initialData.description);
-      setSelectedIcon(initialData.icon);
-      if (isImageUrl(initialData.icon)) {
-        setIconType('upload');
-      } else {
-        setIconType('emoji');
-      }
+      setSelectedIcon(initialData.icon || '');
     } else {
       setTitle('');
       setDescription('');
-      setSelectedIcon('✏️');
-      setIconType('emoji');
+      setSelectedIcon('');
     }
     setError('');
   }, [initialData, isOpen]);
@@ -91,117 +81,65 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
             </div>
           )}
 
-          {/* Icon Selection - Emoji vs Image upload */}
+          {/* Icon Selection - Upload only */}
           <div className="flex flex-col gap-[8px]">
             <label className="text-[14px] font-bold text-[#171a1f] dark:text-light">
               アイコン
             </label>
-            <div className="p-[16px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[12px] flex flex-col gap-[12px]">
-              {/* Tabs */}
-              <div className="flex border-b border-[#dee1e6] dark:border-midnight-800 pb-[1px] gap-[16px]">
-                <button
-                  type="button"
-                  onClick={() => setIconType('emoji')}
-                  className={`pb-[8px] text-[13px] font-semibold transition-colors relative ${
-                    iconType === 'emoji'
-                      ? 'text-[#5570f6] dark:text-[#7c91eb] border-b-2 border-[#5570f6] dark:border-[#7c91eb]'
-                      : 'text-[#9095a0] hover:text-[#565d6d]'
-                  }`}
-                >
-                  絵文字から選択
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIconType('upload')}
-                  className={`pb-[8px] text-[13px] font-semibold transition-colors relative ${
-                    iconType === 'upload'
-                      ? 'text-[#5570f6] dark:text-[#7c91eb] border-b-2 border-[#5570f6] dark:border-[#7c91eb]'
-                      : 'text-[#9095a0] hover:text-[#565d6d]'
-                  }`}
-                >
-                  画像をアップロード
-                </button>
-              </div>
-
-              {/* Selected Preview */}
-              <div className="flex items-center gap-[10px] mb-[4px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
-                <div className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-[#f1f4fe] dark:bg-midnight-900 border-2 border-[#5570f6] dark:border-[#7c91eb] shadow-sm overflow-hidden">
-                  {isImageUrl(selectedIcon) ? (
-                    <img src={selectedIcon} alt="Selected Icon" className="w-full h-full object-cover" />
+            <div className="p-[16px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[12px]">
+              <div className="flex items-center gap-[16px]">
+                {/* Thumbnail Preview */}
+                <div className="flex items-center justify-center w-[64px] h-[64px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 overflow-hidden select-none">
+                  {selectedIcon && (selectedIcon.startsWith('data:image/') || selectedIcon.startsWith('http') || selectedIcon.startsWith('/')) ? (
+                    <img src={selectedIcon.startsWith('/') && !selectedIcon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${selectedIcon}` : (selectedIcon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${selectedIcon}` : selectedIcon)} alt="Thumbnail Preview" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-[24px]">{selectedIcon}</span>
+                    <span className="text-[28px] text-[#9095a0]">📷</span>
                   )}
                 </div>
-                <span className="text-[13px] text-[#565d6d] dark:text-gray-400">選択中のアイコン</span>
-              </div>
 
-              {/* Emoji Grid */}
-              {iconType === 'emoji' && (
-                <div className="grid grid-cols-8 gap-[6px]">
-                  {STEP_ICON_OPTIONS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setSelectedIcon(emoji)}
-                      className={`w-full aspect-square flex items-center justify-center rounded-[8px] text-[20px] transition-all duration-150 hover:scale-110 ${
-                        selectedIcon === emoji && !isImageUrl(selectedIcon)
-                          ? 'bg-[#5570f6]/15 dark:bg-[#5570f6]/20 ring-2 ring-[#5570f6] dark:ring-[#7c91eb]'
-                          : 'bg-white dark:bg-midnight-900 hover:bg-[#f1f4fe] dark:hover:bg-midnight-800 border border-[#dee1e6] dark:border-midnight-800'
-                      }`}
-                      title={emoji}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Image Upload Box */}
-              {iconType === 'upload' && (
-                <div className="flex items-center gap-[16px]">
-                  {/* Thumbnail Preview */}
-                  <div className="flex items-center justify-center w-[64px] h-[64px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 overflow-hidden">
-                    {isImageUrl(selectedIcon) ? (
-                      <img src={selectedIcon} alt="Thumbnail Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-[28px] text-[#9095a0]">📷</span>
-                    )}
-                  </div>
-
-                  {/* Action Upload */}
-                  <div className="flex flex-col gap-[4px]">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            if (event.target?.result) {
-                              setSelectedIcon(event.target.result as string);
-                              toast.success('アイコン画像を読み込みました');
-                            }
-                          };
-                          reader.readAsDataURL(file);
+                {/* Action Upload */}
+                <div className="flex flex-col gap-[4px]">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const uploadToastId = toast.loading('画像をアップロード中...');
+                        try {
+                          const res = await fetch(`${API_BASE}/upload/icon`, {
+                            method: 'POST',
+                            body: formData,
+                          });
+                          if (!res.ok) {
+                            const errData = await res.json();
+                            throw new Error(errData.detail || 'アップロードに失敗しました');
+                          }
+                          const data = await res.json();
+                          setSelectedIcon(data.url);
+                          toast.success('アイコン画像をアップロードしました', { id: uploadToastId });
+                        } catch (err: any) {
+                          toast.error(err.message || '画像のアップロードに失敗しました', { id: uploadToastId });
                         }
-                      }}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="h-[32px] px-[12px] bg-white dark:bg-midnight-900 border border-[#171a1f] dark:border-gray-500 hover:bg-[#fafafb] dark:hover:bg-midnight-800 rounded-[6px] text-[12px] font-medium transition-colors"
-                    >
-                      画像を選択
-                    </button>
-                    <span className="text-[11px] text-[#565d6d] dark:text-gray-400">
-                      推奨サイズ: 400x400px (JPG/PNG)
-                    </span>
-                  </div>
+                      }
+                    }}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-[32px] px-[12px] bg-white dark:bg-midnight-900 border border-[#171a1f] dark:border-gray-500 hover:bg-[#fafafb] dark:hover:bg-midnight-800 rounded-[6px] text-[12px] font-medium transition-colors"
+                  >
+                    画像を選択
+                  </button>
+                  <span className="text-[11px] text-[#565d6d] dark:text-gray-400">
+                    推奨サイズ: 400x400px (JPG/PNG)
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 

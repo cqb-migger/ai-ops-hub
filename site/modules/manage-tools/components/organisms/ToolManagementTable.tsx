@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { useTools } from '../../../../base/hooks/useTools';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
+import { API_BASE } from '../../../../base/utils/api';
 
 interface ManagedTool {
   id: string;
@@ -172,7 +173,7 @@ export default function ToolManagementTable() {
                     <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-[4px] overflow-hidden bg-gray-50 dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
                       {tool.imageUrl && (tool.imageUrl.startsWith('http') || tool.imageUrl.startsWith('/')) ? (
                         <img
-                          src={tool.imageUrl}
+                          src={tool.imageUrl.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.imageUrl}` : tool.imageUrl}
                           alt={tool.name}
                           className="w-full h-full object-cover"
                         />
@@ -194,7 +195,7 @@ export default function ToolManagementTable() {
                   <td className="py-[16px] px-[20px]">
                     <div className="flex flex-wrap gap-[6px] items-center">
                       {tool.category.map((cat) => (
-                        <span key={cat} className="inline-flex items-center justify-center bg-[#f3f4f6] dark:bg-midnight-800 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] font-base whitespace-nowrap">
+                        <span key={cat} className="inline-flex items-center justify-center bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] font-base whitespace-nowrap">
                           {cat}
                         </span>
                       ))}

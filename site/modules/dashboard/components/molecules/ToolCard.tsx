@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Tool } from '../../constants/tools';
+import { API_BASE } from '../../../../base/utils/api';
 
 interface ToolCardProps {
   tool: Tool;
@@ -41,7 +42,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
           <div className="flex items-center gap-[10px] min-w-0">
             <div className="flex-shrink-0 w-[40px] h-[40px] rounded-full overflow-hidden flex items-center justify-center bg-[#f3f6fd] dark:bg-midnight-900 border border-[#dbe2f9] dark:border-midnight-700 text-[22px]">
               {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
-                <img src={tool.icon} alt={tool.name} className="w-full h-full object-cover" />
+                <img src={tool.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.icon}` : tool.icon} alt={tool.name} className="w-full h-full object-cover" />
               ) : (
                 tool.icon || '🔧'
               )}

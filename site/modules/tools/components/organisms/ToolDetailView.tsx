@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Tool } from '../../../dashboard/constants/tools';
+import { API_BASE } from '../../../../base/utils/api';
 
 interface ToolDetailViewProps {
   tool: Tool;
@@ -115,20 +116,16 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
       {/* Title box */}
       <div className="flex items-start gap-[16px] pb-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
         {/* Avatar */}
-        <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#e8f8ec] dark:bg-[#1a3322] shadow-sm border border-[#dee1e6] dark:border-midnight-800 flex items-center justify-center">
-          <img
-            src="http://localhost:3845/assets/ec99497976a9731d061ae187fabe013b28e763e9.png"
-            alt={tool.name}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-              if (fallback) fallback.style.display = 'flex';
-            }}
-            className="w-full h-full object-cover"
-          />
-          <div className="hidden absolute inset-0 items-center justify-center text-[16px] font-bold text-[#22c55e] font-base select-none">
-            GPT
-          </div>
+        <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
+          {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
+            <img
+              src={tool.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.icon}` : tool.icon}
+              alt={tool.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span>{tool.icon || '🔧'}</span>
+          )}
         </div>
 
         {/* Text */}

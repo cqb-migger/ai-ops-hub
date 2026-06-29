@@ -66,11 +66,11 @@ export default function UserManagementTable() {
   const getRoleBadgeStyle = (role: 'Admin' | 'Member') => {
     switch (role) {
       case 'Admin':
-        return 'bg-[#eff6ff] text-[#1e40af] dark:bg-[#1e3a8a]/40 dark:text-[#93c5fd]';
+        return 'bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[#2c5097] dark:text-[#8fa4f5] rounded-full';
       case 'Member':
-        return 'bg-[#f3f4f6] text-[#374151] dark:bg-[#374151]/40 dark:text-[#d1d5db]';
+        return 'bg-[#f3f4f6] dark:bg-midnight-800/60 border border-[#dee1e6] dark:border-midnight-700 text-[#565d6d] dark:text-gray-300 rounded-full';
       default:
-        return 'bg-[#f3f4f6] text-[#374151]';
+        return 'bg-[#f3f4f6] text-[#374151] rounded-full';
     }
   };
 
@@ -150,7 +150,7 @@ export default function UserManagementTable() {
 
                     {/* Role */}
                     <td className="py-[16px] px-[20px]">
-                      <span className={`inline-flex items-center justify-center text-[12px] font-semibold rounded-[11px] px-[10px] h-[22px] font-base ${getRoleBadgeStyle(user.role)}`}>
+                      <span className={`inline-flex items-center justify-center text-[11px] font-semibold px-[10px] h-[20px] font-base ${getRoleBadgeStyle(user.role)}`}>
                         {user.role}
                       </span>
                     </td>

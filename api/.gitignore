@@ -19,4 +19,8 @@ wheels/
 .env
 
 # Local logs
-logs/
+logs/
+
+# Uploaded files
+static/uploads/icons/*
+!static/uploads/icons/.gitkeep

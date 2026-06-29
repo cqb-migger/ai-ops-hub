@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
+import { API_BASE } from '../../../../base/utils/api';
 
 // SVG Icons
 function SettingsIcon() {
@@ -178,17 +179,27 @@ export default function CreateToolForm() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setThumbnailUrl(event.target.result as string);
-          toast.success('画像をアップロードしました');
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadToastId = toast.loading('画像をアップロード中...');
+      try {
+        const res = await fetch(`${API_BASE}/upload/icon`, {
+          method: 'POST',
+          body: formData,
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || 'アップロードに失敗しました');
         }
-      };
-      reader.readAsDataURL(file);
+        const data = await res.json();
+        setThumbnailUrl(data.url);
+        toast.success('画像をアップロードしました', { id: uploadToastId });
+      } catch (err: any) {
+        toast.error(err.message || '画像のアップロードに失敗しました', { id: uploadToastId });
+      }
     }
   };
 

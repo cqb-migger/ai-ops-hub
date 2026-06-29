@@ -1,5 +1,6 @@
 import React from 'react';
 import { Step } from '../../constants/steps';
+import { API_BASE } from '../../../../base/utils/api';
 
 interface StepCardProps {
   step: Step;
@@ -17,7 +18,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
         {/* Circle Icon */}
         <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10 transition-all duration-200 group-hover:scale-105 overflow-hidden">
           {step.icon && (step.icon.startsWith('data:image/') || step.icon.startsWith('http') || step.icon.startsWith('/')) ? (
-            <img src={step.icon} alt={step.title} className="w-full h-full object-cover" />
+            <img src={step.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${step.icon}` : step.icon} alt={step.title} className="w-full h-full object-cover" />
           ) : (
             <span className="text-[28px]" role="img" aria-label={step.title}>
               {step.icon}
