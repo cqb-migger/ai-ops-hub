@@ -38,39 +38,39 @@ export default function ToolCard({ tool }: ToolCardProps) {
         {/* Tool Icon, Title & Help Icon Row */}
         <div className="flex items-start justify-between gap-[12px] min-w-0">
           <div className="flex items-center gap-[12px] min-w-0">
-            {/* Tool Icon — large circle with blue-tinted border */}
-            <div className="flex-shrink-0 w-[48px] h-[48px] rounded-full overflow-hidden flex items-center justify-center bg-[#f0f3ff] dark:bg-midnight-900 border-2 border-[#d6defe] dark:border-midnight-700 text-[24px]">
+            {/* Tool Icon — large circle with pale blue background & border */}
+            <div className="flex-shrink-0 w-[48px] h-[48px] rounded-full overflow-hidden flex items-center justify-center bg-[#f3f6fd] dark:bg-midnight-900 border border-[#dbe2f9] dark:border-midnight-700 text-[24px]">
               {tool.icon || '🔧'}
             </div>
 
-            {/* Tool Name */}
-            <h3 className="text-[18px] font-bold leading-[24px] text-[#171a1f] dark:text-light tracking-[-0.3px] font-base truncate">
+            {/* Tool Name — Deep Navy blue */}
+            <h3 className="text-[18px] font-bold leading-[24px] text-[#0f295a] dark:text-light tracking-[-0.3px] font-base truncate">
               {tool.name}
             </h3>
           </div>
 
-          {/* Help Icon Link — circle container */}
+          {/* Help Icon Link — circle container with matching light blue border */}
           <Link
             href={`/tools/${tool.id}`}
-            className="flex-shrink-0 w-[32px] h-[32px] rounded-full border border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-midnight-800 transition-colors"
-            title={`${tool.name}の詳細情報`}
+            className="flex-shrink-0 w-[32px] h-[32px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-midnight-800 transition-colors"
+            title={`${tool.name}の詳細 hình`}
           >
-            <span className="text-[14px] font-semibold text-[#9ea4b0] dark:text-gray-400 leading-none select-none">?</span>
+            <span className="text-[14px] font-semibold text-[#5a73a3] dark:text-gray-400 leading-none select-none">?</span>
           </Link>
         </div>
 
-        {/* Tags — blue outline pills */}
+        {/* Tags — blue outline pills with pale blue background */}
         <div className="flex flex-wrap gap-[6px] items-center">
           {visibleTags.map((tag) => (
             <span
               key={tag}
-              className="border border-[#c4d0f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[10px] h-[22px] flex items-center justify-center whitespace-nowrap"
+              className="bg-[#f0f4ff] dark:bg-midnight-900/60 border border-[#dbe2f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[10px] h-[22px] flex items-center justify-center whitespace-nowrap"
             >
               {tag}
             </span>
           ))}
           {hiddenCount > 0 && (
-            <span className="border border-[#c4d0f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[8px] h-[22px] flex items-center justify-center whitespace-nowrap">
+            <span className="bg-[#f0f4ff] dark:bg-midnight-900/60 border border-[#dbe2f9] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#3b5bdb] dark:text-[#8fa4f5] rounded-full px-[8px] h-[22px] flex items-center justify-center whitespace-nowrap">
               +{hiddenCount}
             </span>
           )}
@@ -82,17 +82,18 @@ export default function ToolCard({ tool }: ToolCardProps) {
         </p>
       </div>
 
-      {/* Bottom Action — gradient button */}
+      {/* Bottom Action — vibrant gradient button */}
       <div>
         <button
           onClick={handleLaunch}
           className="flex items-center justify-center gap-[8px] w-full h-[48px] text-white rounded-[14px] font-base font-semibold text-[16px] shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow-md active:scale-[0.98]"
-          style={{ background: 'linear-gradient(to right, #7b9cf7, #4a6cf7)' }}
+          style={{ background: 'linear-gradient(to right, #2563eb, #60a5fa)' }}
         >
           <span>ツールを起動</span>
           <ArrowRightIcon />
         </button>
       </div>
     </div>
+
   );
 }
