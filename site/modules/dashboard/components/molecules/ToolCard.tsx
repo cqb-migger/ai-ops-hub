@@ -76,10 +76,19 @@ export default function ToolCard({ tool }: ToolCardProps) {
           )}
         </div>
 
-        {/* Description */}
-        <p className="text-[15px] leading-[22px] text-[#323842] dark:text-gray-300 font-normal font-base line-clamp-3 mt-[2px]">
-          {tool.description}
-        </p>
+        {/* Description with Tooltip */}
+        <div className="relative group/desc mt-[2px]">
+          <p className="text-[15px] leading-[22px] text-[#323842] dark:text-gray-300 font-normal font-base line-clamp-3 cursor-pointer">
+            {tool.description}
+          </p>
+          {tool.description && tool.description.length > 60 && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[8px] hidden group-hover/desc:block w-[280px] p-[12px] bg-[#171a1f] dark:bg-midnight-900 text-white dark:text-light text-[13px] leading-[18px] rounded-[8px] shadow-xl z-30 text-left font-normal border border-gray-700 dark:border-midnight-800 break-all pointer-events-none">
+              {tool.description}
+              {/* Tooltip arrow */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-midnight-900" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Bottom Action — vibrant gradient button */}
