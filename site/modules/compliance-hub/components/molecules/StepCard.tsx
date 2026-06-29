@@ -109,10 +109,10 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
             </span>
 
             {/* Tooltip popping up relative to the ellipsis */}
-            <div className="absolute bottom-full right-0 mb-[8px] hidden group-hover/dots:block w-[240px] p-[12px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-30 text-left font-normal border border-[#dee1e6] dark:border-midnight-800 break-all pointer-events-none">
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-[8px] hidden group-hover/dots:block w-[240px] p-[12px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-30 text-left font-normal border border-[#dee1e6] dark:border-midnight-800 break-all pointer-events-none">
               {step.description}
               {/* Tooltip arrow pointing to the ellipsis */}
-              <div className="absolute top-full right-[6px] border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
             </div>
           </div>
         )}
