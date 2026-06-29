@@ -185,11 +185,6 @@ export default function ComplianceHubView() {
             </div>
           ) : (
             <>
-              {/* Connector line running behind circles on desktop */}
-              {steps.length > 1 && (
-                <div className="hidden md:block absolute top-[56px] left-[12%] right-[12%] h-[2px] bg-[#dee1e6] dark:bg-midnight-800 z-0" />
-              )}
-
               {steps.map((step, index) => (
                 <React.Fragment key={step.id}>
                   <div
@@ -198,7 +193,7 @@ export default function ComplianceHubView() {
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDrop={(e) => handleDrop(e, index)}
                     onDragEnd={handleDragEnd}
-                    className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] ${
+                    className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[200px] md:w-[150px] md:max-w-none md:flex-shrink-0 ${
                       draggedIndex === index ? 'opacity-40 scale-95' : ''
                     } ${
                       dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
@@ -216,10 +211,12 @@ export default function ComplianceHubView() {
                     />
                   </div>
                   {index < steps.length - 1 && (
-                    <StepConnector
-                      onClick={() => handleAddStepAt(index + 1)}
-                      disabled={steps.length >= 6}
-                    />
+                    <div className="flex-1 w-full md:w-auto md:mt-[4px] flex items-center">
+                      <StepConnector
+                        onClick={() => handleAddStepAt(index + 1)}
+                        disabled={steps.length >= 6}
+                      />
+                    </div>
                   )}
                 </React.Fragment>
               ))}
