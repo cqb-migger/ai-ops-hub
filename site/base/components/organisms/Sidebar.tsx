@@ -168,19 +168,19 @@ export default function Sidebar() {
     },
     {
       href: routes.path.complianceHub,
-      label: 'Compliance Hub',
+      label: 'コンプライアンスハブ',
       icon: <ShieldCheckIcon />,
       active: checkIsActive(routes.path.complianceHub),
     },
     {
       href: routes.path.creativeHub,
-      label: 'Creative Hub',
+      label: 'クリエイティブハブ',
       icon: <PaletteIcon />,
       active: checkIsActive(routes.path.creativeHub),
     },
     {
       href: routes.path.dataHub,
-      label: 'Data Hub',
+      label: 'データハブ',
       icon: <ChartColumnIcon />,
       active: checkIsActive(routes.path.dataHub),
     },

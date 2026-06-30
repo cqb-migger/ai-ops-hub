@@ -51,6 +51,14 @@ function PlusIcon() {
   );
 }
 
+function ChevronDownIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
 function GripIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-gray-300 dark:text-gray-600">
@@ -133,7 +141,10 @@ export default function CreateToolForm() {
     '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。'
   );
   const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
-  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [loginIds, setLoginIds] = useState<string[]>([]);
+  const [newLoginId, setNewLoginId] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   
@@ -158,9 +169,11 @@ export default function CreateToolForm() {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const guideFileInputRef = useRef<HTMLInputElement>(null);
+  const referenceFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleTriggerUpload = () => fileInputRef.current?.click();
   const handleTriggerGuideUpload = () => guideFileInputRef.current?.click();
+  const handleTriggerReferenceUpload = () => referenceFileInputRef.current?.click();
 
   const handleAddPrompt = () => {
     setPrompts([...prompts, { id: `p${Date.now()}`, name: '', content: '' }]);
@@ -174,6 +187,25 @@ export default function CreateToolForm() {
     setPrompts(prompts.filter(p => p.id !== id));
   };
 
+  const handleToggleCategory = (cat: string) => {
+    if (categories.includes(cat)) {
+      setCategories(categories.filter((c) => c !== cat));
+    } else {
+      setCategories([...categories, cat]);
+    }
+  };
+
+  const handleAddLoginId = () => {
+    if (newLoginId.trim() && !loginIds.includes(newLoginId.trim())) {
+      setLoginIds([...loginIds, newLoginId.trim()]);
+      setNewLoginId('');
+    }
+  };
+
+  const handleRemoveLoginId = (id: string) => {
+    setLoginIds(loginIds.filter((login) => login !== id));
+  };
+
   const handleSave = () => {
     // Implement save logic later
     toast.success('保存しました');
@@ -184,7 +216,7 @@ export default function CreateToolForm() {
   };
 
   return (
-    <div className="flex flex-col gap-[24px] w-full max-w-[1024px] mx-auto text-[#171a1f] dark:text-light font-base">
+    <div className="flex flex-col gap-[24px] w-full text-[#171a1f] dark:text-light font-base">
       
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
@@ -280,29 +312,98 @@ export default function CreateToolForm() {
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 カテゴリ <span className="text-[#f25a5a]">*</span>
               </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] appearance-none"
-              >
-                <option value="">選択...</option>
-                <option value="creative">Creative Hub</option>
-                <option value="compliance">Compliance Hub</option>
-                <option value="data">Data Hub</option>
-              </select>
+              
+              {/* Custom Multi-select Dropdown */}
+              <div className="relative">
+                <div 
+                  className="w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer"
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                >
+                  <span className="text-[#565d6d] dark:text-gray-400">カテゴリを選択...</span>
+                  <ChevronDownIcon />
+                </div>
+                
+                {isCategoryOpen && (
+                  <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col">
+                    {['クリエイティブハブ', 'コンプライアンスハブ', 'データハブ'].map((cat) => (
+                      <label key={cat} className="flex items-center gap-[8px] px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={categories.includes(cat)}
+                          onChange={() => handleToggleCategory(cat)}
+                          className="w-[16px] h-[16px] accent-[#5570f6] cursor-pointer"
+                        />
+                        <span className="text-[14px] text-[#171a1f] dark:text-light">{cat}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Category Tags */}
+              {categories.length > 0 && (
+                <div className="flex flex-wrap gap-[8px] mt-[4px]">
+                  {categories.map((cat) => (
+                    <span key={cat} className="inline-flex items-center gap-[6px] bg-[#f3f4f6] dark:bg-midnight-850 text-[#1e2128] dark:text-gray-300 text-[12px] font-semibold rounded-[11px] px-[12px] h-[26px]">
+                      {cat}
+                      <button type="button" onClick={() => handleToggleCategory(cat)} className="text-[#9095a1] hover:text-[#f25a5a]">
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Login ID Row */}
+          <div className="flex flex-col gap-[6px] mt-[4px]">
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              Login ID
+            </label>
+            <div className="flex items-center gap-[12px]">
+              <input
+                type="text"
+                value={newLoginId}
+                onChange={(e) => setNewLoginId(e.target.value)}
+                placeholder="IDを入力して追加..."
+                className="w-full max-w-[400px] h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLoginId())}
+              />
+              <button
+                type="button"
+                onClick={handleAddLoginId}
+                className="h-[40px] px-[20px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[14px] font-semibold transition-colors"
+              >
+                追加
+              </button>
+            </div>
+            
+            {/* Added Login IDs */}
+            {loginIds.length > 0 && (
+              <div className="flex flex-wrap gap-[8px] mt-[8px]">
+                {loginIds.map((id) => (
+                  <span key={id} className="inline-flex items-center gap-[6px] bg-[#e0e7ff] dark:bg-indigo-950/40 text-[#4f46e5] dark:text-indigo-300 text-[13px] font-semibold rounded-[6px] px-[12px] py-[6px]">
+                    {id}
+                    <button type="button" onClick={() => handleRemoveLoginId(id)} className="text-[#4f46e5] dark:text-indigo-300 hover:text-[#f25a5a]">
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Icon and Visibility Settings Row */}
-          <div className="flex flex-col md:flex-row gap-[16px] md:gap-[40px] mt-[4px]">
+          <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px] mt-[4px]">
             {/* Thumbnail Image */}
-            <div className="flex flex-col gap-[6px]">
+            <div className="flex flex-col gap-[6px] flex-[2]">
               <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 アイコン
               </span>
-              <div className="flex flex-row items-center gap-[16px] mt-[4px]">
+              <div className="flex flex-row items-center gap-[16px]">
                 {/* Image Preview Box */}
-                <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden">
+                <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden shrink-0">
                   <ImageUploadIcon />
                 </div>
                 {/* Upload Button & Text */}
@@ -328,11 +429,11 @@ export default function CreateToolForm() {
             </div>
 
             {/* Visibility Settings */}
-            <div className="flex flex-col gap-[6px]">
+            <div className="flex flex-col gap-[6px] flex-1">
               <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 公開設定
               </span>
-              <div className="flex items-center gap-[24px] mt-[16px]">
+              <div className="flex items-center gap-[24px] h-[56px]">
                 <label className="flex items-center gap-[8px] cursor-pointer text-[14px]">
                   <input
                     type="radio"
@@ -408,14 +509,16 @@ export default function CreateToolForm() {
                         placeholder="プロンプト名を入力..."
                         className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] outline-none focus:border-[#5570f6]"
                       />
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePrompt(prompt.id)}
-                        className="flex-shrink-0 w-[40px] h-[40px] flex items-center justify-center rounded-[4px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors"
-                        title="プロンプトを削除"
-                      >
-                        <TrashIcon />
-                      </button>
+                      {prompts.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePrompt(prompt.id)}
+                          className="flex-shrink-0 w-[40px] h-[40px] flex items-center justify-center rounded-[4px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors"
+                          title="プロンプトを削除"
+                        >
+                          <TrashIcon />
+                        </button>
+                      )}
                     </div>
                     <textarea
                       value={prompt.content}
@@ -512,6 +615,34 @@ export default function CreateToolForm() {
                 type="file"
                 ref={guideFileInputRef}
                 accept=".jpg,.png,.pdf"
+                className="hidden"
+              />
+            </div>
+          </div>
+
+          {/* Reference Materials (リファレンス) */}
+          <div className="flex flex-col gap-[6px] mt-[16px]">
+            <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              リファレンス
+            </span>
+            <div
+              className="flex flex-col items-center justify-center w-full py-[32px] px-[20px] mt-[4px] border-2 border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[8px] bg-[#fafafb] hover:bg-[#f3f4f6] dark:bg-midnight-900 dark:hover:bg-midnight-850 cursor-pointer transition-colors group"
+              onClick={handleTriggerReferenceUpload}
+            >
+              <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 mb-[12px] group-hover:scale-105 transition-transform shadow-sm">
+                <DocumentUploadIcon />
+              </div>
+              <div className="flex flex-col items-center gap-[4px] text-center">
+                <p className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                  クリックしてアップロード<span className="font-normal text-[#565d6d] dark:text-gray-400">、またはファイルをドラッグ＆ドロップ</span>
+                </p>
+                <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
+                  全ファイル形式対応 (最大 50MB)
+                </p>
+              </div>
+              <input
+                type="file"
+                ref={referenceFileInputRef}
                 className="hidden"
               />
             </div>

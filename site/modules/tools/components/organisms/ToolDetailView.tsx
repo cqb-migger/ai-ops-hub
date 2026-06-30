@@ -111,9 +111,9 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
   const backHref = fromPath || '/';
   
   let backLabel = 'ダッシュボードに戻る';
-  if (fromPath?.startsWith('/compliance-hub')) backLabel = 'Compliance Hubに戻る';
-  else if (fromPath?.startsWith('/creative-hub')) backLabel = 'Creative Hubに戻る';
-  else if (fromPath?.startsWith('/data-hub')) backLabel = 'Data Hubに戻る';
+  if (fromPath?.startsWith('/compliance-hub')) backLabel = 'コンプライアンスハブに戻る';
+  else if (fromPath?.startsWith('/creative-hub')) backLabel = 'クリエイティブハブに戻る';
+  else if (fromPath?.startsWith('/data-hub')) backLabel = 'データハブに戻る';
   else if (fromPath?.startsWith('/manage-tools')) backLabel = 'ツール管理に戻る';
 
   const handleCopy = (content: string, index: number) => {
@@ -142,7 +142,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
   };
 
   return (
-    <div className="flex flex-col gap-[28px] w-full max-w-[800px] mx-auto">
+    <div className="flex flex-col gap-[28px] w-full">
       {/* Back button */}
       <Link href={backHref}>
         <span className="flex items-center gap-[8px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-300 dark:hover:text-white text-[14px] leading-[22px] font-base font-medium cursor-pointer w-fit transition-colors duration-200">

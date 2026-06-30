@@ -37,7 +37,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '1',
           name: 'ChatGPT',
-          category: ['creative'],
+          category: ['クリエイティブハブ'],
           description: 'コンテンツ作成や文章生成を支援する高度なAI言語モデル。',
           url: 'https://chat.openai.com',
           status: '稼働中',
@@ -46,7 +46,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '2',
           name: 'ポリシーチェッカー AI',
-          category: ['compliance'],
+          category: ['コンプライアンスハブ'],
           description: '社内規定やコンプライアンス要件を自動で検証するツール。',
           url: 'https://example.com/policy',
           status: '稼働中',
@@ -54,7 +54,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '3',
           name: 'データインサイト分析',
-          category: ['data'],
+          category: ['データハブ'],
           description: '大規模データの包括的な分析とKPIのモニタリングを提供。',
           url: 'https://example.com/data',
           status: 'メンテナンス',
@@ -62,7 +62,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '4',
           name: 'Midjourney',
-          category: ['creative'],
+          category: ['クリエイティブハブ'],
           description: 'クリエイティブ職向けの高品質なAI画像生成ツール。',
           url: 'https://midjourney.com',
           status: '稼働中',
@@ -70,7 +70,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '5',
           name: 'セキュリティスキャナー',
-          category: ['compliance', 'data'],
+          category: ['コンプライアンスハブ', 'データハブ'],
           description: '機密データの脆弱性および法令遵守に関するスキャナー。',
           url: 'https://example.com/security',
           status: '停止中',
@@ -80,7 +80,7 @@ export function useTools(options: UseToolsOptions = {}) {
       // Generate extra mock tools for pagination testing (Total will be > 16)
       const extraTools: Tool[] = Array.from({ length: 25 }).map((_, i) => {
         const idNum = i + 6;
-        const categories = [['creative'], ['compliance'], ['data'], ['creative', 'data'], ['compliance', 'data']];
+        const categories = [['クリエイティブハブ'], ['コンプライアンスハブ'], ['データハブ'], ['クリエイティブハブ', 'データハブ'], ['コンプライアンスハブ', 'データハブ']];
         const statuses = ['稼働中', '稼働中', '稼働中', 'メンテナンス', '停止中'];
         return {
           id: `mock-generated-${idNum}`,

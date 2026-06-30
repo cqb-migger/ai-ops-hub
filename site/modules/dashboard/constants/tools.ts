@@ -34,9 +34,9 @@ export interface Tool {
 
 export const CATEGORIES = [
   'すべてのカテゴリ',
-  'creative',
-  'compliance',
-  'data',
+  'クリエイティブハブ',
+  'コンプライアンスハブ',
+  'データハブ',
 ];
 
 
