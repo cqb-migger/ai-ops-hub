@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { useTools } from '../../../../base/hooks/useTools';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { API_BASE } from '../../../../base/utils/api';
+import Pagination from '../../../../base/components/molecules/Pagination';
 
 interface ManagedTool {
   id: string;
@@ -59,6 +60,12 @@ export default function ToolManagementTable() {
   const { tools, loading, deleteTool } = useTools();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
 
   const managedTools = useMemo<ManagedTool[]>(() => {
     return tools.map((t) => ({
@@ -84,6 +91,14 @@ export default function ToolManagementTable() {
       return matchesSearch && matchesCategory;
     });
   }, [managedTools, searchQuery, selectedCategory]);
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
+  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
+  const paginatedTools = useMemo(() => {
+    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
+    return filteredTools.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [filteredTools, currentPageSafe]);
 
   const handleAddNew = () => {
     router.push('/manage-tools/new');
@@ -163,7 +178,7 @@ export default function ToolManagementTable() {
                 </td>
               </tr>
             ) : filteredTools.length > 0 ? (
-              filteredTools.map((tool) => (
+              paginatedTools.map((tool) => (
                 <tr
                   key={tool.id}
                   className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
@@ -240,6 +255,11 @@ export default function ToolManagementTable() {
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPageSafe}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }

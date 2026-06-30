@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
@@ -7,10 +7,12 @@ import { Step } from '../../constants/steps';
 import StepCard from '../molecules/StepCard';
 import StepModal from '../molecules/StepModal';
 import StepConnector from '../molecules/StepConnector';
+import Pagination from '../../../../base/components/molecules/Pagination';
 
 
 export default function ComplianceHubView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStep, setEditingStep] = useState<Step | null>(null);
   const [insertAtIndex, setInsertAtIndex] = useState<number | null>(null);
@@ -21,6 +23,11 @@ export default function ComplianceHubView() {
 
   const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -73,6 +80,14 @@ export default function ComplianceHubView() {
       return matchesSearch;
     });
   }, [tools, searchQuery]);
+
+  const ITEMS_PER_PAGE = 16;
+  const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
+  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
+  const paginatedResources = useMemo(() => {
+    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
+    return filteredResources.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [filteredResources, currentPageSafe]);
 
   const handleDeleteStep = async (id: string) => {
     if (steps.length <= 1) {
@@ -272,10 +287,17 @@ export default function ComplianceHubView() {
             読み込み中...
           </div>
         ) : filteredResources.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px] mt-[12px]">
-            {filteredResources.map((resource, index) => (
-              <ToolCard key={`${resource.id}-${index}`} tool={resource} />
-            ))}
+          <div className="flex flex-col gap-[28px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px] mt-[12px]">
+              {paginatedResources.map((resource, index) => (
+                <ToolCard key={`${resource.id}-${index}`} tool={resource} />
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPageSafe}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full mt-[12px]">

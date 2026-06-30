@@ -1,11 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
+import Pagination from '../../../../base/components/molecules/Pagination';
 
 export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const { tools, loading } = useTools({ category: 'data' });
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const filteredTools = useMemo(() => {
     return tools.filter((tool) => {
@@ -17,6 +24,14 @@ export default function DataHubView() {
       return matchesSearch;
     });
   }, [tools, searchQuery]);
+
+  const ITEMS_PER_PAGE = 16;
+  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
+  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
+  const paginatedTools = useMemo(() => {
+    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
+    return filteredTools.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [filteredTools, currentPageSafe]);
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
@@ -46,14 +61,19 @@ export default function DataHubView() {
           読み込み中...
         </div>
       ) : filteredTools.length > 0 ? (
-        <>
+        <div className="flex flex-col gap-[28px]">
           {/* Tool Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
-            {filteredTools.map((tool) => (
+            {paginatedTools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} />
             ))}
           </div>
-        </>
+          <Pagination
+            currentPage={currentPageSafe}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       ) : (
         <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
           <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">

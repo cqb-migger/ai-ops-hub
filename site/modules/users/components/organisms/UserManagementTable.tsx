@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { useUsers } from '../../../../base/hooks/useUsers';
+import Pagination from '../../../../base/components/molecules/Pagination';
 
 // Helper to extract initials
 const getInitials = (name: string) => {
@@ -36,6 +37,12 @@ export default function UserManagementTable() {
   const { users, loading, toggleUserRole } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('すべての役割');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedRole]);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -49,6 +56,14 @@ export default function UserManagementTable() {
       return matchesSearch && matchesRole;
     });
   }, [users, searchQuery, selectedRole]);
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
+  const paginatedUsers = useMemo(() => {
+    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
+    return filteredUsers.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+  }, [filteredUsers, currentPageSafe]);
 
   const handleToggleRole = async (id: number, name: string, currentRole: 'Admin' | 'Member') => {
     const nextRole = currentRole === 'Admin' ? 'Member' : 'Admin';
@@ -126,7 +141,7 @@ export default function UserManagementTable() {
                 </td>
               </tr>
             ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => {
+              paginatedUsers.map((user) => {
                 const isAdmin = user.role === 'Admin';
                 return (
                   <tr
@@ -196,6 +211,11 @@ export default function UserManagementTable() {
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPageSafe}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
