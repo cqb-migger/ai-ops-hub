@@ -51,27 +51,45 @@ export default function Combobox({
       className={`relative ${widthClass} h-[40px] z-10 ${className}`}
     >
       {/* Trigger Button */}
-      <button
-        type="button"
+      <div
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] text-[#171a1f] dark:text-light px-[12px] pr-[32px] flex items-center justify-between outline-none font-base cursor-pointer hover:bg-gray-50 dark:hover:bg-midnight-850 transition-colors"
+        className="w-full h-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] text-[#171a1f] dark:text-light px-[12px] flex items-center justify-between outline-none font-base cursor-pointer hover:bg-gray-50 dark:hover:bg-midnight-850 transition-colors"
       >
-        <span className="truncate">{value || placeholder}</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`w-[16px] h-[16px] text-[#565d6d] dark:text-gray-400 pointer-events-none transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
+        <span className="truncate flex-1 text-left">{value || placeholder}</span>
+        <div className="flex items-center gap-[4px] ml-[8px]">
+          {value && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange('');
+                setIsOpen(false);
+              }}
+              className="p-[2px] rounded-full hover:bg-gray-200 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-400 transition-colors"
+              title="Clear selection"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px]">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`w-[16px] h-[16px] flex-shrink-0 text-[#565d6d] dark:text-gray-400 pointer-events-none transition-transform duration-200 ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </div>
 
       {/* Options Menu */}
       {isOpen && (
