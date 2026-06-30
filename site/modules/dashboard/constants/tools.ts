@@ -22,6 +22,12 @@ export interface Tool {
   icon?: string;
   status?: string;
   details?: ToolDetails;
+  role?: string;
+  visibility?: 'public' | 'draft';
+  promptVisibility?: 'public' | 'private';
+  guideContent?: string;
+  guideMaterials?: string[];
+  adminMemo?: string;
 }
 
 

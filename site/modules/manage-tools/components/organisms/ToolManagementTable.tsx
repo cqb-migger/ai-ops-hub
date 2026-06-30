@@ -193,7 +193,7 @@ export default function ToolManagementTable() {
 
                   {/* Tool name & image */}
                   <td className="py-[16px] px-[20px] flex items-start gap-[12px]">
-                    <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-[4px] overflow-hidden bg-gray-50 dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
+                    <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 border border-[#dbe2f9] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
                       {tool.imageUrl && (tool.imageUrl.startsWith('http') || tool.imageUrl.startsWith('/')) ? (
                         <img
                           src={tool.imageUrl.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.imageUrl}` : tool.imageUrl}

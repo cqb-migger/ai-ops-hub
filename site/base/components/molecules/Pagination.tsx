@@ -33,13 +33,18 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] text-[14px] font-semibold transition-all duration-200 ${
+          className={`group relative overflow-hidden w-[36px] h-[36px] flex items-center justify-center rounded-[8px] text-[14px] font-semibold transition-all duration-200 ${
             currentPageSafe === page
-              ? 'bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white border border-transparent shadow-sm'
-              : 'border border-[#dee1e6] hover:bg-gradient-to-r hover:from-[#2563eb] hover:to-[#60a5fa] text-[#565d6d] hover:text-white hover:border-transparent dark:border-midnight-800 dark:text-light'
+              ? 'text-white border-transparent shadow-sm'
+              : 'border border-[#dee1e6] text-[#565d6d] hover:text-white hover:border-transparent dark:border-midnight-800 dark:text-light'
           }`}
         >
-          {page}
+          <div
+            className={`absolute inset-0 transition-opacity duration-200 bg-gradient-to-r from-[#2563eb] to-[#60a5fa] ${
+              currentPageSafe === page ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}
+          />
+          <span className="relative z-10">{page}</span>
         </button>
       ))}
 

@@ -109,29 +109,25 @@ interface SidebarLinkProps {
 }
 
 function SidebarLink({ href, label, icon, active, collapsed }: SidebarLinkProps) {
-  const [isHovered, setIsHovered] = React.useState(false);
-
   return (
     <Link href={href}>
       <span
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={`flex items-center gap-[12px] h-[36px] rounded-[6px] cursor-pointer transition-all duration-200 ${
+        className={`group relative overflow-hidden flex items-center gap-[12px] h-[36px] rounded-[6px] cursor-pointer transition-all duration-200 ${
           collapsed ? 'px-0 justify-center' : 'px-[12px]'
         } ${
-          active || isHovered
+          active
             ? 'text-white'
-            : 'text-[#565d6d] dark:text-gray-300'
+            : 'text-[#565d6d] hover:text-white dark:text-gray-300'
         }`}
-        style={
-          active || isHovered
-            ? { background: 'linear-gradient(to right, #2563eb, #60a5fa)' }
-            : undefined
-        }
       >
-        <span className="flex-shrink-0">{icon}</span>
+        <div
+          className={`absolute inset-0 transition-opacity duration-200 bg-gradient-to-r from-[#2563eb] to-[#60a5fa] ${
+            active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
+        />
+        <span className="relative z-10 flex-shrink-0">{icon}</span>
         {!collapsed && (
-          <span className="text-[14px] font-[500] leading-[22px] font-base whitespace-nowrap overflow-hidden text-ellipsis">
+          <span className="relative z-10 text-[14px] font-[500] leading-[22px] font-base whitespace-nowrap overflow-hidden text-ellipsis">
             {label}
           </span>
         )}

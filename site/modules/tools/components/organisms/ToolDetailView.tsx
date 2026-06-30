@@ -75,6 +75,33 @@ function ExternalLinkIcon() {
   );
 }
 
+function BookOpenIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px] text-[#5570f6] dark:text-[#7c91eb]">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
+function PaperclipIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#565d6d] dark:text-gray-400">
+      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  );
+}
+
+function ShieldAlertIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-amber-600 dark:text-amber-400">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <line x1="12" x2="12" y1="8" y2="12" />
+      <line x1="12" x2="12.01" y1="16" y2="16" />
+    </svg>
+  );
+}
+
 export default function ToolDetailView({ tool }: ToolDetailViewProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -139,6 +166,25 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
                 {cat}
               </span>
             ))}
+            {tool.role && (
+              <span className="bg-[#e0e7ff] dark:bg-indigo-950/40 text-[12px] font-semibold text-[#4f46e5] dark:text-indigo-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap gap-[4px]">
+                💼 {tool.role === 'sales' ? '営業 (Sales)' : tool.role === 'marketing' ? 'マーケティング' : tool.role === 'dev' ? '開発 (Dev)' : tool.role}
+              </span>
+            )}
+            {tool.visibility && (
+              <span className={`text-[12px] font-semibold rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap gap-[4px] ${
+                tool.visibility === 'public'
+                  ? 'bg-[#dcfce7] dark:bg-green-950/40 text-[#15803d] dark:text-green-300'
+                  : 'bg-[#fee2e2] dark:bg-red-950/40 text-[#b91c1c] dark:text-red-300'
+              }`}>
+                🌐 {tool.visibility === 'public' ? '公開' : '非公開'}
+              </span>
+            )}
+            {tool.promptVisibility && (
+              <span className="bg-[#fef3c7] dark:bg-amber-950/40 text-[12px] font-semibold text-[#b45309] dark:text-amber-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap gap-[4px]">
+                🔒 プロンプト: {tool.promptVisibility === 'public' ? '公開' : '非公開'}
+              </span>
+            )}
           </div>
           <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
             {tool.description}
@@ -196,6 +242,58 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Usage Guide */}
+      {tool.guideContent && (
+        <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm">
+          <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
+            <BookOpenIcon />
+            <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+              活用ガイド
+            </h3>
+          </div>
+          <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base whitespace-pre-wrap">
+            {tool.guideContent}
+          </div>
+          {tool.guideMaterials && tool.guideMaterials.length > 0 && (
+            <div className="flex flex-col gap-[8px] mt-[12px] pt-[16px] border-t border-[#dee1e6] dark:border-midnight-800">
+              <span className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400 uppercase tracking-[0.5px]">
+                関連資料 (Materials)
+              </span>
+              <div className="flex flex-wrap gap-[12px]">
+                {tool.guideMaterials.map((material, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-[8px] px-[12px] py-[8px] bg-[#f3f4f6] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-[#e5e7eb] dark:hover:bg-midnight-850 cursor-pointer transition-colors w-fit"
+                  >
+                    <PaperclipIcon />
+                    <span className="text-[13px] font-medium text-[#171a1f] dark:text-light truncate max-w-[200px]">
+                      {material}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin Memo */}
+      {tool.adminMemo && (
+        <div className="bg-[#fffbeb] dark:bg-amber-950/20 border border-[#fef3c7] dark:border-amber-900/50 rounded-[12px] p-[16px] mt-[12px] flex gap-[12px] items-start">
+          <div className="flex-shrink-0 mt-[2px]">
+            <ShieldAlertIcon />
+          </div>
+          <div className="flex flex-col gap-[4px] min-w-0">
+            <span className="text-[13px] font-semibold text-[#b45309] dark:text-amber-400 font-base uppercase tracking-[0.5px]">
+              管理者用メモ (非公開)
+            </span>
+            <p className="text-[13px] leading-[20px] text-[#78350f] dark:text-amber-300/90 font-base whitespace-pre-wrap">
+              {tool.adminMemo}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Recommended Prompts */}
       <div className="flex flex-col gap-[16px] mt-[12px]">
