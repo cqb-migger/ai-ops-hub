@@ -145,15 +145,45 @@ export default function Sidebar() {
   ]);
 
   const navItems = [
-    { href: routes.path.home, label: 'Dashboard', icon: <DashboardIcon /> },
-    { href: routes.path.complianceHub, label: 'Compliance Hub', icon: <ShieldCheckIcon /> },
-    { href: routes.path.creativeHub, label: 'Creative Hub', icon: <PaletteIcon /> },
-    { href: routes.path.dataHub, label: 'Data Hub', icon: <ChartColumnIcon /> },
+    {
+      href: routes.path.home,
+      label: 'Dashboard',
+      icon: <DashboardIcon />,
+      active: router.pathname === routes.path.home || router.pathname.startsWith('/tools/'),
+    },
+    {
+      href: routes.path.complianceHub,
+      label: 'Compliance Hub',
+      icon: <ShieldCheckIcon />,
+      active: router.pathname.startsWith(routes.path.complianceHub),
+    },
+    {
+      href: routes.path.creativeHub,
+      label: 'Creative Hub',
+      icon: <PaletteIcon />,
+      active: router.pathname.startsWith(routes.path.creativeHub),
+    },
+    {
+      href: routes.path.dataHub,
+      label: 'Data Hub',
+      icon: <ChartColumnIcon />,
+      active: router.pathname.startsWith(routes.path.dataHub),
+    },
   ];
 
   const adminItems = [
-    { href: routes.path.manageTools, label: 'Manage Tools', icon: <WrenchIcon /> },
-    { href: routes.path.users, label: 'Users', icon: <UsersIcon /> },
+    {
+      href: routes.path.manageTools,
+      label: 'Manage Tools',
+      icon: <WrenchIcon />,
+      active: router.pathname.startsWith(routes.path.manageTools),
+    },
+    {
+      href: routes.path.users,
+      label: 'Users',
+      icon: <UsersIcon />,
+      active: router.pathname.startsWith(routes.path.users),
+    },
   ];
 
   const [showDropdown, setShowDropdown] = React.useState(false);
@@ -225,7 +255,7 @@ export default function Sidebar() {
                   href={item.href}
                   label={item.label}
                   icon={item.icon}
-                  active={router.pathname === item.href}
+                  active={item.active}
                   collapsed={isSidebarCollapsed}
                 />
               ))}
@@ -246,7 +276,7 @@ export default function Sidebar() {
                   href={item.href}
                   label={item.label}
                   icon={item.icon}
-                  active={router.pathname === item.href}
+                  active={item.active}
                   collapsed={isSidebarCollapsed}
                 />
               ))}
