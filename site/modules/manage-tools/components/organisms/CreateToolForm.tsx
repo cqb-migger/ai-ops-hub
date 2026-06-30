@@ -64,6 +64,16 @@ function GripIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
 function CircleCheckIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
@@ -123,8 +133,7 @@ export default function CreateToolForm() {
     '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。'
   );
   const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
-  const [category, setCategory] = useState('creative');
-  const [role, setRole] = useState('sales');
+  const [category, setCategory] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   
@@ -159,6 +168,10 @@ export default function CreateToolForm() {
 
   const handleUpdatePrompt = (id: string, field: keyof PromptItem, value: string) => {
     setPrompts(prompts.map(p => p.id === id ? { ...p, [field]: value } : p));
+  };
+
+  const handleDeletePrompt = (id: string) => {
+    setPrompts(prompts.filter(p => p.id !== id));
   };
 
   const handleSave = () => {
@@ -262,7 +275,7 @@ export default function CreateToolForm() {
               />
             </div>
 
-            {/* Category (takes roughly 25%) */}
+            {/* Category (takes roughly 33%) */}
             <div className="flex flex-col gap-[6px] flex-1 relative">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 カテゴリ <span className="text-[#f25a5a]">*</span>
@@ -276,24 +289,6 @@ export default function CreateToolForm() {
                 <option value="creative">Creative Hub</option>
                 <option value="compliance">Compliance Hub</option>
                 <option value="data">Data Hub</option>
-              </select>
-            </div>
-
-            {/* Role (takes roughly 25%) */}
-            <div className="flex flex-col gap-[6px] flex-1 relative">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                役割 <span className="text-[#f25a5a]">*</span>
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] appearance-none"
-              >
-                <option value="">選択...</option>
-                <option value="sales">営業 (Sales)</option>
-                <option value="marketing">マーケティング</option>
-                <option value="dev">開発 (Dev)</option>
-                <option value="admin">管理者 (Admin)</option>
               </select>
             </div>
           </div>
@@ -401,17 +396,27 @@ export default function CreateToolForm() {
             {prompts.map((prompt) => (
               <div key={prompt.id} className="flex flex-col gap-[12px]">
                 <div className="flex items-start gap-[12px]">
-                  <div className="mt-[12px] cursor-grab">
+                  <div className="mt-[12px] text-[#9095a0] dark:text-gray-500">
                     <GripIcon />
                   </div>
                   <div className="flex flex-col gap-[12px] flex-1">
-                    <input
-                      type="text"
-                      value={prompt.name}
-                      onChange={(e) => handleUpdatePrompt(prompt.id, 'name', e.target.value)}
-                      placeholder="プロンプト名を入力..."
-                      className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] outline-none focus:border-[#5570f6]"
-                    />
+                    <div className="flex items-center gap-[12px]">
+                      <input
+                        type="text"
+                        value={prompt.name}
+                        onChange={(e) => handleUpdatePrompt(prompt.id, 'name', e.target.value)}
+                        placeholder="プロンプト名を入力..."
+                        className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] outline-none focus:border-[#5570f6]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePrompt(prompt.id)}
+                        className="flex-shrink-0 w-[40px] h-[40px] flex items-center justify-center rounded-[4px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors"
+                        title="プロンプトを削除"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
                     <textarea
                       value={prompt.content}
                       onChange={(e) => handleUpdatePrompt(prompt.id, 'content', e.target.value)}

@@ -177,23 +177,14 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
                 {cat}
               </span>
             ))}
-            {tool.role && (
-              <span className="bg-[#e0e7ff] dark:bg-indigo-950/40 text-[12px] font-semibold text-[#4f46e5] dark:text-indigo-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap gap-[4px]">
-                💼 {tool.role === 'sales' ? '営業 (Sales)' : tool.role === 'marketing' ? 'マーケティング' : tool.role === 'dev' ? '開発 (Dev)' : tool.role}
-              </span>
-            )}
             {tool.visibility && (
-              <span className={`text-[12px] font-semibold rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap gap-[4px] ${
-                tool.visibility === 'public'
-                  ? 'bg-[#dcfce7] dark:bg-green-950/40 text-[#15803d] dark:text-green-300'
-                  : 'bg-[#fee2e2] dark:bg-red-950/40 text-[#b91c1c] dark:text-red-300'
-              }`}>
-                🌐 {tool.visibility === 'public' ? '公開' : '非公開'}
+              <span className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
+                {tool.visibility === 'public' ? '公開' : '非公開'}
               </span>
             )}
             {tool.promptVisibility && (
-              <span className="bg-[#fef3c7] dark:bg-amber-950/40 text-[12px] font-semibold text-[#b45309] dark:text-amber-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap gap-[4px]">
-                🔒 プロンプト: {tool.promptVisibility === 'public' ? '公開' : '非公開'}
+              <span className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
+                プロンプト: {tool.promptVisibility === 'public' ? '公開' : '非公開'}
               </span>
             )}
           </div>
