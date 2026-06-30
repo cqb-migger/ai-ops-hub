@@ -33,7 +33,7 @@ export function useTools(options: UseToolsOptions = {}) {
       */
       
       // --- MOCK DATA FOR UI DEV ---
-      const mockToolsData: Tool[] = [
+      const baseMockTools: Tool[] = [
         {
           id: '1',
           name: 'ChatGPT',
@@ -76,6 +76,23 @@ export function useTools(options: UseToolsOptions = {}) {
           status: '停止中',
         }
       ];
+      
+      // Generate extra mock tools for pagination testing (Total will be > 16)
+      const extraTools: Tool[] = Array.from({ length: 25 }).map((_, i) => {
+        const idNum = i + 6;
+        const categories = [['creative'], ['compliance'], ['data'], ['creative', 'data'], ['compliance', 'data']];
+        const statuses = ['稼働中', '稼働中', '稼働中', 'メンテナンス', '停止中'];
+        return {
+          id: `mock-generated-${idNum}`,
+          name: `AI サンプルツール ${idNum}`,
+          category: categories[i % categories.length],
+          description: `これは自動生成されたサンプルツール ${idNum} です。UIやページネーションのテストに使用します。`,
+          url: `https://example.com/tool-${idNum}`,
+          status: statuses[i % statuses.length],
+        };
+      });
+
+      const mockToolsData: Tool[] = [...baseMockTools, ...extraTools];
 
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 500));
