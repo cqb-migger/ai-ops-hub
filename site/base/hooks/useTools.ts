@@ -101,7 +101,13 @@ export function useTools(options: UseToolsOptions = {}) {
       const selectedFilter = category || hub;
       
       if (selectedFilter && selectedFilter !== 'すべてのカテゴリ' && selectedFilter !== 'すべてのハブ') {
-        filteredData = filteredData.filter(t => t.category.includes(selectedFilter.toLowerCase()));
+        const filterMap: Record<string, string> = {
+          'creative': 'クリエイティブハブ',
+          'compliance': 'コンプライアンスハブ',
+          'data': 'データハブ'
+        };
+        const actualFilter = filterMap[selectedFilter.toLowerCase()] || selectedFilter;
+        filteredData = filteredData.filter(t => t.category.includes(actualFilter));
       }
       
       if (search) {
