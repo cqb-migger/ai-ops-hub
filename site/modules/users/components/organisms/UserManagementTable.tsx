@@ -218,14 +218,17 @@ export default function UserManagementTable() {
             )}
           </tbody>
         </table>
+        <div className="px-[20px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-gray-50 dark:bg-midnight-950">
+          <Pagination
+            currentPage={currentPageSafe}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredUsers.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            className="mt-0"
+          />
+        </div>
       </div>
-      <Pagination
-        currentPage={currentPageSafe}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        totalItems={filteredUsers.length}
-        itemsPerPage={ITEMS_PER_PAGE}
-      />
     </div>
   );
 }

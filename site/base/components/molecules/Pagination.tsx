@@ -6,9 +6,10 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   totalItems?: number;
   itemsPerPage?: number;
+  className?: string;
 }
 
-export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage }: PaginationProps) {
+export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage, className = 'mt-[20px]' }: PaginationProps) {
   const currentPageSafe = Math.max(1, Math.min(currentPage, Math.max(1, totalPages)));
   
   const showPaginationControls = totalPages > 1;
@@ -20,7 +21,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
   const endItem = Math.min(currentPageSafe * (itemsPerPage || 1), totalItems || 0);
 
   return (
-    <div className="flex items-center justify-between w-full mt-[20px] font-base">
+    <div className={`flex items-center justify-between w-full font-base ${className}`}>
       <div className="text-[14px] text-[#565d6d] dark:text-gray-400 font-medium">
         {showItemCount && totalItems !== undefined && totalItems > 0 && (
           <>全 {totalItems} 件中 {startItem} - {endItem} 件を表示</>
