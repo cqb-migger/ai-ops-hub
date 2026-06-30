@@ -149,8 +149,9 @@ export default function ToolManagementTable() {
       />
 
       {/* Table Container */}
-      <div className="w-full overflow-x-auto bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px]">
-        <table className="w-full min-w-[800px] border-collapse text-left">
+      <div className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] overflow-hidden shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)]">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px] border-collapse text-left">
           {/* Table Header */}
           <thead>
             <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
@@ -262,6 +263,7 @@ export default function ToolManagementTable() {
             )}
           </tbody>
         </table>
+        </div>
         <div className="px-[20px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-gray-50 dark:bg-midnight-950">
           <Pagination
             currentPage={currentPageSafe}
