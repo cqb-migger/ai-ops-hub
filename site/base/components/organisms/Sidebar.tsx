@@ -236,14 +236,14 @@ export default function Sidebar() {
           </div>
         ) : (
           <div className="flex items-center justify-between h-[64px] border-b border-[#dee1e6] dark:border-midnight-800 px-[16px]">
-            <div className="flex items-center gap-[8px] min-w-0">
+            <Link href="/" className="flex items-center gap-[8px] min-w-0 cursor-pointer">
               <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-[6px] bg-[#5570f6]">
                 <CompassIcon />
               </div>
               <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[17px] leading-[20px] text-[#5570f6] dark:text-primary-400 whitespace-nowrap overflow-hidden text-ellipsis">
                 AI Navigator
               </span>
-            </div>
+            </Link>
             <button
               onClick={() => setIsSidebarCollapsed(true)}
               className="flex-shrink-0 flex items-center justify-center w-[24px] h-[24px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200 cursor-pointer"
