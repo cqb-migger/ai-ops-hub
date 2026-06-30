@@ -223,6 +223,8 @@ export default function UserManagementTable() {
         currentPage={currentPageSafe}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+        totalItems={filteredUsers.length}
+        itemsPerPage={ITEMS_PER_PAGE}
       />
     </div>
   );

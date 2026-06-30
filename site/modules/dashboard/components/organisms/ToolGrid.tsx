@@ -95,6 +95,8 @@ export default function ToolGrid() {
               currentPage={currentPageSafe}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
+              totalItems={filteredTools.length}
+              itemsPerPage={ITEMS_PER_PAGE}
             />
         </div>
       ) : (

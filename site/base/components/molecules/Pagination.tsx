@@ -4,16 +4,35 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  totalItems?: number;
+  itemsPerPage?: number;
 }
 
-export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  if (totalPages <= 1) return null;
+export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage }: PaginationProps) {
+  const currentPageSafe = Math.max(1, Math.min(currentPage, Math.max(1, totalPages)));
+  
+  const showPaginationControls = totalPages > 1;
+  const showItemCount = totalItems !== undefined && itemsPerPage !== undefined;
 
-  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
+  if (!showPaginationControls && !showItemCount) return null;
+
+  const startItem = (currentPageSafe - 1) * (itemsPerPage || 1) + 1;
+  const endItem = Math.min(currentPageSafe * (itemsPerPage || 1), totalItems || 0);
 
   return (
-    <div className="flex items-center justify-center gap-[8px] mt-[12px] font-base">
-      {/* Previous Page Button */}
+    <div className="flex items-center justify-between w-full mt-[20px] font-base">
+      <div className="text-[14px] text-[#565d6d] dark:text-gray-400 font-medium">
+        {showItemCount && totalItems !== undefined && totalItems > 0 && (
+          <>全 {totalItems} 件中 {startItem} - {endItem} 件を表示</>
+        )}
+        {showItemCount && totalItems === 0 && (
+          <>全 0 件中 0 件を表示</>
+        )}
+      </div>
+
+      {showPaginationControls ? (
+        <div className="flex items-center gap-[8px]">
+          {/* Previous Page Button */}
       <button
         onClick={() => onPageChange(Math.max(1, currentPageSafe - 1))}
         disabled={currentPageSafe === 1}
@@ -62,6 +81,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
+        </div>
+      ) : (
+        <div />
+      )}
     </div>
   );
 }

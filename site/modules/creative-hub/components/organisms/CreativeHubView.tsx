@@ -68,6 +68,8 @@ export default function CreativeHubView() {
             currentPage={currentPageSafe}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
+            totalItems={filteredCards.length}
+            itemsPerPage={ITEMS_PER_PAGE}
           />
         </div>
       ) : (

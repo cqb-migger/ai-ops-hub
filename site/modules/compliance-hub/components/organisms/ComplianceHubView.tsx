@@ -297,6 +297,8 @@ export default function ComplianceHubView() {
               currentPage={currentPageSafe}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
+              totalItems={filteredResources.length}
+              itemsPerPage={ITEMS_PER_PAGE}
             />
           </div>
         ) : (
