@@ -25,6 +25,15 @@ function SearchIcon() {
   );
 }
 
+function XIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export default function FilterBar({
   searchQuery,
   onSearchChange,
@@ -53,6 +62,15 @@ export default function FilterBar({
           placeholder={placeholder}
           className="w-full bg-transparent border-none outline-none text-[14px] leading-[22px] text-[#171a1f] dark:text-light placeholder-[#565d6d] dark:placeholder-gray-500 font-base"
         />
+        {searchQuery && (
+          <button
+            onClick={() => onSearchChange('')}
+            className="flex items-center justify-center text-[#9095a0] hover:text-[#171a1f] dark:text-gray-500 dark:hover:text-white transition-colors flex-shrink-0"
+            title="Clear search"
+          >
+            <XIcon />
+          </button>
+        )}
       </div>
 
       {showFilters && !showRoleFilterOnly && (
