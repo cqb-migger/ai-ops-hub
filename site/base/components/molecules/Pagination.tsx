@@ -33,10 +33,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] text-[14px] font-semibold transition-colors ${
+          className={`w-[36px] h-[36px] flex items-center justify-center rounded-[8px] text-[14px] font-semibold transition-all duration-200 ${
             currentPageSafe === page
-              ? 'bg-[#5570f6] text-white border border-[#5570f6]'
-              : 'border border-[#dee1e6] hover:bg-[#fafafb] text-[#565d6d] dark:border-midnight-800 dark:hover:bg-midnight-900 dark:text-light'
+              ? 'bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white border border-transparent shadow-sm'
+              : 'border border-[#dee1e6] hover:bg-gradient-to-r hover:from-[#2563eb] hover:to-[#60a5fa] text-[#565d6d] hover:text-white hover:border-transparent dark:border-midnight-800 dark:text-light'
           }`}
         >
           {page}

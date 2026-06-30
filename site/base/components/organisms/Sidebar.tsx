@@ -86,20 +86,16 @@ function MenuIcon() {
 
 function PanelLeftClose() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M9 3v18" />
-      <path d="m16 15-3-3 3-3" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <path d="m11 17-5-5 5-5M18 17l-5-5 5-5" />
     </svg>
   );
 }
 
 function PanelLeftOpen() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M9 3v18" />
-      <path d="m13 9 3 3-3 3" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <path d="m6 17 5-5-5-5M13 17l5-5-5-5" />
     </svg>
   );
 }
@@ -163,6 +159,21 @@ export default function Sidebar() {
     { href: routes.path.manageTools, label: 'Manage Tools', icon: <WrenchIcon /> },
     { href: routes.path.users, label: 'Users', icon: <UsersIcon /> },
   ];
+
+  const [showDropdown, setShowDropdown] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <aside
@@ -249,10 +260,47 @@ export default function Sidebar() {
       </div>
 
       {/* Bottom Profile Section */}
-      <div className="border-t border-[#dee1e6] dark:border-midnight-800 flex flex-col p-[12px]">
+      <div ref={dropdownRef} className="relative border-t border-[#dee1e6] dark:border-midnight-800 flex flex-col p-[12px]">
+        {/* Dropdown Menu */}
+        {showDropdown && (
+          <div className={`absolute bottom-full mb-[8px] z-50 bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-lg py-[4px] font-base ${
+            isSidebarCollapsed ? 'left-[12px] w-[160px]' : 'left-[12px] right-[12px]'
+          }`}>
+            <div className="px-[12px] py-[6px] border-b border-[#dee1e6] dark:border-midnight-800 mb-[4px] min-w-0">
+              <span className="block text-[12px] font-bold text-[#171a1f] dark:text-light truncate">
+                Nguyen Van An
+              </span>
+              <span className="block text-[10px] text-[#565d6d] dark:text-gray-400 truncate">
+                Admin
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                import('react-hot-toast').then(({ default: toast }) => {
+                  toast.success('ログアウトします (シミュレーション)');
+                });
+                setShowDropdown(false);
+              }}
+              className="flex items-center gap-[8px] w-full px-[12px] py-[8px] text-[13px] text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 text-left font-medium transition-colors cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              <span>ログアウト</span>
+            </button>
+          </div>
+        )}
+
         {/* User Profile */}
-        <div className={`flex items-center gap-[12px] h-[48px] px-[4px] ${isSidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
-          <div className="relative flex-shrink-0 flex items-center justify-center w-[32px] h-[32px] rounded-full overflow-hidden bg-[#fce4e7] dark:bg-[#4a2e35] cursor-pointer">
+        <div
+          onClick={() => setShowDropdown(!showDropdown)}
+          className={`flex items-center gap-[12px] h-[48px] px-[4px] rounded-[8px] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none transition-colors ${
+            isSidebarCollapsed ? 'justify-center' : 'justify-start'
+          }`}
+        >
+          <div className="relative flex-shrink-0 flex items-center justify-center w-[32px] h-[32px] rounded-full overflow-hidden bg-[#fce4e7] dark:bg-[#4a2e35]">
             <img
               src="http://localhost:3845/assets/709c4e40e160703b4d5465c009c441b8854bf5d0.png"
               alt="User Avatar"

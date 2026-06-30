@@ -117,6 +117,9 @@ export default function UserManagementTable() {
           {/* Table Header */}
           <thead>
             <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
+              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[60px]">
+                STT
+              </th>
               <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[400px]">
                 ユーザー
               </th>
@@ -136,18 +139,23 @@ export default function UserManagementTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   読み込み中...
                 </td>
               </tr>
             ) : filteredUsers.length > 0 ? (
-              paginatedUsers.map((user) => {
+              paginatedUsers.map((user, index) => {
                 const isAdmin = user.role === 'Admin';
                 return (
                   <tr
                     key={user.id}
                     className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
                   >
+                    {/* STT */}
+                    <td className="py-[16px] px-[20px] text-[14px] text-[#565d6d] dark:text-gray-400 font-base font-medium">
+                      {(currentPageSafe - 1) * ITEMS_PER_PAGE + index + 1}
+                    </td>
+
                     {/* User Profile */}
                     <td className="py-[16px] px-[20px] flex items-center gap-[12px]">
                       <div className={`flex-shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] font-bold font-base select-none ${getAvatarBg(user.name)}`}>
@@ -203,7 +211,7 @@ export default function UserManagementTable() {
               })
             ) : (
               <tr>
-                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   該当するユーザーが見つかりませんでした。
                 </td>
               </tr>

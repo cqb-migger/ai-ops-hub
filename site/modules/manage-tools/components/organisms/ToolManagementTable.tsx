@@ -154,6 +154,9 @@ export default function ToolManagementTable() {
           {/* Table Header */}
           <thead>
             <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
+              <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[60px]">
+                STT
+              </th>
               <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[400px]">
                 ツール名
               </th>
@@ -173,16 +176,21 @@ export default function ToolManagementTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   読み込み中...
                 </td>
               </tr>
             ) : filteredTools.length > 0 ? (
-              paginatedTools.map((tool) => (
+              paginatedTools.map((tool, index) => (
                 <tr
                   key={tool.id}
                   className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
                 >
+                  {/* STT */}
+                  <td className="py-[16px] px-[20px] text-[14px] text-[#565d6d] dark:text-gray-400 font-base font-medium">
+                    {(currentPageSafe - 1) * ITEMS_PER_PAGE + index + 1}
+                  </td>
+
                   {/* Tool name & image */}
                   <td className="py-[16px] px-[20px] flex items-start gap-[12px]">
                     <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-[4px] overflow-hidden bg-gray-50 dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
@@ -247,7 +255,7 @@ export default function ToolManagementTable() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
                   条件に一致するツールが見つかりませんでした。
                 </td>
               </tr>
