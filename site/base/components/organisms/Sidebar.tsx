@@ -144,30 +144,45 @@ export default function Sidebar() {
     state.setIsSidebarCollapsed,
   ]);
 
+  const fromPath = router.query.from as string;
+  const isToolDetail = router.pathname.startsWith('/tools/');
+
+  const checkIsActive = (href: string) => {
+    if (router.pathname === href) return true;
+    if (href !== '/' && router.pathname.startsWith(href)) return true;
+    if (isToolDetail) {
+      if (fromPath) {
+        return fromPath === href || (href !== '/' && fromPath.startsWith(href));
+      }
+      return href === routes.path.home;
+    }
+    return false;
+  };
+
   const navItems = [
     {
       href: routes.path.home,
       label: 'Dashboard',
       icon: <DashboardIcon />,
-      active: router.pathname === routes.path.home || router.pathname.startsWith('/tools/'),
+      active: checkIsActive(routes.path.home),
     },
     {
       href: routes.path.complianceHub,
       label: 'Compliance Hub',
       icon: <ShieldCheckIcon />,
-      active: router.pathname.startsWith(routes.path.complianceHub),
+      active: checkIsActive(routes.path.complianceHub),
     },
     {
       href: routes.path.creativeHub,
       label: 'Creative Hub',
       icon: <PaletteIcon />,
-      active: router.pathname.startsWith(routes.path.creativeHub),
+      active: checkIsActive(routes.path.creativeHub),
     },
     {
       href: routes.path.dataHub,
       label: 'Data Hub',
       icon: <ChartColumnIcon />,
-      active: router.pathname.startsWith(routes.path.dataHub),
+      active: checkIsActive(routes.path.dataHub),
     },
   ];
 
@@ -176,13 +191,13 @@ export default function Sidebar() {
       href: routes.path.manageTools,
       label: 'Manage Tools',
       icon: <WrenchIcon />,
-      active: router.pathname.startsWith(routes.path.manageTools),
+      active: checkIsActive(routes.path.manageTools),
     },
     {
       href: routes.path.users,
       label: 'Users',
       icon: <UsersIcon />,
-      active: router.pathname.startsWith(routes.path.users),
+      active: checkIsActive(routes.path.users),
     },
   ];
 
