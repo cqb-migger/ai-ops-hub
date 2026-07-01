@@ -133,7 +133,7 @@ export default function ComplianceHubView() {
         title: data.title,
         description: data.description,
       };
-      
+
       if (insertAtIndex !== null) {
         const temp = [...steps];
         temp.splice(insertAtIndex, 0, newStep);
@@ -156,7 +156,7 @@ export default function ComplianceHubView() {
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
-      
+
       {/* Category Pill Badge & Header title */}
       <div className="flex flex-col items-start gap-[12px]">
         {/* Title & description */}
@@ -171,7 +171,7 @@ export default function ComplianceHubView() {
       {/* Section 1: Review Flow */}
       <section className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_3px_rgba(23,26,31,0.05)] p-[20px] sm:p-[24px]">
         {/* Card Header (Collapsible trigger) */}
-        <div 
+        <div
           onClick={() => setIsFlowExpanded(!isFlowExpanded)}
           className="flex justify-between items-center cursor-pointer select-none"
         >
@@ -183,7 +183,7 @@ export default function ComplianceHubView() {
               コンテンツ作成から公開までの必須手順 (ドラッグ＆ドロップで並び替え可能)
             </p>
           </div>
-          
+
           <div className="flex items-center gap-[12px]">
             {isFlowExpanded && steps.length < 6 && (
               <button
@@ -202,7 +202,7 @@ export default function ComplianceHubView() {
                 ステップを追加
               </button>
             )}
-            
+
             {/* Collapse / Expand Arrow Icon */}
             <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center border border-[#dee1e6] dark:border-midnight-800 text-[#565d6d] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-midnight-900 transition-all ${isFlowExpanded ? 'rotate-180' : ''}`}>
               <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -234,11 +234,9 @@ export default function ComplianceHubView() {
                       onDragOver={(e) => handleDragOver(e, index)}
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[200px] md:w-[150px] md:max-w-none md:flex-shrink-0 ${
-                        draggedIndex === index ? 'opacity-40 scale-95' : ''
-                      } ${
-                        dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
-                      }`}
+                      className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[200px] md:w-[150px] md:max-w-none md:flex-shrink-0 ${draggedIndex === index ? 'opacity-40 scale-95' : ''
+                        } ${dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
+                        }`}
                     >
                       <StepCard
                         step={step}
@@ -288,7 +286,7 @@ export default function ComplianceHubView() {
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            <span>ガイドラインをダウンロード</span>
+            <span>一括ダウンロード</span>
           </a>
         </div>
 

@@ -246,7 +246,7 @@ export default function CreateToolForm() {
   );
   const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
   const [categories, setCategories] = useState<string[]>([]);
-  const [role, setRole] = useState('');
+  const [roles, setRoles] = useState<string[]>([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [loginIds, setLoginIds] = useState<string[]>(['']);
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
@@ -278,6 +278,8 @@ export default function CreateToolForm() {
   const guideFileInputRef = useRef<HTMLInputElement>(null);
   const referenceFileInputRef = useRef<HTMLInputElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const roleDropdownRef = useRef<HTMLDivElement>(null);
+  const [isRoleOpen, setIsRoleOpen] = useState(false);
 
   const handleTriggerUpload = () => fileInputRef.current?.click();
   const handleTriggerGuideUpload = () => guideFileInputRef.current?.click();
@@ -288,14 +290,17 @@ export default function CreateToolForm() {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
         setIsCategoryOpen(false);
       }
+      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target as Node)) {
+        setIsRoleOpen(false);
+      }
     }
-    if (isCategoryOpen) {
+    if (isCategoryOpen || isRoleOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isCategoryOpen]);
+  }, [isCategoryOpen, isRoleOpen]);
 
   const handleAddPrompt = () => {
     setPrompts([...prompts, { id: `p${Date.now()}`, name: '', content: '', isPublic: true, categories: [] }]);
@@ -314,6 +319,14 @@ export default function CreateToolForm() {
       setCategories(categories.filter((c) => c !== cat));
     } else {
       setCategories([...categories, cat]);
+    }
+  };
+
+  const handleToggleRole = (roleVal: string) => {
+    if (roles.includes(roleVal)) {
+      setRoles(roles.filter((r) => r !== roleVal));
+    } else {
+      setRoles([...roles, roleVal]);
     }
   };
 
@@ -422,7 +435,7 @@ export default function CreateToolForm() {
             {/* URL (takes roughly 50%) */}
             <div className="flex flex-col gap-[6px] flex-[2]">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                遷移先URL <span className="text-[#f25a5a]">*</span>
+                遷移先URL
               </label>
               <input
                 type="text"
@@ -489,16 +502,62 @@ export default function CreateToolForm() {
             </div>
 
             {/* Role (takes roughly 25%) */}
-            <div className="flex flex-col gap-[6px] flex-1">
+            <div ref={roleDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                ロール <span className="text-[#f25a5a]">*</span>
+                すべての役割 <span className="text-[#f25a5a]">*</span>
               </label>
-              <RoleSelect
-                value={role}
-                onChange={setRole}
-                options={ROLE_OPTIONS}
-                placeholder="ロールを選択..."
-              />
+
+              {/* Custom Multi-select Dropdown */}
+              <div className="relative">
+                <div
+                  className="w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
+                  onClick={() => setIsRoleOpen(!isRoleOpen)}
+                >
+                  <span className={roles.length > 0 ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
+                    {roles.length > 0 ? `${roles.length}件選択中` : 'ロールを選択...'}
+                  </span>
+                  <ChevronDownIcon />
+                </div>
+
+                {isRoleOpen && (
+                  <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col font-base">
+                    {ROLE_OPTIONS.map((opt) => (
+                      <div
+                        key={opt.value}
+                        onClick={() => handleToggleRole(opt.value)}
+                        className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${roles.includes(opt.value)
+                          ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
+                          : 'text-[#171a1f] dark:text-light'
+                          }`}
+                      >
+                        <span>{opt.label}</span>
+                        {roles.includes(opt.value) && (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Role Tags */}
+              {roles.length > 0 && (
+                <div className="flex flex-wrap gap-[8px] mt-[4px]">
+                  {roles.map((roleVal) => {
+                    const label = ROLE_OPTIONS.find(opt => opt.value === roleVal)?.label || roleVal;
+                    return (
+                      <span key={roleVal} className="inline-flex items-center gap-[6px] bg-[#f3f4f6] dark:bg-midnight-850 text-[#1e2128] dark:text-gray-300 text-[12px] font-semibold rounded-[11px] px-[12px] h-[26px]">
+                        {label}
+                        <button type="button" onClick={() => handleToggleRole(roleVal)} className="text-[#9095a1] hover:text-[#f25a5a]">
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -830,19 +889,19 @@ export default function CreateToolForm() {
                 {guideContent ? (
                   <ReactMarkdown
                     components={{
-                      h1: ({node, ...props}) => <h1 className="text-[20px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
-                      h2: ({node, ...props}) => <h2 className="text-[17px] font-bold mt-3 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
-                      h3: ({node, ...props}) => <h3 className="text-[15px] font-bold mt-3 mb-1" {...props} />,
-                      p:  ({node, ...props}) => <p className="my-[6px] leading-[22px]" {...props} />,
-                      ul: ({node, ...props}) => <ul className="list-disc pl-[20px] my-[6px] space-y-[2px]" {...props} />,
-                      ol: ({node, ...props}) => <ol className="list-decimal pl-[20px] my-[6px] space-y-[2px]" {...props} />,
-                      li: ({node, ...props}) => <li className="leading-[22px]" {...props} />,
-                      strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                      em: ({node, ...props}) => <em className="italic" {...props} />,
-                      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-[#5570f6] pl-[12px] italic text-[#565d6d] dark:text-gray-400 my-[8px]" {...props} />,
-                      code: ({node, ...props}) => <code className="bg-[#f0f0f0] dark:bg-midnight-800 rounded px-[4px] py-[1px] text-[13px] font-mono" {...props} />,
-                      pre: ({node, ...props}) => <pre className="bg-[#f0f0f0] dark:bg-midnight-800 rounded-[4px] p-[12px] overflow-x-auto text-[13px] font-mono my-[8px]" {...props} />,
-                      hr: ({node, ...props}) => <hr className="border-[#dee1e6] dark:border-midnight-800 my-[12px]" {...props} />,
+                      h1: ({ node, ...props }) => <h1 className="text-[20px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-[17px] font-bold mt-3 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-[15px] font-bold mt-3 mb-1" {...props} />,
+                      p: ({ node, ...props }) => <p className="my-[6px] leading-[22px]" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc pl-[20px] my-[6px] space-y-[2px]" {...props} />,
+                      ol: ({ node, ...props }) => <ol className="list-decimal pl-[20px] my-[6px] space-y-[2px]" {...props} />,
+                      li: ({ node, ...props }) => <li className="leading-[22px]" {...props} />,
+                      strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+                      em: ({ node, ...props }) => <em className="italic" {...props} />,
+                      blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#5570f6] pl-[12px] italic text-[#565d6d] dark:text-gray-400 my-[8px]" {...props} />,
+                      code: ({ node, ...props }) => <code className="bg-[#f0f0f0] dark:bg-midnight-800 rounded px-[4px] py-[1px] text-[13px] font-mono" {...props} />,
+                      pre: ({ node, ...props }) => <pre className="bg-[#f0f0f0] dark:bg-midnight-800 rounded-[4px] p-[12px] overflow-x-auto text-[13px] font-mono my-[8px]" {...props} />,
+                      hr: ({ node, ...props }) => <hr className="border-[#dee1e6] dark:border-midnight-800 my-[12px]" {...props} />,
                     }}
                   >
                     {guideContent}

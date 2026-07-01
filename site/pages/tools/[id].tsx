@@ -38,6 +38,11 @@ function ToolDetailPage() {
         status: 'active',
         role: 'sales', // 営業
         visibility: 'public',
+        loginIds: [
+          'sales-analyzer-user01@company.local',
+          'sales-analyzer-user02@company.local',
+          'sales-analyzer-admin@company.local'
+        ],
 
         guideContent: `# 商談データ分析アシスタント 活用ガイド
   

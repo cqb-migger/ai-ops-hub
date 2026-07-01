@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
 import { Tool } from '../../../dashboard/constants/tools';
 import { API_BASE } from '../../../../base/utils/api';
 
@@ -106,6 +107,8 @@ function ShieldAlertIcon() {
 export default function ToolDetailView({ tool }: ToolDetailViewProps) {
   const router = useRouter();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
+  const [isMarkdownPreview, setIsMarkdownPreview] = useState<boolean>(true);
 
   const fromPath = router.query.from as string;
   const backHref = fromPath || '/';
@@ -122,6 +125,15 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
     toast.success('プロンプトをコピーしました！');
     setTimeout(() => {
       setCopiedIndex(null);
+    }, 2000);
+  };
+
+  const handleCopyLoginId = (content: string, index: number) => {
+    navigator.clipboard.writeText(content);
+    setCopiedLoginIdIndex(index);
+    toast.success('ログインIDをコピーしました！');
+    setTimeout(() => {
+      setCopiedLoginIdIndex(null);
     }, 2000);
   };
 
@@ -144,7 +156,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
   return (
     <div className="flex flex-col gap-[28px] w-full">
       {/* Title box */}
-      <div className="flex items-start gap-[16px] pb-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
+      <div className="flex items-start gap-[16px] dark:border-midnight-800">
         {/* Avatar */}
         <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
           {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
@@ -171,20 +183,135 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
         </div>
       </div>
 
+      {/* Login Info & Launch Card */}
+      {((tool.loginIds && tool.loginIds.length > 0) || tool.url) && (
+        <div className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm flex flex-col gap-[20px] mt-[12px]">
+          <div className="flex items-center justify-between border-b dark:border-midnight-800 pb-[12px] flex-wrap gap-[12px]">
+            <div className="flex items-center gap-[8px]">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-[20px] h-[20px] text-[#5570f6]">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+              </svg>
+              <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+                接続・ログイン設定
+              </h3>
+            </div>
+            {tool.url && (
+              <a
+                href={tool.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-[#5570f6] hover:bg-[#405bd4] text-white text-[13px] font-bold rounded-[8px] transition-all shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" x2="21" y1="14" y2="3" />
+                </svg>
+                <span>ツールを開く</span>
+              </a>
+            )}
+          </div>
 
+          {tool.loginIds && tool.loginIds.length > 0 && (
+            <div className="flex flex-col gap-[12px]">
+              <span className="text-[13px] font-semibold text-[#565d6d] dark:text-gray-400">
+                ログインID
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[12px]">
+                {tool.loginIds.map((loginId, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-[12px] bg-[#f8fafc] dark:bg-midnight-900 border border-[#e2e8f0] dark:border-midnight-800 rounded-[8px] hover:bg-[#f1f5f9] dark:hover:bg-midnight-850 transition-colors"
+                  >
+                    <span className="text-[14px] font-mono text-[#0f172a] dark:text-light font-medium truncate pr-[8px]">
+                      {loginId}
+                    </span>
+                    <button
+                      onClick={() => handleCopyLoginId(loginId, index)}
+                      className="text-[#64748b] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-[#7c91eb] transition-colors flex-shrink-0"
+                      title="コピー"
+                    >
+                      {copiedLoginIdIndex === index ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-[16px] h-[16px] text-green-500">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-[16px] h-[16px]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0A2.25 2.25 0 0 1 13.5 5.25h-3a2.25 2.25 0 0 1-2.166-1.612m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.546.546.908 1.287.908 2.112v12.75a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25V5.375c0-.825.362-1.566.908-2.112" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Usage Guide */}
       {tool.guideContent && (
         <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm">
-          <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
-            <BookOpenIcon />
-            <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
-              活用ガイド
-            </h3>
+          <div className="flex items-center justify-between pb-[12px] border-b dark:border-midnight-800">
+            <div className="flex items-center gap-[8px]">
+              <BookOpenIcon />
+              <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+                活用ガイド
+              </h3>
+            </div>
+
+            {/* View Mode Switcher */}
+            <div className="flex items-center bg-[#f3f4f6] dark:bg-midnight-900 rounded-[8px] p-[2px] select-none">
+              <button
+                type="button"
+                onClick={() => setIsMarkdownPreview(true)}
+                className={`px-[12px] py-[4px] text-[12px] font-semibold rounded-[6px] transition-all duration-200 ${isMarkdownPreview
+                  ? 'bg-white dark:bg-midnight-805 text-[#5570f6] dark:text-[#7c91eb] shadow-sm'
+                  : 'text-[#565d6d] dark:text-gray-400 hover:text-[#171a1f] dark:hover:text-light'
+                  }`}
+              >
+                Markdown
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMarkdownPreview(false)}
+                className={`px-[12px] py-[4px] text-[12px] font-semibold rounded-[6px] transition-all duration-200 ${!isMarkdownPreview
+                  ? 'bg-white dark:bg-midnight-805 text-[#5570f6] dark:text-[#7c91eb] shadow-sm'
+                  : 'text-[#565d6d] dark:text-gray-400 hover:text-[#171a1f] dark:hover:text-light'
+                  }`}
+              >
+                原文 (Raw)
+              </button>
+            </div>
           </div>
-          <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base whitespace-pre-wrap">
-            {tool.guideContent}
-          </div>
+
+          {isMarkdownPreview ? (
+            <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base">
+              <ReactMarkdown
+                components={{
+                  h1: ({ node, ...props }) => <h1 className="text-[22px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                  h2: ({ node, ...props }) => <h2 className="text-[18px] font-bold mt-3 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                  h3: ({ node, ...props }) => <h3 className="text-[16px] font-bold mt-3 mb-1" {...props} />,
+                  p: ({ node, ...props }) => <p className="my-[8px] leading-[24px]" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc pl-[20px] my-[8px] space-y-[4px]" {...props} />,
+                  ol: ({ node, ...props }) => <ol className="list-decimal pl-[20px] my-[8px] space-y-[4px]" {...props} />,
+                  li: ({ node, ...props }) => <li className="leading-[24px]" {...props} />,
+                  strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+                  em: ({ node, ...props }) => <em className="italic" {...props} />,
+                  blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#5570f6] pl-[12px] italic text-[#565d6d] dark:text-gray-400 my-[8px]" {...props} />,
+                  code: ({ node, ...props }) => <code className="bg-[#f0f0f0] dark:bg-midnight-800 rounded px-[4px] py-[1px] text-[13px] font-mono" {...props} />,
+                  pre: ({ node, ...props }) => <pre className="bg-[#f0f0f0] dark:bg-midnight-800 rounded-[4px] p-[12px] overflow-x-auto text-[13px] font-mono my-[8px]" {...props} />,
+                  hr: ({ node, ...props }) => <hr className="border-[#dee1e6] dark:border-midnight-800 my-[12px]" {...props} />,
+                }}
+              >
+                {tool.guideContent}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            <div className="text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-mono whitespace-pre-wrap bg-[#f8fafc] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] p-[16px]">
+              {tool.guideContent}
+            </div>
+          )}
           {tool.guideMaterials && tool.guideMaterials.length > 0 && (
             <div className="flex flex-col gap-[8px] mt-[12px] pt-[16px] border-t border-[#dee1e6] dark:border-midnight-800">
               <span className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400 uppercase tracking-[0.5px]">
@@ -207,7 +334,6 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
           )}
         </div>
       )}
-
 
 
       {/* Recommended Prompts */}
@@ -268,27 +394,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
           })}
         </div>
       </div>
-
-
-      {/* Launch Button at the bottom */}
-      {tool.url && (
-        <div className="flex justify-center mt-[12px]">
-          <a
-            href={tool.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-[8px] h-[48px] px-[32px] bg-[#5570f6] hover:bg-[#405bd4] text-white text-[16px] font-bold rounded-[8px] transition-all shadow-md w-full sm:w-auto"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" x2="21" y1="14" y2="3" />
-            </svg>
-            <span>ツールを開く</span>
-          </a>
-        </div>
-      )}
-
     </div>
   );
 }
+

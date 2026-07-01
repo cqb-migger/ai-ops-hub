@@ -94,18 +94,16 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
             return (
               <label
                 key={opt.value}
-                className={`flex items-center gap-[12px] px-[16px] py-[14px] rounded-[10px] border cursor-pointer transition-all select-none ${
-                  checked
-                    ? 'bg-[#eef0fd] dark:bg-[#2a3060] border-[#5570f6] dark:border-[#5570f6]/60'
-                    : 'bg-white dark:bg-midnight-900 border-[#dee1e6] dark:border-midnight-800 hover:border-[#9095a0] dark:hover:border-midnight-700'
-                }`}
+                className={`flex items-center gap-[12px] px-[16px] py-[14px] rounded-[10px] border cursor-pointer transition-all select-none ${checked
+                  ? 'bg-[#eef0fd] dark:bg-[#2a3060] border-[#5570f6] dark:border-[#5570f6]/60'
+                  : 'bg-white dark:bg-midnight-900 border-[#dee1e6] dark:border-midnight-800 hover:border-[#9095a0] dark:hover:border-midnight-700'
+                  }`}
               >
                 {/* Custom radio */}
-                <span className={`flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${
-                  checked
-                    ? 'border-[#5570f6] bg-[#5570f6]'
-                    : 'border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900'
-                }`}>
+                <span className={`flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${checked
+                  ? 'border-[#5570f6] bg-[#5570f6]'
+                  : 'border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900'
+                  }`}>
                   {checked && <span className="w-[7px] h-[7px] rounded-full bg-white" />}
                 </span>
                 <input
@@ -293,10 +291,9 @@ export default function UserManagementTable() {
                         type="button"
                         onClick={() => setEditingUser(user)}
                         title="役割を変更"
-                        className="inline-flex items-center gap-[6px] px-[10px] h-[30px] rounded-[6px] border border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900 text-[12px] font-medium text-[#565d6d] dark:text-gray-400 hover:border-[#5570f6] hover:text-[#5570f6] dark:hover:border-[#5570f6]/60 dark:hover:text-[#7c91eb] transition-colors"
+                        className="inline-flex items-center justify-center w-[28px] h-[28px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors"
                       >
                         <EditIcon />
-                        変更
                       </button>
                     </td>
                   </tr>

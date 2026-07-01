@@ -42,7 +42,8 @@ export function useTools(options: UseToolsOptions = {}) {
           url: 'https://chat.openai.com',
           role: 'marketing',
           status: '稼働中',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg'
+          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
+          loginIds: ['chatgpt-user01@company.local', 'chatgpt-user02@company.local']
         },
         {
           id: '2',
@@ -52,6 +53,7 @@ export function useTools(options: UseToolsOptions = {}) {
           url: 'https://example.com/policy',
           role: 'backoffice',
           status: '稼働中',
+          loginIds: ['policy-checker-user01@company.local']
         },
         {
           id: '3',
@@ -61,6 +63,7 @@ export function useTools(options: UseToolsOptions = {}) {
           url: 'https://example.com/data',
           role: 'accounting',
           status: 'メンテナンス',
+          loginIds: ['data-insight-user01@company.local', 'data-insight-user02@company.local']
         },
         {
           id: '4',
@@ -70,6 +73,7 @@ export function useTools(options: UseToolsOptions = {}) {
           url: 'https://midjourney.com',
           role: 'marketing',
           status: '稼働中',
+          loginIds: ['midjourney-user01@company.local']
         },
         {
           id: '5',
@@ -79,6 +83,7 @@ export function useTools(options: UseToolsOptions = {}) {
           url: 'https://example.com/security',
           role: 'backoffice',
           status: '停止中',
+          loginIds: ['security-scanner-user01@company.local']
         }
       ];
       
