@@ -149,7 +149,7 @@ export default function CreateToolForm() {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   
   // Prompt settings
-  const [promptVisibility, setPromptVisibility] = useState<'public' | 'private'>('public');
+
   const [prompts, setPrompts] = useState<PromptItem[]>([
     {
       id: 'p1',
@@ -468,26 +468,6 @@ export default function CreateToolForm() {
             <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
               推奨プロンプト設定
             </h3>
-          </div>
-          <div className="flex items-center gap-[20px]">
-            <label className="flex items-center gap-[6px] cursor-pointer text-[13px]">
-              <input
-                type="radio"
-                checked={promptVisibility === 'public'}
-                onChange={() => setPromptVisibility('public')}
-                className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer"
-              />
-              <span className={promptVisibility === 'public' ? 'text-[#171a1f] font-medium' : 'text-[#565d6d]'}>公開</span>
-            </label>
-            <label className="flex items-center gap-[6px] cursor-pointer text-[13px]">
-              <input
-                type="radio"
-                checked={promptVisibility === 'private'}
-                onChange={() => setPromptVisibility('private')}
-                className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer"
-              />
-              <span className={promptVisibility === 'private' ? 'text-[#171a1f] font-medium' : 'text-[#565d6d]'}>非公開</span>
-            </label>
           </div>
         </div>
 

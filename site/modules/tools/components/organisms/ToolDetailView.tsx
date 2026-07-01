@@ -182,11 +182,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
                 {tool.visibility === 'public' ? '公開' : '非公開'}
               </span>
             )}
-            {tool.promptVisibility && (
-              <span className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
-                プロンプト: {tool.promptVisibility === 'public' ? '公開' : '非公開'}
-              </span>
-            )}
+
           </div>
           <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
             {tool.description}
@@ -194,56 +190,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
         </div>
       </div>
 
-      {/* Task Prerequisites */}
-      <div className="flex flex-col gap-[16px]">
-        <div className="flex items-center gap-[8px]">
-          <FileTextIcon />
-          <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
-            タスクの前提条件
-          </h3>
-        </div>
 
-        {/* Panels Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
-          {/* Input Panel */}
-          <div className="bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[20px] flex flex-col gap-[16px] shadow-sm">
-            <div className="flex items-center gap-[8px]">
-              <ChevronRightIcon />
-              <span className="text-[14px] font-semibold leading-[20px] text-[#565d6d] dark:text-gray-400 tracking-[0.7px] uppercase font-base">
-                提供するデータ (Input)
-              </span>
-            </div>
-            <div className="flex flex-col gap-[10px]">
-              {details.inputs.map((input, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] h-[46px] px-[12px] flex items-center gap-[10px] shadow-sm"
-                >
-                  <div className="flex-shrink-0 bg-[#5570f6] w-[6px] h-[6px] rounded-full" />
-                  <span className="text-[14px] text-[#171a1f] dark:text-light font-base truncate">
-                    {input}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Output Panel */}
-          <div className="bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[20px] flex flex-col gap-[16px] shadow-sm">
-            <div className="flex items-center gap-[8px]">
-              <ChevronRightIcon />
-              <span className="text-[14px] font-semibold leading-[20px] text-[#565d6d] dark:text-gray-400 tracking-[0.7px] uppercase font-base">
-                期待する結果 (Output)
-              </span>
-            </div>
-            <div className="bg-white dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] min-h-[158px] p-[16px] shadow-sm flex items-start">
-              <p className="text-[14px] leading-[23px] text-[#171a1f] dark:text-light font-base">
-                {details.outputDescription}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Usage Guide */}
       {tool.guideContent && (
@@ -280,22 +227,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
         </div>
       )}
 
-      {/* Admin Memo */}
-      {tool.adminMemo && (
-        <div className="bg-[#fffbeb] dark:bg-amber-950/20 border border-[#fef3c7] dark:border-amber-900/50 rounded-[12px] p-[16px] mt-[12px] flex gap-[12px] items-start">
-          <div className="flex-shrink-0 mt-[2px]">
-            <ShieldAlertIcon />
-          </div>
-          <div className="flex flex-col gap-[4px] min-w-0">
-            <span className="text-[13px] font-semibold text-[#b45309] dark:text-amber-400 font-base uppercase tracking-[0.5px]">
-              管理者用メモ (非公開)
-            </span>
-            <p className="text-[13px] leading-[20px] text-[#78350f] dark:text-amber-300/90 font-base whitespace-pre-wrap">
-              {tool.adminMemo}
-            </p>
-          </div>
-        </div>
-      )}
+
 
       {/* Recommended Prompts */}
       <div className="flex flex-col gap-[16px] mt-[12px]">
@@ -370,24 +302,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
         </div>
       </div>
 
-      {/* Bottom CTA panel */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-[20px] pt-[24px] border-t border-[#dee1e6] dark:border-midnight-800 mt-[12px]">
-        <div className="flex flex-col gap-[6px]">
-          <h4 className="text-[16px] font-semibold leading-[24px] text-[#171a1f] dark:text-light font-base">
-            準備は完了しましたか？
-          </h4>
-          <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
-            プロンプトをコピーしたら、ツールを起動してタスクを開始しましょう。
-          </p>
-        </div>
-        <button
-          onClick={handleLaunchTool}
-          className="flex items-center justify-center gap-[8px] w-[219px] h-[48px] bg-[#5570f6] text-white hover:bg-primary-600 rounded-[6px] shadow-md font-base font-medium text-[14px] transition-all duration-200"
-        >
-          <span>ツールを起動</span>
-          <ExternalLinkIcon />
-        </button>
-      </div>
+
     </div>
   );
 }

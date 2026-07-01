@@ -24,7 +24,7 @@ export interface Tool {
   details?: ToolDetails;
   role?: string;
   visibility?: 'public' | 'draft';
-  promptVisibility?: 'public' | 'private';
+
   guideContent?: string;
   guideMaterials?: string[];
   adminMemo?: string;

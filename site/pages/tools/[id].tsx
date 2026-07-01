@@ -31,14 +31,14 @@ function ToolDetailPage() {
       const mockTool: Tool = {
         id: String(id || '2'),
         name: '商談データ分析アシスタント',
-        category: ['creative', 'compliance', 'data'],
+        category: ['クリエイティブハブ', 'コンプライアンスハブ', 'データハブ'],
         description: '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。',
         url: 'https://internal.app/tools/sales-analyzer',
         icon: '📊',
         status: 'active',
         role: 'sales', // 営業
         visibility: 'public',
-        promptVisibility: 'public',
+
         guideContent: `# 商談データ分析アシスタント 活用ガイド
   
 このツールは、商談中の会話メモや議事録、CRMに登録されている履歴データから、**「顧客の潜在課題」「次に取るべき具体的なアクション」「見込まれる受注確度 (A/B/C/D)」**を自動的に分析し、レポートを作成します。
