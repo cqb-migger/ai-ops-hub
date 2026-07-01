@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
 import { API_BASE } from '../../../../base/utils/api';
 import { useTools } from '../../../../base/hooks/useTools';
+import { ROLE_OPTIONS } from '../../constants/roles';
 
 // SVG Icons
 function SettingsIcon() {
@@ -126,7 +128,109 @@ interface PromptItem {
   id: string;
   name: string;
   content: string;
+  isPublic?: boolean;
+  categories?: string[];
 }
+
+interface RoleSelectProps {
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+}
+
+function RoleSelect({ value, onChange, options, placeholder = '選択...' }: RoleSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm('');
+    }
+  }, [isOpen]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div ref={containerRef} className="relative w-full z-20">
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
+      >
+        <span className={selectedOption ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <ChevronDownIcon />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-50 py-[8px] flex flex-col">
+          {/* Search Input */}
+          <div className="px-[12px] pb-[8px] mb-[4px] border-b border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900">
+            <input
+              type="text"
+              placeholder="検索..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full h-[32px] px-[8px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-850 rounded-[4px] text-[13px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+            />
+          </div>
+
+          {/* Options List */}
+          <div className="max-h-[200px] overflow-y-auto flex flex-col">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <div
+                  key={opt.value}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${opt.value === value
+                    ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
+                    : 'text-[#171a1f] dark:text-light'
+                    }`}
+                >
+                  <span>{opt.label}</span>
+                  {opt.value === value && (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="px-[12px] py-[8px] text-[13px] text-gray-400 dark:text-gray-500 text-center">
+                一致する結果はありません
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 
 export default function CreateToolForm() {
   const router = useRouter();
@@ -142,12 +246,12 @@ export default function CreateToolForm() {
   );
   const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
   const [categories, setCategories] = useState<string[]>([]);
+  const [role, setRole] = useState('');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [loginIds, setLoginIds] = useState<string[]>([]);
-  const [newLoginId, setNewLoginId] = useState('');
+  const [loginIds, setLoginIds] = useState<string[]>(['']);
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
-  
+
   // Prompt settings
 
   const [prompts, setPrompts] = useState<PromptItem[]>([
@@ -155,12 +259,15 @@ export default function CreateToolForm() {
       id: 'p1',
       name: '',
       content: '',
+      isPublic: true,
+      categories: [],
     }
   ]);
 
   // Guide settings
   const [guideContent, setGuideContent] = useState('');
-  
+  const [isGuidePreview, setIsGuidePreview] = useState(false);
+
   // Supplementary states
   const [adminMemo, setAdminMemo] = useState(
     '2023/11: プロンプトV2に更新。営業部からのフィードバックを反映し、確度判定を追加。'
@@ -170,16 +277,31 @@ export default function CreateToolForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const guideFileInputRef = useRef<HTMLInputElement>(null);
   const referenceFileInputRef = useRef<HTMLInputElement>(null);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const handleTriggerUpload = () => fileInputRef.current?.click();
   const handleTriggerGuideUpload = () => guideFileInputRef.current?.click();
   const handleTriggerReferenceUpload = () => referenceFileInputRef.current?.click();
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+    }
+    if (isCategoryOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCategoryOpen]);
+
   const handleAddPrompt = () => {
-    setPrompts([...prompts, { id: `p${Date.now()}`, name: '', content: '' }]);
+    setPrompts([...prompts, { id: `p${Date.now()}`, name: '', content: '', isPublic: true, categories: [] }]);
   };
 
-  const handleUpdatePrompt = (id: string, field: keyof PromptItem, value: string) => {
+  const handleUpdatePrompt = (id: string, field: keyof PromptItem, value: any) => {
     setPrompts(prompts.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
@@ -196,14 +318,17 @@ export default function CreateToolForm() {
   };
 
   const handleAddLoginId = () => {
-    if (newLoginId.trim() && !loginIds.includes(newLoginId.trim())) {
-      setLoginIds([...loginIds, newLoginId.trim()]);
-      setNewLoginId('');
-    }
+    setLoginIds([...loginIds, '']);
   };
 
-  const handleRemoveLoginId = (id: string) => {
-    setLoginIds(loginIds.filter((login) => login !== id));
+  const handleUpdateLoginId = (index: number, val: string) => {
+    const updated = [...loginIds];
+    updated[index] = val;
+    setLoginIds(updated);
+  };
+
+  const handleRemoveLoginId = (index: number) => {
+    setLoginIds(loginIds.filter((_, idx) => idx !== index));
   };
 
   const handleSave = () => {
@@ -217,7 +342,7 @@ export default function CreateToolForm() {
 
   return (
     <div className="flex flex-col gap-[24px] w-full text-[#171a1f] dark:text-light font-base">
-      
+
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
         <h2 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
@@ -265,7 +390,7 @@ export default function CreateToolForm() {
 
         {/* Form Fields */}
         <div className="flex flex-col gap-[20px]">
-          
+
           {/* Tool Name */}
           <div className="flex flex-col gap-[6px]">
             <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
@@ -308,33 +433,41 @@ export default function CreateToolForm() {
             </div>
 
             {/* Category (takes roughly 33%) */}
-            <div className="flex flex-col gap-[6px] flex-1 relative">
+            <div ref={categoryDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 カテゴリ <span className="text-[#f25a5a]">*</span>
               </label>
-              
+
               {/* Custom Multi-select Dropdown */}
               <div className="relative">
-                <div 
-                  className="w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer"
+                <div
+                  className="w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                 >
-                  <span className="text-[#565d6d] dark:text-gray-400">カテゴリを選択...</span>
+                  <span className={categories.length > 0 ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
+                    {categories.length > 0 ? `${categories.length}件選択中` : 'カテゴリを選択...'}
+                  </span>
                   <ChevronDownIcon />
                 </div>
-                
+
                 {isCategoryOpen && (
                   <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col">
                     {['クリエイティブハブ', 'コンプライアンスハブ', 'データハブ'].map((cat) => (
-                      <label key={cat} className="flex items-center gap-[8px] px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={categories.includes(cat)}
-                          onChange={() => handleToggleCategory(cat)}
-                          className="w-[16px] h-[16px] accent-[#5570f6] cursor-pointer"
-                        />
-                        <span className="text-[14px] text-[#171a1f] dark:text-light">{cat}</span>
-                      </label>
+                      <div
+                        key={cat}
+                        onClick={() => handleToggleCategory(cat)}
+                        className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${categories.includes(cat)
+                          ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
+                          : 'text-[#171a1f] dark:text-light'
+                          }`}
+                      >
+                        <span>{cat}</span>
+                        {categories.includes(cat) && (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -354,44 +487,63 @@ export default function CreateToolForm() {
                 </div>
               )}
             </div>
+
+            {/* Role (takes roughly 25%) */}
+            <div className="flex flex-col gap-[6px] flex-1">
+              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                ロール <span className="text-[#f25a5a]">*</span>
+              </label>
+              <RoleSelect
+                value={role}
+                onChange={setRole}
+                options={ROLE_OPTIONS}
+                placeholder="ロールを選択..."
+              />
+            </div>
           </div>
 
           {/* Login ID Row */}
-          <div className="flex flex-col gap-[6px] mt-[4px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              Login ID
-            </label>
-            <div className="flex items-center gap-[12px]">
-              <input
-                type="text"
-                value={newLoginId}
-                onChange={(e) => setNewLoginId(e.target.value)}
-                placeholder="IDを入力して追加..."
-                className="w-full max-w-[400px] h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLoginId())}
-              />
+          <div className="flex flex-col gap-[8px] mt-[4px]">
+            <div className="flex items-center justify-between">
+              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                Login ID
+              </label>
               <button
                 type="button"
                 onClick={handleAddLoginId}
-                className="h-[40px] px-[20px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[14px] font-semibold transition-colors"
+                className="h-[28px] px-[12px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[12px] font-semibold flex items-center gap-[4px] transition-colors"
               >
-                追加
+                <PlusIcon />
+                <span>追加</span>
               </button>
             </div>
-            
-            {/* Added Login IDs */}
-            {loginIds.length > 0 && (
-              <div className="flex flex-wrap gap-[8px] mt-[8px]">
-                {loginIds.map((id) => (
-                  <span key={id} className="inline-flex items-center gap-[6px] bg-[#e0e7ff] dark:bg-indigo-950/40 text-[#4f46e5] dark:text-indigo-300 text-[13px] font-semibold rounded-[6px] px-[12px] py-[6px]">
-                    {id}
-                    <button type="button" onClick={() => handleRemoveLoginId(id)} className="text-[#4f46e5] dark:text-indigo-300 hover:text-[#f25a5a]">
-                      ×
+
+            <div className="flex flex-col gap-[8px]">
+              {loginIds.map((id, index) => (
+                <div key={index} className="flex items-center gap-[12px]">
+                  <input
+                    type="text"
+                    value={id}
+                    onChange={(e) => handleUpdateLoginId(index, e.target.value)}
+                    placeholder="Login IDを入力..."
+                    className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
+                  />
+                  {loginIds.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLoginId(index)}
+                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
+                      title="削除"
+                    >
+                      <TrashIcon />
                     </button>
-                  </span>
-                ))}
-              </div>
-            )}
+                  )}
+                </div>
+              ))}
+              {loginIds.length === 0 && (
+                <p className="text-[13px] text-gray-400 dark:text-gray-500 italic">Login IDが設定されていません。「追加」ボタンをクリックして追加してください。</p>
+              )}
+            </div>
           </div>
 
           {/* Icon and Visibility Settings Row */}
@@ -456,150 +608,6 @@ export default function CreateToolForm() {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* Box 2: プロンプト設定 (Prompt Settings) */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
-        {/* Section Title */}
-        <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
-          <div className="flex items-center gap-[8px]">
-            <MessageSquareIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-              推奨プロンプト設定
-            </h3>
-          </div>
-        </div>
-
-        {/* List of Prompts */}
-        <div className="flex flex-col gap-[16px] font-base">
-          <div className="flex flex-col gap-[12px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[16px] bg-[#fafafb] dark:bg-midnight-900/50">
-            {prompts.map((prompt) => (
-              <div key={prompt.id} className="flex flex-col gap-[12px]">
-                <div className="flex items-start gap-[12px]">
-                  <div className="mt-[12px] text-[#9095a0] dark:text-gray-500">
-                    <GripIcon />
-                  </div>
-                  <div className="flex flex-col gap-[12px] flex-1">
-                    <div className="flex items-center gap-[12px]">
-                      <input
-                        type="text"
-                        value={prompt.name}
-                        onChange={(e) => handleUpdatePrompt(prompt.id, 'name', e.target.value)}
-                        placeholder="プロンプト名を入力..."
-                        className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] outline-none focus:border-[#5570f6]"
-                      />
-                      {prompts.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeletePrompt(prompt.id)}
-                          className="flex-shrink-0 w-[40px] h-[40px] flex items-center justify-center rounded-[4px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors"
-                          title="プロンプトを削除"
-                        >
-                          <TrashIcon />
-                        </button>
-                      )}
-                    </div>
-                    <textarea
-                      value={prompt.content}
-                      onChange={(e) => handleUpdatePrompt(prompt.id, 'content', e.target.value)}
-                      placeholder="プロンプト本文を入力..."
-                      rows={3}
-                      className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <span className="text-[11px] text-[#9095a1] dark:text-gray-500">
-                    文字数: {prompt.content.length} / 2000 (推奨)
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-end mt-[4px]">
-            <button
-              type="button"
-              onClick={handleAddPrompt}
-              className="flex items-center gap-[6px] h-[36px] px-[16px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[14px] font-semibold transition-colors"
-            >
-              <PlusIcon />
-              <span>プロンプト追加</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Box 3: 活用ガイド設定 (Usage Guide Settings) */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
-        {/* Section Title */}
-        <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
-          <div className="flex items-center gap-[8px]">
-            <BookIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-              活用ガイド設定
-            </h3>
-          </div>
-          <button
-            type="button"
-            className="h-[26px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 hover:bg-[#fafafb] dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light rounded-full text-[12px] font-semibold flex items-center justify-center select-none transition-colors"
-          >
-            Markdown プレビュー
-          </button>
-        </div>
-
-        {/* Guide Content */}
-        <div className="flex flex-col gap-[16px] font-base">
-          <div className="flex flex-col gap-[12px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[16px] bg-[#fafafb] dark:bg-midnight-900/50">
-            <div className="flex items-start gap-[12px]">
-              <div className="mt-[12px] cursor-grab">
-                <GripIcon />
-              </div>
-              <textarea
-                value={guideContent}
-                onChange={(e) => setGuideContent(e.target.value)}
-                placeholder="ガイド内容を入力..."
-                rows={4}
-                className="flex-1 p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
-              />
-            </div>
-            <div className="flex justify-end">
-              <span className="text-[11px] text-[#9095a1] dark:text-gray-500">
-                文字数: {guideContent.length} / 2000 (推奨)
-              </span>
-            </div>
-          </div>
-
-          {/* Guide Materials (ガイド資料) */}
-          <div className="flex flex-col gap-[6px] mt-[8px]">
-            <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              ガイド資料
-            </span>
-            <div
-              className="flex flex-col items-center justify-center w-full py-[32px] px-[20px] mt-[4px] border-2 border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[8px] bg-[#fafafb] hover:bg-[#f3f4f6] dark:bg-midnight-900 dark:hover:bg-midnight-850 cursor-pointer transition-colors group"
-              onClick={handleTriggerGuideUpload}
-            >
-              <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 mb-[12px] group-hover:scale-105 transition-transform shadow-sm">
-                <DocumentUploadIcon />
-              </div>
-              <div className="flex flex-col items-center gap-[4px] text-center">
-                <p className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                  クリックしてアップロード<span className="font-normal text-[#565d6d] dark:text-gray-400">、またはファイルをドラッグ＆ドロップ</span>
-                </p>
-                <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
-                  JPG, PNG, PDF形式 (最大 10MB)
-                </p>
-              </div>
-              <input
-                type="file"
-                ref={guideFileInputRef}
-                accept=".jpg,.png,.pdf"
-                className="hidden"
-              />
-            </div>
-          </div>
-
           {/* Reference Materials (リファレンス) */}
           <div className="flex flex-col gap-[6px] mt-[16px]">
             <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
@@ -623,6 +631,266 @@ export default function CreateToolForm() {
               <input
                 type="file"
                 ref={referenceFileInputRef}
+                className="hidden"
+              />
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Box 2: プロンプト設定 (Prompt Settings) */}
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+        {/* Section Title */}
+        <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
+          <div className="flex items-center gap-[8px]">
+            <MessageSquareIcon />
+            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+              推奨プロンプト設定
+            </h3>
+          </div>
+        </div>
+
+        {/* List of Prompts */}
+        <div className="flex flex-col gap-[20px] font-base">
+          {prompts.map((prompt, index) => (
+            <div
+              key={prompt.id}
+              className="flex flex-col gap-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 shadow-sm"
+            >
+              {/* Card Header Row */}
+              <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800/80">
+                <span className="text-[14px] font-bold text-[#5570f6] dark:text-[#7c91eb]">
+                  プロンプト設定 #{index + 1}
+                </span>
+                {prompts.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePrompt(prompt.id)}
+                    className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-950 hover:bg-red-50 dark:hover:bg-red-950/20 text-[#f25a5a] transition-colors shadow-sm"
+                    title="プロンプトを削除"
+                  >
+                    <TrashIcon />
+                  </button>
+                )}
+              </div>
+
+              {/* Form Fields */}
+              <div className="flex flex-col gap-[12px]">
+                {/* Prompt Name */}
+                <div className="flex flex-col gap-[6px]">
+                  <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
+                    プロンプト名 <span className="text-[#f25a5a]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={prompt.name}
+                    onChange={(e) => handleUpdatePrompt(prompt.id, 'name', e.target.value)}
+                    placeholder="プロンプト名を入力..."
+                    className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] outline-none focus:border-[#5570f6]"
+                  />
+                </div>
+
+                {/* Prompt Content */}
+                <div className="flex flex-col gap-[6px]">
+                  <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
+                    プロンプト本文 <span className="text-[#f25a5a]">*</span>
+                  </label>
+                  <textarea
+                    value={prompt.content}
+                    onChange={(e) => handleUpdatePrompt(prompt.id, 'content', e.target.value)}
+                    placeholder="プロンプト本文を入力..."
+                    rows={3}
+                    className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
+                  />
+                </div>
+
+                {/* Prompt Options Row: Visibility & Categories */}
+                <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px] mt-[4px]">
+                  {/* Visibility Radios */}
+                  <div className="flex flex-col gap-[6px] flex-1">
+                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
+                      公開設定 <span className="text-[#f25a5a]">*</span>
+                    </label>
+                    <div className="flex items-center gap-[16px] h-[40px]">
+                      <label className="flex items-center gap-[8px] cursor-pointer text-[13px]">
+                        <input
+                          type="radio"
+                          name={`prompt-visibility-${prompt.id}`}
+                          checked={prompt.isPublic !== false}
+                          onChange={() => handleUpdatePrompt(prompt.id, 'isPublic', true)}
+                          className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer"
+                        />
+                        <span className={prompt.isPublic !== false ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>公開</span>
+                      </label>
+                      <label className="flex items-center gap-[8px] cursor-pointer text-[13px]">
+                        <input
+                          type="radio"
+                          name={`prompt-visibility-${prompt.id}`}
+                          checked={prompt.isPublic === false}
+                          onChange={() => handleUpdatePrompt(prompt.id, 'isPublic', false)}
+                          className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer"
+                        />
+                        <span className={prompt.isPublic === false ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>非公開</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Categories Checkboxes */}
+                  <div className="flex flex-col gap-[6px] flex-[2]">
+                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
+                      カテゴリ
+                    </label>
+                    <div className="flex flex-wrap items-center gap-[16px] min-h-[40px]">
+                      {categories.length === 0 ? (
+                        <span className="text-[12px] text-gray-400 dark:text-gray-500">
+                          基本情報でカテゴリを選択してください
+                        </span>
+                      ) : (
+                        categories.map((cat) => {
+                          const isChecked = (prompt.categories || []).includes(cat);
+                          return (
+                            <label key={cat} className="flex items-center gap-[8px] cursor-pointer text-[13px]">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  const currentSelected = prompt.categories || [];
+                                  const nextSelected = isChecked
+                                    ? currentSelected.filter((c) => c !== cat)
+                                    : [...currentSelected, cat];
+                                  handleUpdatePrompt(prompt.id, 'categories', nextSelected);
+                                }}
+                                className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
+                              />
+                              <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
+                                {cat}
+                              </span>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Character Count Row */}
+                <div className="flex justify-end mt-[4px]">
+                  <span className="text-[11px] text-[#9095a1] dark:text-gray-500">
+                    文字数: {prompt.content.length} / 2000 (推奨)
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end mt-[4px]">
+          <button
+            type="button"
+            onClick={handleAddPrompt}
+            className="flex items-center gap-[6px] h-[36px] px-[16px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[14px] font-semibold transition-colors"
+          >
+            <PlusIcon />
+            <span>プロンプト追加</span>
+          </button>
+        </div>
+      </section>
+
+      {/* Box 3: 活用ガイド設定 (Usage Guide Settings) */}
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+        {/* Section Title */}
+        <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
+          <div className="flex items-center gap-[8px]">
+            <BookIcon />
+            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+              活用ガイド設定
+            </h3>
+          </div>
+        </div>
+
+        {/* Guide Content & Upload Materials */}
+        <div className="flex flex-col gap-[20px] font-base">
+          {/* Guide Content */}
+          <div className="flex flex-col gap-[6px]">
+            <div className="flex items-center justify-between">
+              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                ガイド内容
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsGuidePreview(!isGuidePreview)}
+                className="h-[26px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 hover:bg-[#fafafb] dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light rounded-full text-[12px] font-semibold flex items-center justify-center select-none transition-colors"
+              >
+                {isGuidePreview ? '編集に戻る' : 'Markdown プレビュー'}
+              </button>
+            </div>
+            {isGuidePreview ? (
+              <div className="w-full min-h-[106px] p-[12px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] overflow-y-auto text-[#171a1f] dark:text-light">
+                {guideContent ? (
+                  <ReactMarkdown
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-[20px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-[17px] font-bold mt-3 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-[15px] font-bold mt-3 mb-1" {...props} />,
+                      p:  ({node, ...props}) => <p className="my-[6px] leading-[22px]" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc pl-[20px] my-[6px] space-y-[2px]" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal pl-[20px] my-[6px] space-y-[2px]" {...props} />,
+                      li: ({node, ...props}) => <li className="leading-[22px]" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                      em: ({node, ...props}) => <em className="italic" {...props} />,
+                      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-[#5570f6] pl-[12px] italic text-[#565d6d] dark:text-gray-400 my-[8px]" {...props} />,
+                      code: ({node, ...props}) => <code className="bg-[#f0f0f0] dark:bg-midnight-800 rounded px-[4px] py-[1px] text-[13px] font-mono" {...props} />,
+                      pre: ({node, ...props}) => <pre className="bg-[#f0f0f0] dark:bg-midnight-800 rounded-[4px] p-[12px] overflow-x-auto text-[13px] font-mono my-[8px]" {...props} />,
+                      hr: ({node, ...props}) => <hr className="border-[#dee1e6] dark:border-midnight-800 my-[12px]" {...props} />,
+                    }}
+                  >
+                    {guideContent}
+                  </ReactMarkdown>
+                ) : (
+                  <p className="text-gray-400 dark:text-gray-500 italic">コンテンツは空です</p>
+                )}
+              </div>
+            ) : (
+              <textarea
+                value={guideContent}
+                onChange={(e) => setGuideContent(e.target.value)}
+                placeholder="ガイド内容を入力..."
+                rows={4}
+                className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
+              />
+            )}
+            <div className="flex justify-end">
+              <span className="text-[11px] text-[#9095a1] dark:text-gray-500">
+                文字数: {guideContent.length} / 2000 (推奨)
+              </span>
+            </div>
+          </div>
+
+          {/* Guide Materials (ガイド資料) */}
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              ガイド資料
+            </label>
+            <div
+              className="flex flex-col items-center justify-center w-full py-[32px] px-[20px] mt-[4px] border-2 border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[8px] bg-[#fafafb] hover:bg-[#f3f4f6] dark:bg-midnight-900 dark:hover:bg-midnight-850 cursor-pointer transition-colors group"
+              onClick={handleTriggerGuideUpload}
+            >
+              <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 mb-[12px] group-hover:scale-105 transition-transform shadow-sm">
+                <DocumentUploadIcon />
+              </div>
+              <div className="flex flex-col items-center gap-[4px] text-center">
+                <p className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                  クリックしてアップロード<span className="font-normal text-[#565d6d] dark:text-gray-400">、またはファイルをドラッグ＆ドロップ</span>
+                </p>
+                <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
+                  JPG, PNG, PDF形式 (最大 10MB)
+                </p>
+              </div>
+              <input
+                type="file"
+                ref={guideFileInputRef}
+                accept=".jpg,.png,.pdf"
                 className="hidden"
               />
             </div>

@@ -6,13 +6,14 @@ import Pagination from '../../../../base/components/molecules/Pagination';
 
 export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { tools, loading } = useTools({ category: 'data' });
 
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, selectedRole]);
 
   const filteredTools = useMemo(() => {
     return tools.filter((tool) => {
@@ -21,9 +22,12 @@ export default function DataHubView() {
         tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.category.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      return matchesSearch;
+      const matchesRole =
+        selectedRole === '' || tool.role === selectedRole;
+
+      return matchesSearch && matchesRole;
     });
-  }, [tools, searchQuery]);
+  }, [tools, searchQuery, selectedRole]);
 
   const ITEMS_PER_PAGE = 16;
   const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
@@ -49,11 +53,12 @@ export default function DataHubView() {
         </p>
       </div>
 
-      {/* Filter Bar */}
       <FilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        showFilters={false}
+        selectedRole={selectedRole}
+        onRoleChange={setSelectedRole}
+        showRoleFilterOnly
       />
 
       {loading ? (
@@ -84,6 +89,7 @@ export default function DataHubView() {
           <button
             onClick={() => {
               setSearchQuery('');
+              setSelectedRole('');
             }}
             className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
           >

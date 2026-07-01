@@ -16,7 +16,8 @@ function SparklesIcon() {
 
 export default function ToolGrid() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('すべてのカテゴリ');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const { tools, loading } = useTools();
@@ -24,7 +25,7 @@ export default function ToolGrid() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, selectedRole]);
 
   // Filter tools logic
   const filteredTools = useMemo(() => {
@@ -35,11 +36,14 @@ export default function ToolGrid() {
         tool.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesCategory =
-        selectedCategory === 'すべてのカテゴリ' || tool.category.includes(selectedCategory);
+        selectedCategory === '' || tool.category.includes(selectedCategory);
 
-      return matchesSearch && matchesCategory;
+      const matchesRole =
+        selectedRole === '' || tool.role === selectedRole;
+
+      return matchesSearch && matchesCategory && matchesRole;
     });
-  }, [tools, searchQuery, selectedCategory]);
+  }, [tools, searchQuery, selectedCategory, selectedRole]);
 
   const ITEMS_PER_PAGE = 16;
   const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
@@ -68,6 +72,9 @@ export default function ToolGrid() {
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
+        selectedRole={selectedRole}
+        onRoleChange={setSelectedRole}
+        showBothFilters
       />
 
       {/* Grid count header */}
@@ -107,7 +114,8 @@ export default function ToolGrid() {
           <button
             onClick={() => {
               setSearchQuery('');
-              setSelectedCategory('すべてのカテゴリ');
+              setSelectedCategory('');
+              setSelectedRole('');
             }}
             className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
           >

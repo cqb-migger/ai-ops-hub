@@ -14,7 +14,7 @@ function ToolDetailPage() {
 
   useEffect(() => {
     if (!router.isReady || !id) return;
-    
+
     setLoading(true);
     // apiFetch<Tool>(`/tools/${id}`)
     //   .then((data) => {

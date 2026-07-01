@@ -20,6 +20,7 @@ export default function ComplianceHubView() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isFlowExpanded, setIsFlowExpanded] = useState(true);
+  const [selectedRole, setSelectedRole] = useState('');
 
   const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
@@ -27,7 +28,7 @@ export default function ComplianceHubView() {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, selectedRole]);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -77,9 +78,12 @@ export default function ComplianceHubView() {
         resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         resource.category.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      return matchesSearch;
+      const matchesRole =
+        selectedRole === '' || resource.role === selectedRole;
+
+      return matchesSearch && matchesRole;
     });
-  }, [tools, searchQuery]);
+  }, [tools, searchQuery, selectedRole]);
 
   const ITEMS_PER_PAGE = 16;
   const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
@@ -265,20 +269,36 @@ export default function ComplianceHubView() {
 
       {/* Section 2: Tools & References */}
       <section className="flex flex-col gap-[28px]">
-        <div>
-          <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
-            ツール & リファレンス
-          </h3>
-          <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
-            チェック業務に必要なシステムや文書へのリンク
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[16px]">
+          <div>
+            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+              ツール & リファレンス
+            </h3>
+            <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
+              チェック業務に必要なシステムや文書へのリンク
+            </p>
+          </div>
+          <a
+            href="/assets/compliance_guideline.txt"
+            download="compliance_guideline.txt"
+            className="flex-shrink-0 inline-flex items-center justify-center gap-[8px] h-[40px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>ガイドラインをダウンロード</span>
+          </a>
         </div>
 
         {/* Filter Bar */}
         <FilterBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          showFilters={false}
+          selectedRole={selectedRole}
+          onRoleChange={setSelectedRole}
+          showRoleFilterOnly
         />
 
         {/* Cards Grid */}
@@ -309,6 +329,7 @@ export default function ComplianceHubView() {
             <button
               onClick={() => {
                 setSearchQuery('');
+                setSelectedRole('');
               }}
               className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
             >

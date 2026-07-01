@@ -7,97 +7,154 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    container: {
-      center: true,
-      padding: '1rem',
-    },
-    colors: {
-      transparent: 'transparent',
-      current: 'currentColor',
-      white: '#fff',
-      light: '#FEFEFE',
-      black: '#000000',
-      primary: {
-        DEFAULT: '#395CE0',
-        50: '#E9ECFC',
-        100: '#C8CFF6',
-        200: '#A3B0F1',
-        300: '#7C91EB',
-        400: '#5C77E6',
-        500: '#395CE0',
-        600: '#3354D5',
-        700: '#274AC8',
-        800: '#1D3FBC',
-        900: '#002BA9',
-      },
-      blue: {
-        50: '#E9ECFC',
-        100: '#C8CFF6',
-        200: '#A3B0F1',
-        300: '#7C91EB',
-        400: '#5C77E6',
-        500: '#395CE0',
-        600: '#3354D5',
-        700: '#274AC8',
-        800: '#1D3FBC',
-        900: '#002BA9',
-      },
-      accent: 'B3261E',
-      red: {
-        50: '#FEEBEE',
-        100: '#FECED2',
-        200: '#ED9B9A',
-        300: '#E27573',
-        400: '#EC5751',
-        500: '#F04837',
-        600: '#E13F36',
-        700: '#CF3630',
-        800: '#C22F29',
-        900: '#B3261E',
-      },
-      green: {
-        50: '#E2F5EE',
-        100: '#B9E6D4',
-        200: '#8AD6B8',
-        300: '#52C69D',
-        400: '#00BA88',
-        500: '#00AE74',
-        600: '#009F68',
-        700: '#008C5B',
-        800: '#007B4E',
-        900: '#005C37',
-      },
-      gray: {
-        50: '#F5F5F5',
-        100: '#E9E9E9',
-        200: '#DADADA',
-        300: '#C5C5C5',
-        400: '#9F9F9F',
-        500: '#7D7D7D',
-        600: '#575757',
-        700: '#454545',
-        800: '#282828',
-        900: '#030303',
-      },
-      dark: '#020E3C',
-      midnight: {
-        50: '#E3E5EC',
-        100: '#B9BED2',
-        200: '#8C94B3',
-        300: '#616C96',
-        400: '#424F82',
-        500: '#213470',
-        600: '#1C2E68',
-        700: '#13265E',
-        800: '#0B1D52',
-        900: '#020E3C',
-      },
-    },
-    fontFamily: {
-      base: ['Poppins'],
-    },
-    extend: {},
+  	container: {
+  		center: true,
+  		padding: '1rem'
+  	},
+  	colors: {
+  		transparent: 'transparent',
+  		current: 'currentColor',
+  		white: '#fff',
+  		light: '#FEFEFE',
+  		black: '#000000',
+  		primary: {
+  			'50': '#E9ECFC',
+  			'100': '#C8CFF6',
+  			'200': '#A3B0F1',
+  			'300': '#7C91EB',
+  			'400': '#5C77E6',
+  			'500': '#395CE0',
+  			'600': '#3354D5',
+  			'700': '#274AC8',
+  			'800': '#1D3FBC',
+  			'900': '#002BA9',
+  			DEFAULT: '#395CE0'
+  		},
+  		blue: {
+  			'50': '#E9ECFC',
+  			'100': '#C8CFF6',
+  			'200': '#A3B0F1',
+  			'300': '#7C91EB',
+  			'400': '#5C77E6',
+  			'500': '#395CE0',
+  			'600': '#3354D5',
+  			'700': '#274AC8',
+  			'800': '#1D3FBC',
+  			'900': '#002BA9'
+  		},
+  		accent: 'B3261E',
+  		red: {
+  			'50': '#FEEBEE',
+  			'100': '#FECED2',
+  			'200': '#ED9B9A',
+  			'300': '#E27573',
+  			'400': '#EC5751',
+  			'500': '#F04837',
+  			'600': '#E13F36',
+  			'700': '#CF3630',
+  			'800': '#C22F29',
+  			'900': '#B3261E'
+  		},
+  		green: {
+  			'50': '#E2F5EE',
+  			'100': '#B9E6D4',
+  			'200': '#8AD6B8',
+  			'300': '#52C69D',
+  			'400': '#00BA88',
+  			'500': '#00AE74',
+  			'600': '#009F68',
+  			'700': '#008C5B',
+  			'800': '#007B4E',
+  			'900': '#005C37'
+  		},
+  		gray: {
+  			'50': '#F5F5F5',
+  			'100': '#E9E9E9',
+  			'200': '#DADADA',
+  			'300': '#C5C5C5',
+  			'400': '#9F9F9F',
+  			'500': '#7D7D7D',
+  			'600': '#575757',
+  			'700': '#454545',
+  			'800': '#282828',
+  			'900': '#030303'
+  		},
+  		dark: '#020E3C',
+  		midnight: {
+  			'50': '#E3E5EC',
+  			'100': '#B9BED2',
+  			'200': '#8C94B3',
+  			'300': '#616C96',
+  			'400': '#424F82',
+  			'500': '#213470',
+  			'600': '#1C2E68',
+  			'700': '#13265E',
+  			'800': '#0B1D52',
+  			'900': '#020E3C'
+  		}
+  	},
+  	fontFamily: {
+  		base: [
+  			'Poppins'
+  		]
+  	},
+  	extend: {
+  		borderRadius: {
+  			lg: 'var(--radius)',
+  			md: 'calc(var(--radius) - 2px)',
+  			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		colors: {
+  			background: 'var(--background)',
+  			foreground: 'var(--foreground)',
+  			card: {
+  				DEFAULT: 'var(--card)',
+  				foreground: 'var(--card-foreground)'
+  			},
+  			popover: {
+  				DEFAULT: 'var(--popover)',
+  				foreground: 'var(--popover-foreground)'
+  			},
+  			primary: {
+  				DEFAULT: 'var(--primary)',
+  				foreground: 'var(--primary-foreground)'
+  			},
+  			secondary: {
+  				DEFAULT: 'var(--secondary)',
+  				foreground: 'var(--secondary-foreground)'
+  			},
+  			muted: {
+  				DEFAULT: 'var(--muted)',
+  				foreground: 'var(--muted-foreground)'
+  			},
+  			accent: {
+  				DEFAULT: 'var(--accent)',
+  				foreground: 'var(--accent-foreground)'
+  			},
+  			destructive: 'var(--destructive)',
+  			border: 'var(--border)',
+  			input: 'var(--input)',
+  			ring: 'var(--ring)',
+  			chart: {
+  				'1': 'var(--chart-1)',
+  				'2': 'var(--chart-2)',
+  				'3': 'var(--chart-3)',
+  				'4': 'var(--chart-4)',
+  				'5': 'var(--chart-5)'
+  			},
+  			sidebar: {
+  				DEFAULT: 'var(--sidebar)',
+  				foreground: 'var(--sidebar-foreground)',
+  				primary: 'var(--sidebar-primary)',
+  				'primary-foreground': 'var(--sidebar-primary-foreground)',
+  				accent: 'var(--sidebar-accent)',
+  				'accent-foreground': 'var(--sidebar-accent-foreground)',
+  				border: 'var(--sidebar-border)',
+  				ring: 'var(--sidebar-ring)'
+  			}
+  		}
+  	}
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
   rtl: false,
 };

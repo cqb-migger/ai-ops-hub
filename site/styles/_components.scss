@@ -57,7 +57,8 @@
     @apply hidden items-center overflow-y-auto overflow-x-hidden fixed top-0 left-0 z-[1200] w-full h-full;
   
     &.slide {
-      @apply flex transition ease-out duration-[400ms];
+      @apply flex transition ease-out;
+      transition-duration: 400ms;
   
       &__left {
         @apply -translate-x-full;
@@ -366,7 +367,8 @@
       @apply h-[300px];
   
       &__item {
-        @apply absolute inset-0 transition-all ease-in-out duration-1000 transform;
+        @apply absolute inset-0 transition-all ease-in-out transform;
+        transition-duration: 1000ms;
   
         h3 {
           @apply text-2xl font-semibold mb-[20px];

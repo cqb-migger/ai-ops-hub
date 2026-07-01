@@ -19,13 +19,12 @@ export default function PageTemplate({ header, footer, children, hideSidebar = f
 
       {/* Main Content Area */}
       <div
-        className={`flex flex-col min-h-screen transition-all duration-300 ${
-          hideSidebar
-            ? 'pl-0'
-            : isSidebarCollapsed
+        className={`flex flex-col min-h-screen transition-all duration-300 ${hideSidebar
+          ? 'pl-0'
+          : isSidebarCollapsed
             ? 'pl-[60px]'
             : 'pl-[215px]'
-        }`}
+          }`}
       >
         {/* Header bar (rendered if provided) */}
         {header && header}

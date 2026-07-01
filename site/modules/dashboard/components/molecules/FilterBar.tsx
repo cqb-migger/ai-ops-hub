@@ -1,6 +1,6 @@
 import React from 'react';
-import { CATEGORIES } from '../../constants/tools';
-import Combobox from '@base/components/molecules/Combobox';
+import CategoryDropdown from './CategoryDropdown';
+import RoleDropdown from './RoleDropdown';
 
 interface FilterBarProps {
   searchQuery: string;
@@ -12,7 +12,10 @@ interface FilterBarProps {
   categories?: string[];
   roles?: string[];
   showFilters?: boolean;
+  /** Show only the role dropdown (used in user management page) */
   showRoleFilterOnly?: boolean;
+  /** Show both category and role dropdowns simultaneously */
+  showBothFilters?: boolean;
   placeholder?: string;
 }
 
@@ -25,9 +28,9 @@ function SearchIcon() {
   );
 }
 
-function XIcon() {
+function XIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: size, height: size }}>
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -38,21 +41,18 @@ export default function FilterBar({
   searchQuery,
   onSearchChange,
   selectedCategory = '',
-  onCategoryChange = () => {},
+  onCategoryChange = () => { },
   selectedRole = '',
-  onRoleChange = () => {},
+  onRoleChange = () => { },
   categories,
-  roles,
   showFilters = true,
   showRoleFilterOnly = false,
+  showBothFilters = false,
   placeholder = 'ツール名、キーワードで検索...',
 }: FilterBarProps) {
-  const categoriesList = categories || CATEGORIES;
-  const rolesList = roles || ['すべての役割', 'Admin', 'Member'];
-
   return (
-    <div className="w-full h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[16px]">
-      {/* Search Input Box — always fills remaining space */}
+    <div className="w-full h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[12px]">
+      {/* Search Input */}
       <div className="relative flex-1 h-[40px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] flex items-center gap-[8px]">
         <SearchIcon />
         <input
@@ -68,27 +68,44 @@ export default function FilterBar({
             className="flex items-center justify-center text-[#9095a0] hover:text-[#171a1f] dark:text-gray-500 dark:hover:text-white transition-colors flex-shrink-0"
             title="Clear search"
           >
-            <XIcon />
+            <XIcon size={16} />
           </button>
         )}
       </div>
 
-      {showFilters && !showRoleFilterOnly && (
+      {/* Both category + role dropdowns */}
+      {showBothFilters && (
         <>
-          {/* Category Dropdown */}
-          <Combobox
-            value={selectedCategory}
-            onChange={onCategoryChange}
-            options={categoriesList}
+          <CategoryDropdown
+            selectedCategory={selectedCategory}
+            onCategoryChange={onCategoryChange}
+            categories={categories}
+            width={200}
+          />
+          <RoleDropdown
+            selectedRole={selectedRole}
+            onRoleChange={onRoleChange}
+            width={200}
           />
         </>
       )}
 
-      {showRoleFilterOnly && (
-        <Combobox
-          value={selectedRole}
-          onChange={onRoleChange}
-          options={rolesList}
+      {/* Category only */}
+      {showFilters && !showRoleFilterOnly && !showBothFilters && (
+        <CategoryDropdown
+          selectedCategory={selectedCategory}
+          onCategoryChange={onCategoryChange}
+          categories={categories}
+          width={250}
+        />
+      )}
+
+      {/* Role only */}
+      {showRoleFilterOnly && !showBothFilters && (
+        <RoleDropdown
+          selectedRole={selectedRole}
+          onRoleChange={onRoleChange}
+          width={250}
         />
       )}
     </div>

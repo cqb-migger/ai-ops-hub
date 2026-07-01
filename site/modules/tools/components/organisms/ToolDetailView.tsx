@@ -109,7 +109,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
 
   const fromPath = router.query.from as string;
   const backHref = fromPath || '/';
-  
+
   let backLabel = 'ダッシュボードに戻る';
   if (fromPath?.startsWith('/compliance-hub')) backLabel = 'コンプライアンスハブに戻る';
   else if (fromPath?.startsWith('/creative-hub')) backLabel = 'クリエイティブハブに戻る';
@@ -143,14 +143,6 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
 
   return (
     <div className="flex flex-col gap-[28px] w-full">
-      {/* Back button */}
-      <Link href={backHref}>
-        <span className="flex items-center gap-[8px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-300 dark:hover:text-white text-[14px] leading-[22px] font-base font-medium cursor-pointer w-fit transition-colors duration-200">
-          <ArrowLeftIcon />
-          <span>{backLabel}</span>
-        </span>
-      </Link>
-
       {/* Title box */}
       <div className="flex items-start gap-[16px] pb-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
         {/* Avatar */}
@@ -172,17 +164,6 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
             <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
               {tool.name}
             </h2>
-            {tool.category.map((cat) => (
-              <span key={cat} className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
-                {cat}
-              </span>
-            ))}
-            {tool.visibility && (
-              <span className="bg-[#f3f4f6] dark:bg-midnight-850 text-[12px] font-semibold text-[#1e2128] dark:text-gray-300 rounded-[11px] px-[12px] h-[22px] flex items-center whitespace-nowrap">
-                {tool.visibility === 'public' ? '公開' : '非公開'}
-              </span>
-            )}
-
           </div>
           <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
             {tool.description}
@@ -254,11 +235,10 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
             return (
               <div
                 key={idx}
-                className={`bg-white dark:bg-midnight-950 border rounded-[16px] p-[24px] flex flex-col gap-[16px] shadow-md transition-colors duration-200 ${
-                  isRec
-                    ? 'border-[#5570f6]/50 dark:border-[#5570f6]/40'
-                    : 'border-[#dee1e6] dark:border-midnight-800'
-                }`}
+                className={`bg-white dark:bg-midnight-950 border rounded-[16px] p-[24px] flex flex-col gap-[16px] shadow-md transition-colors duration-200 ${isRec
+                  ? 'border-[#5570f6]/50 dark:border-[#5570f6]/40'
+                  : 'border-[#dee1e6] dark:border-midnight-800'
+                  }`}
               >
                 {/* Header row */}
                 <div className="flex items-center justify-between gap-[16px] flex-wrap">
@@ -266,14 +246,6 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
                     <h4 className="text-[18px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
                       {prompt.title}
                     </h4>
-                    {isRec && (
-                      <div className="bg-[#5570f6] h-[22px] rounded-[11px] px-[10px] flex items-center gap-[4px]">
-                        <SparklesIcon className="w-[12px] h-[12px] text-white" />
-                        <span className="text-[12px] font-semibold text-white font-base leading-[16px]">
-                          推奨
-                        </span>
-                      </div>
-                    )}
                   </div>
                   {/* Copy Button */}
                   <button
@@ -284,11 +256,6 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
                     <span>{copiedIndex === idx ? 'コピーしました' : 'プロンプトをコピー'}</span>
                   </button>
                 </div>
-
-                {/* Subtitle */}
-                <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
-                  {prompt.description}
-                </p>
 
                 {/* Content Box */}
                 <div className="bg-[#fafafb]/50 dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] p-[16px] max-h-[330px] overflow-y-auto">
@@ -302,6 +269,25 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
         </div>
       </div>
 
+
+      {/* Launch Button at the bottom */}
+      {tool.url && (
+        <div className="flex justify-center mt-[12px]">
+          <a
+            href={tool.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-[8px] h-[48px] px-[32px] bg-[#5570f6] hover:bg-[#405bd4] text-white text-[16px] font-bold rounded-[8px] transition-all shadow-md w-full sm:w-auto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" x2="21" y1="14" y2="3" />
+            </svg>
+            <span>ツールを開く</span>
+          </a>
+        </div>
+      )}
 
     </div>
   );

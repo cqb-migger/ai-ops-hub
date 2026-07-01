@@ -56,6 +56,8 @@ export default function ToolCard({ tool }: ToolCardProps) {
           </div>
           <Link
             href={`/tools/${tool.id}?from=${router.pathname}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex-shrink-0 w-[28px] h-[28px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-[#f0f3fa] dark:hover:bg-midnight-800 transition-colors"
             title={`${tool.name}の詳細情報`}
           >

@@ -40,6 +40,7 @@ export function useTools(options: UseToolsOptions = {}) {
           category: ['クリエイティブハブ'],
           description: 'コンテンツ作成や文章生成を支援する高度なAI言語モデル。',
           url: 'https://chat.openai.com',
+          role: 'marketing',
           status: '稼働中',
           icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg'
         },
@@ -49,6 +50,7 @@ export function useTools(options: UseToolsOptions = {}) {
           category: ['コンプライアンスハブ'],
           description: '社内規定やコンプライアンス要件を自動で検証するツール。',
           url: 'https://example.com/policy',
+          role: 'backoffice',
           status: '稼働中',
         },
         {
@@ -57,6 +59,7 @@ export function useTools(options: UseToolsOptions = {}) {
           category: ['データハブ'],
           description: '大規模データの包括的な分析とKPIのモニタリングを提供。',
           url: 'https://example.com/data',
+          role: 'accounting',
           status: 'メンテナンス',
         },
         {
@@ -65,6 +68,7 @@ export function useTools(options: UseToolsOptions = {}) {
           category: ['クリエイティブハブ'],
           description: 'クリエイティブ職向けの高品質なAI画像生成ツール。',
           url: 'https://midjourney.com',
+          role: 'marketing',
           status: '稼働中',
         },
         {
@@ -73,6 +77,7 @@ export function useTools(options: UseToolsOptions = {}) {
           category: ['コンプライアンスハブ', 'データハブ'],
           description: '機密データの脆弱性および法令遵守に関するスキャナー。',
           url: 'https://example.com/security',
+          role: 'backoffice',
           status: '停止中',
         }
       ];
@@ -82,10 +87,12 @@ export function useTools(options: UseToolsOptions = {}) {
         const idNum = i + 6;
         const categories = [['クリエイティブハブ'], ['コンプライアンスハブ'], ['データハブ'], ['クリエイティブハブ', 'データハブ'], ['コンプライアンスハブ', 'データハブ']];
         const statuses = ['稼働中', '稼働中', '稼働中', 'メンテナンス', '停止中'];
+        const roles = ['sale', 'marketing', 'backoffice', 'accounting', ''];
         return {
           id: `mock-generated-${idNum}`,
           name: `AI サンプルツール ${idNum}`,
           category: categories[i % categories.length],
+          role: roles[i % roles.length],
           description: `これは自動生成されたサンプルツール ${idNum} です。UIやページネーションのテストに使用します。`,
           url: `https://example.com/tool-${idNum}`,
           status: statuses[i % statuses.length],
