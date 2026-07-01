@@ -28,6 +28,7 @@ export interface Tool {
   guideContent?: string;
   guideMaterials?: string[];
   adminMemo?: string;
+  loginIds?: string[];
 }
 
 
