@@ -31,7 +31,7 @@ function ToolDetailPage() {
       const mockTool: Tool = {
         id: String(id || '2'),
         name: '商談データ分析アシスタント',
-        category: ['クリエイティブハブ', 'コンプライアンスハブ', 'データハブ'],
+        category: ['クリエイティブ', 'コンプライアンス', 'データ'],
         description: '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。',
         url: 'https://internal.app/tools/sales-analyzer',
         icon: '📊',

@@ -465,7 +465,7 @@ export default function CreateToolForm() {
 
                 {isCategoryOpen && (
                   <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col">
-                    {['クリエイティブハブ', 'コンプライアンスハブ', 'データハブ'].map((cat) => (
+                    {['クリエイティブ', 'コンプライアンス', 'データ'].map((cat) => (
                       <div
                         key={cat}
                         onClick={() => handleToggleCategory(cat)}

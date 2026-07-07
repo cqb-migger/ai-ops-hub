@@ -8,6 +8,7 @@ import StepCard from '../molecules/StepCard';
 import StepModal from '../molecules/StepModal';
 import StepConnector from '../molecules/StepConnector';
 import Pagination from '../../../../base/components/molecules/Pagination';
+import ItemCount from '../../../../base/components/molecules/ItemCount';
 
 
 export default function ComplianceHubView() {
@@ -19,7 +20,7 @@ export default function ComplianceHubView() {
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [isFlowExpanded, setIsFlowExpanded] = useState(true);
+  const [isFlowExpanded, setIsFlowExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
 
   const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
@@ -161,7 +162,7 @@ export default function ComplianceHubView() {
       <div className="flex flex-col items-start gap-[12px]">
         {/* Title & description */}
         <h2 className="text-[36px] font-extrabold leading-[40px] text-[#171a1f] dark:text-light tracking-[-0.9px] font-base">
-          法務・規制チェック プロセス
+          コンプライアンスハブ
         </h2>
         <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
           薬機法（医薬品医療機器等法）および景表法（景品表示法）に準拠した安全なコンテンツ発信のためのガイドラインとツールを提供します。すべての外部公開コンテンツ は 以下のステップに従って確認を行ってください。
@@ -267,7 +268,7 @@ export default function ComplianceHubView() {
 
       {/* Section 2: Tools & References */}
       <section className="flex flex-col gap-[28px]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[16px]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px]">
           <div>
             <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
               ツール & リファレンス
@@ -291,50 +292,61 @@ export default function ComplianceHubView() {
         </div>
 
         {/* Filter Bar */}
-        <FilterBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedRole={selectedRole}
-          onRoleChange={setSelectedRole}
-          showRoleFilterOnly
-        />
+        <div className="flex flex-col gap-[12px] w-full">
+          <FilterBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedRole={selectedRole}
+            onRoleChange={setSelectedRole}
+            showRoleFilterOnly
+          />
 
-        {/* Cards Grid */}
-        {toolsLoading ? (
-          <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
-            読み込み中...
-          </div>
-        ) : filteredResources.length > 0 ? (
-          <div className="flex flex-col gap-[28px]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px] mt-[12px]">
-              {paginatedResources.map((resource, index) => (
-                <ToolCard key={`${resource.id}-${index}`} tool={resource} />
-              ))}
+          <div className="flex flex-col gap-[12px] w-full">
+          <ItemCount
+            currentPage={currentPageSafe}
+            totalItems={filteredResources.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
+
+          {/* Cards Grid */}
+          {toolsLoading ? (
+            <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
+              読み込み中...
             </div>
-            <Pagination
-              currentPage={currentPageSafe}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              totalItems={filteredResources.length}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full mt-[12px]">
-            <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-              条件に一致するツールが見つかりませんでした。
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedRole('');
-              }}
-              className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
-            >
-              フィルターをクリア
-            </button>
-          </div>
-        )}
+          ) : filteredResources.length > 0 ? (
+            <div className="flex flex-col gap-[28px]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px]">
+                {paginatedResources.map((resource, index) => (
+                  <ToolCard key={`${resource.id}-${index}`} tool={resource} />
+                ))}
+              </div>
+              <Pagination
+                currentPage={currentPageSafe}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={filteredResources.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                hideItemCount={true}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
+              <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
+                条件に一致するツールが見つかりませんでした。
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedRole('');
+                }}
+                className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
+              >
+                フィルターをクリア
+              </button>
+            </div>
+          )}
+        </div>
+        </div>
       </section>
 
       {/* Step Add/Edit Modal */}

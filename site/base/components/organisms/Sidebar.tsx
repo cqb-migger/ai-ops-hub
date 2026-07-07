@@ -307,13 +307,33 @@ export default function Sidebar() {
           <div className={`absolute bottom-full mb-[8px] z-50 bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-lg py-[4px] font-base ${
             isSidebarCollapsed ? 'left-[12px] w-[160px]' : 'left-[12px] right-[12px]'
           }`}>
-            <div className="px-[12px] py-[6px] border-b border-[#dee1e6] dark:border-midnight-800 mb-[4px] min-w-0">
+            <div className="px-[12px] py-[6px] border-b border-[#dee1e6] dark:border-midnight-800 min-w-0">
               <span className="block text-[12px] font-bold text-[#171a1f] dark:text-light truncate">
                 Nguyen Van An
               </span>
               <span className="block text-[10px] text-[#565d6d] dark:text-gray-400 truncate">
                 Admin
               </span>
+            </div>
+
+            {/* Language Setting */}
+            <div className="px-[12px] py-[8px] border-b border-[#dee1e6] dark:border-midnight-800 mb-[4px] flex items-center justify-between">
+              <div className="flex items-center gap-[8px] text-[13px] text-[#565d6d] dark:text-gray-400 font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-[15px] h-[15px]">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  <path d="M2 12h20"></path>
+                </svg>
+                <span>言語</span>
+              </div>
+              <select 
+                defaultValue="ja" 
+                className="bg-transparent text-[12px] font-medium text-[#171a1f] dark:text-light outline-none cursor-pointer focus:ring-2 focus:ring-[#5570f6] rounded-[4px]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <option value="ja">日本語</option>
+                <option value="en">English</option>
+              </select>
             </div>
             <button
               onClick={() => {

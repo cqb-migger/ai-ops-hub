@@ -1,8 +1,8 @@
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Tool } from '../../constants/tools';
 import { API_BASE } from '../../../../base/utils/api';
+import ToolDetailModal from '../../../tools/components/organisms/ToolDetailModal';
 
 interface ToolCardProps {
   tool: Tool;
@@ -21,6 +21,7 @@ function ArrowRightIcon() {
 
 export default function ToolCard({ tool }: ToolCardProps) {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLaunch = () => {
     if (tool.url) {
@@ -54,15 +55,13 @@ export default function ToolCard({ tool }: ToolCardProps) {
               {tool.name}
             </h3>
           </div>
-          <Link
-            href={`/tools/${tool.id}?from=${router.pathname}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setIsModalOpen(true)}
             className="flex-shrink-0 w-[28px] h-[28px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-[#f0f3fa] dark:hover:bg-midnight-800 transition-colors"
             title={`${tool.name}の詳細情報`}
           >
             <span className="text-[12px] font-semibold text-[#5a73a3] dark:text-gray-400 leading-none select-none">?</span>
-          </Link>
+          </button>
         </div>
 
         {/* Tags */}
@@ -108,6 +107,13 @@ export default function ToolCard({ tool }: ToolCardProps) {
           <ArrowRightIcon />
         </button>
       </div>
+
+      {/* Detail Modal */}
+      <ToolDetailModal
+        toolId={tool.id}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

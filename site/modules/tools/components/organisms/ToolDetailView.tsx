@@ -8,6 +8,8 @@ import { API_BASE } from '../../../../base/utils/api';
 
 interface ToolDetailViewProps {
   tool: Tool;
+  hideHeader?: boolean;
+  hideLaunchButton?: boolean;
 }
 
 // Icons
@@ -104,7 +106,7 @@ function ShieldAlertIcon() {
   );
 }
 
-export default function ToolDetailView({ tool }: ToolDetailViewProps) {
+export default function ToolDetailView({ tool, hideHeader = false, hideLaunchButton = false }: ToolDetailViewProps) {
   const router = useRouter();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
@@ -156,32 +158,34 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
   return (
     <div className="flex flex-col gap-[28px] w-full">
       {/* Title box */}
-      <div className="flex items-start gap-[16px] dark:border-midnight-800">
-        {/* Avatar */}
-        <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
-          {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
-            <img
-              src={tool.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.icon}` : tool.icon}
-              alt={tool.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span>{tool.icon || '🔧'}</span>
-          )}
-        </div>
-
-        {/* Text */}
-        <div className="flex flex-col gap-[8px] min-w-0">
-          <div className="flex items-center gap-[12px] flex-wrap">
-            <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
-              {tool.name}
-            </h2>
+      {!hideHeader && (
+        <div className="flex items-start gap-[16px] dark:border-midnight-800">
+          {/* Avatar */}
+          <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
+            {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
+              <img
+                src={tool.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.icon}` : tool.icon}
+                alt={tool.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{tool.icon || '🔧'}</span>
+            )}
           </div>
-          <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
-            {tool.description}
-          </p>
+
+          {/* Text */}
+          <div className="flex flex-col gap-[8px] min-w-0">
+            <div className="flex items-center gap-[12px] flex-wrap">
+              <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
+                {tool.name}
+              </h2>
+            </div>
+            <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
+              {tool.description}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Login Info & Launch Card */}
       {((tool.loginIds && tool.loginIds.length > 0) || tool.url) && (
@@ -195,7 +199,7 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
                 接続・ログイン設定
               </h3>
             </div>
-            {tool.url && (
+            {!hideLaunchButton && tool.url && (
               <a
                 href={tool.url}
                 target="_blank"
@@ -346,9 +350,6 @@ export default function ToolDetailView({ tool }: ToolDetailViewProps) {
               推奨プロンプト
             </h3>
           </div>
-          <span className="text-[12px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
-            ステップ 1 / {details.prompts.length}
-          </span>
         </div>
         <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
           以下のプロンプトをコピーし、ツール起動後のチャット入力欄に貼り付けて開始してください。[※]の部分はお手元のデータで書き換える必要があります。

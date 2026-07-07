@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { useUsers, SSOUser } from '../../../../base/hooks/useUsers';
 import Pagination from '../../../../base/components/molecules/Pagination';
+import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { ROLE_OPTIONS, ROLE_BADGE_COLORS } from '../../../manage-tools/constants/roles';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -222,8 +223,15 @@ export default function UserManagementTable() {
         placeholder="ユーザー名、メールで検索..."
       />
 
-      {/* Table */}
-      <div className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] overflow-hidden shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)]">
+      <div className="flex flex-col gap-[12px] w-full">
+        <ItemCount
+          currentPage={currentPageSafe}
+          totalItems={filteredUsers.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+
+        {/* Table */}
+        <div className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] overflow-hidden shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] border-collapse text-left">
             <thead>
@@ -317,8 +325,10 @@ export default function UserManagementTable() {
             totalItems={filteredUsers.length}
             itemsPerPage={ITEMS_PER_PAGE}
             className="mt-0"
+            hideItemCount={true}
           />
         </div>
+      </div>
       </div>
     </div>
   );

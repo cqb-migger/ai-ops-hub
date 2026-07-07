@@ -37,7 +37,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '1',
           name: 'ChatGPT',
-          category: ['クリエイティブハブ'],
+          category: ['クリエイティブ'],
           description: 'コンテンツ作成や文章生成を支援する高度なAI言語モデル。',
           url: 'https://chat.openai.com',
           role: 'marketing',
@@ -48,7 +48,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '2',
           name: 'ポリシーチェッカー AI',
-          category: ['コンプライアンスハブ'],
+          category: ['コンプライアンス'],
           description: '社内規定やコンプライアンス要件を自動で検証するツール。',
           url: 'https://example.com/policy',
           role: 'backoffice',
@@ -58,7 +58,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '3',
           name: 'データインサイト分析',
-          category: ['データハブ'],
+          category: ['データ'],
           description: '大規模データの包括的な分析とKPIのモニタリングを提供。',
           url: 'https://example.com/data',
           role: 'accounting',
@@ -68,7 +68,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '4',
           name: 'Midjourney',
-          category: ['クリエイティブハブ'],
+          category: ['クリエイティブ'],
           description: 'クリエイティブ職向けの高品質なAI画像生成ツール。',
           url: 'https://midjourney.com',
           role: 'marketing',
@@ -78,7 +78,7 @@ export function useTools(options: UseToolsOptions = {}) {
         {
           id: '5',
           name: 'セキュリティスキャナー',
-          category: ['コンプライアンスハブ', 'データハブ'],
+          category: ['コンプライアンス', 'データ'],
           description: '機密データの脆弱性および法令遵守に関するスキャナー。',
           url: 'https://example.com/security',
           role: 'backoffice',
@@ -90,7 +90,7 @@ export function useTools(options: UseToolsOptions = {}) {
       // Generate extra mock tools for pagination testing (Total will be > 16)
       const extraTools: Tool[] = Array.from({ length: 25 }).map((_, i) => {
         const idNum = i + 6;
-        const categories = [['クリエイティブハブ'], ['コンプライアンスハブ'], ['データハブ'], ['クリエイティブハブ', 'データハブ'], ['コンプライアンスハブ', 'データハブ']];
+        const categories = [['クリエイティブ'], ['コンプライアンス'], ['データ'], ['クリエイティブ', 'データ'], ['コンプライアンス', 'データ']];
         const statuses = ['稼働中', '稼働中', '稼働中', 'メンテナンス', '停止中'];
         const roles = ['sale', 'marketing', 'backoffice', 'accounting', ''];
         return {
@@ -114,9 +114,9 @@ export function useTools(options: UseToolsOptions = {}) {
       
       if (selectedFilter && selectedFilter !== 'すべてのカテゴリ' && selectedFilter !== 'すべてのハブ') {
         const filterMap: Record<string, string> = {
-          'creative': 'クリエイティブハブ',
-          'compliance': 'コンプライアンスハブ',
-          'data': 'データハブ'
+          'creative': 'クリエイティブ',
+          'compliance': 'コンプライアンス',
+          'data': 'データ'
         };
         const actualFilter = filterMap[selectedFilter.toLowerCase()] || selectedFilter;
         filteredData = filteredData.filter(t => t.category.includes(actualFilter));

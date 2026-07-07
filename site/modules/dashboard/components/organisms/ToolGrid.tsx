@@ -3,6 +3,7 @@ import FilterBar from '../molecules/FilterBar';
 import ToolCard from '../molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
 import Pagination from '../../../../base/components/molecules/Pagination';
+import ItemCount from '../../../../base/components/molecules/ItemCount';
 
 function SparklesIcon() {
   return (
@@ -77,52 +78,58 @@ export default function ToolGrid() {
         showBothFilters
       />
 
-      {/* Grid count header */}
-      <div className="flex items-center gap-[8px]">
-        <SparklesIcon />
-        <h3 className="text-[20px] font-semibold leading-[30px] text-[#171a1f] dark:text-light font-base">
-          利用可能なツール ({filteredTools.length})
-        </h3>
-      </div>
-
-      {/* Cards Grid */}
-      {loading ? (
-        <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-          読み込み中...
+      {/* Grid count header and tools list */}
+      <div className="flex flex-col gap-[12px]">
+        <div className="flex items-center gap-[8px]">
+          <SparklesIcon />
+          <h3 className="text-[20px] font-semibold leading-[30px] text-[#171a1f] dark:text-light font-base">
+            利用可能なツール
+          </h3>
         </div>
-      ) : filteredTools.length > 0 ? (
-        <div className="flex flex-col gap-[28px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
-            {paginatedTools.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
+        <ItemCount
+          currentPage={currentPageSafe}
+          totalItems={filteredTools.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+
+        {/* Cards Grid */}
+        {loading ? (
+          <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+            読み込み中...
           </div>
+        ) : filteredTools.length > 0 ? (
+          <div className="flex flex-col gap-[28px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
+              {paginatedTools.map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
 
             <Pagination
               currentPage={currentPageSafe}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
-              totalItems={filteredTools.length}
-              itemsPerPage={ITEMS_PER_PAGE}
+              hideItemCount={true}
             />
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
-          <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-            条件に一致するツールが見つかりませんでした。
-          </p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('');
-              setSelectedRole('');
-            }}
-            className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
-          >
-            フィルターをクリア
-          </button>
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
+            <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
+              条件に一致するツールが見つかりませんでした。
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('');
+                setSelectedRole('');
+              }}
+              className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
+            >
+              フィルターをクリア
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
