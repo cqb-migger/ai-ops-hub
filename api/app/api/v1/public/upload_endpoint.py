@@ -83,7 +83,7 @@ async def _check_url_alive(client: httpx.AsyncClient, url: str) -> bool:
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
 
-@router.post('/icon-from-url', summary='Lấy favicon từ URL website')
+@router.post('/icon-from-url', summary='Get favicon from website URL')
 async def get_favicon_from_url(body: IconUrlRequest):
     """
     Nhận vào URL website, tự động tìm và trả về URL favicon.
@@ -123,7 +123,7 @@ async def get_favicon_from_url(body: IconUrlRequest):
     return {"url": google_favicon, "source": "google_favicon_api"}
 
 
-@router.post('/icon', summary='Upload ảnh icon (file)')
+@router.post('/icon', summary='Upload icon file')
 async def upload_icon(file: UploadFile = File(...)):
     """Upload file ảnh icon (PNG, JPG, JPEG, WEBP — tối đa 2MB)."""
     _, ext = os.path.splitext(file.filename or "")

@@ -120,7 +120,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
 
       {/* Detail Modal */}
       <ToolDetailModal
-        toolId={tool.id}
+        toolId={String(tool.id)}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />

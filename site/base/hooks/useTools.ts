@@ -1,194 +1,172 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
-import { Tool } from '../../modules/dashboard/constants/tools';
+import { Tool, ToolCategory } from '../../modules/dashboard/constants/tools';
 
 interface UseToolsOptions {
   hub?: string;
   category?: string;
   search?: string;
+  visibility?: 'public' | 'draft' | 'all';
+  role?: string;
+  limit?: number;
+  skip?: number;
+}
+
+interface ToolsResponse {
+  items: any[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+/** Maps an API tool object to the internal Tool shape used by the UI */
+function mapApiTool(t: any): Tool {
+  return {
+    // Keep original numeric id but expose as string where legacy code expects string
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    url: t.url,
+    icon: t.icon,
+    status: t.status,
+    visibility: t.visibility,
+    login_ids: t.login_ids || [],
+    guide_content: t.guide_content,
+    admin_memo: t.admin_memo,
+    details: t.details,
+    step_id: t.step_id,
+    categories: t.categories || [],
+    roles: t.roles || [],
+    guide_files: t.guide_files || [],
+    prompts: (t.prompts || []).map((p: any) => ({
+      ...p,
+      isRecommended: p.is_recommended,
+    })),
+    created_at: t.created_at,
+    updated_at: t.updated_at,
+    // Legacy flat fields for existing UI components
+    category: (t.categories || []).map((c: ToolCategory) => c.name),
+    role: (t.roles || []).join(','),
+    loginIds: t.login_ids || [],
+    guideContent: t.guide_content,
+    adminMemo: t.admin_memo,
+  };
 }
 
 export function useTools(options: UseToolsOptions = {}) {
   const [tools, setTools] = useState<Tool[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const { hub, category, search } = options;
+  const { hub, category, search, visibility, role, limit = 20, skip = 0 } = options;
 
-  const fetchTools = async () => {
+  const fetchTools = useCallback(async () => {
     setLoading(true);
     try {
-      // --- COMMENTED OUT DB FETCH ---
-      /*
       const params = new URLSearchParams();
-      const selectedFilter = category || hub;
-      if (selectedFilter && selectedFilter !== 'すべてのカテゴリ' && selectedFilter !== 'すべてのハブ') {
-        params.append('category', selectedFilter);
-      }
+      if (hub) params.append('hub', hub);
+      if (category) params.append('category', category);
       if (search) params.append('search', search);
+      if (visibility) params.append('visibility', visibility);
+      if (role) params.append('role', role);
+      params.append('limit', String(limit));
+      params.append('skip', String(skip));
 
       const queryString = params.toString() ? `?${params.toString()}` : '';
-      const data = await apiFetch<Tool[]>(`/tools${queryString}`);
-      setTools(data);
-      */
-      
-      // --- MOCK DATA FOR UI DEV ---
-      const baseMockTools: Tool[] = [
-        {
-          id: '1',
-          name: 'ChatGPT',
-          category: ['クリエイティブ'],
-          description: 'コンテンツ作成や文章生成を支援する高度なAI言語モデル。',
-          url: 'https://chat.openai.com',
-          role: 'marketing',
-          status: '稼働中',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg',
-          loginIds: ['chatgpt-user01@company.local', 'chatgpt-user02@company.local']
-        },
-        {
-          id: '2',
-          name: 'ポリシーチェッカー AI',
-          category: ['コンプライアンス'],
-          description: '社内規定やコンプライアンス要件を自動で検証するツール。',
-          url: 'https://example.com/policy',
-          role: 'backoffice',
-          status: '稼働中',
-          loginIds: ['policy-checker-user01@company.local']
-        },
-        {
-          id: '3',
-          name: 'データインサイト分析',
-          category: ['データ'],
-          description: '大規模データの包括的な分析とKPIのモニタリングを提供。',
-          url: 'https://example.com/data',
-          role: 'accounting',
-          status: 'メンテナンス',
-          loginIds: ['data-insight-user01@company.local', 'data-insight-user02@company.local']
-        },
-        {
-          id: '4',
-          name: 'Midjourney',
-          category: ['クリエイティブ'],
-          description: 'クリエイティブ職向けの高品質なAI画像生成ツール。',
-          url: 'https://midjourney.com',
-          role: 'marketing',
-          status: '稼働中',
-          loginIds: ['midjourney-user01@company.local']
-        },
-        {
-          id: '5',
-          name: 'セキュリティスキャナー',
-          category: ['コンプライアンス', 'データ'],
-          description: '機密データの脆弱性および法令遵守に関するスキャナー。',
-          url: 'https://example.com/security',
-          role: 'backoffice',
-          status: '停止中',
-          loginIds: ['security-scanner-user01@company.local']
-        }
-      ];
-      
-      // Generate extra mock tools for pagination testing (Total will be > 16)
-      const extraTools: Tool[] = Array.from({ length: 25 }).map((_, i) => {
-        const idNum = i + 6;
-        const categories = [['クリエイティブ'], ['コンプライアンス'], ['データ'], ['クリエイティブ', 'データ'], ['コンプライアンス', 'データ']];
-        const statuses = ['稼働中', '稼働中', '稼働中', 'メンテナンス', '停止中'];
-        const roles = ['sale', 'marketing', 'backoffice', 'accounting', ''];
-        return {
-          id: `mock-generated-${idNum}`,
-          name: `AI サンプルツール ${idNum}`,
-          category: categories[i % categories.length],
-          role: roles[i % roles.length],
-          description: `これは自動生成されたサンプルツール ${idNum} です。UIやページネーションのテストに使用します。`,
-          url: `https://example.com/tool-${idNum}`,
-          status: statuses[i % statuses.length],
-        };
-      });
-
-      const mockToolsData: Tool[] = [...baseMockTools, ...extraTools];
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      let filteredData = mockToolsData;
-      const selectedFilter = category || hub;
-      
-      if (selectedFilter && selectedFilter !== 'すべてのカテゴリ' && selectedFilter !== 'すべてのハブ') {
-        const filterMap: Record<string, string> = {
-          'creative': 'クリエイティブ',
-          'compliance': 'コンプライアンス',
-          'data': 'データ'
-        };
-        const actualFilter = filterMap[selectedFilter.toLowerCase()] || selectedFilter;
-        filteredData = filteredData.filter(t => t.category.includes(actualFilter));
-      }
-      
-      if (search) {
-        filteredData = filteredData.filter(t => 
-          t.name.toLowerCase().includes(search.toLowerCase()) || 
-          t.description.toLowerCase().includes(search.toLowerCase()) ||
-          t.category.some(c => c.toLowerCase().includes(search.toLowerCase()))
-        );
-      }
-
-      setTools(filteredData);
+      const data = await apiFetch<ToolsResponse>(`/tools${queryString}`);
+      setTools((data.items || []).map(mapApiTool));
+      setTotal(data.total || 0);
       setError(null);
     } catch (err: any) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [hub, category, search, visibility, role, limit, skip]);
 
   useEffect(() => {
     fetchTools();
-  }, [hub, category, search]);
+  }, [fetchTools]);
 
-  const createTool = async (newTool: Omit<Tool, 'id'>) => {
-    // --- COMMENTED OUT DB POST ---
-    /*
-    const data = await apiFetch<Tool>('/tools', {
+  const createTool = async (newTool: Partial<Tool>) => {
+    const body = buildToolRequestBody(newTool);
+    const data = await apiFetch<any>('/tools', {
       method: 'POST',
-      body: JSON.stringify(newTool),
+      body: JSON.stringify(body),
     });
-    setTools((prev) => [...prev, data]);
-    return data;
-    */
-    
-    // --- MOCK MIGRATION ---
-    const data: Tool = { ...newTool, id: Math.random().toString(36).substr(2, 9) };
-    setTools((prev) => [...prev, data]);
-    return data;
+    const mapped = mapApiTool(data);
+    setTools((prev) => [mapped, ...prev]);
+    return mapped;
   };
 
-  const updateTool = async (id: string, updatedFields: Partial<Tool>) => {
-    // --- COMMENTED OUT DB PUT ---
-    /*
-    const data = await apiFetch<Tool>(`/tools/${id}`, {
+  const updateTool = async (id: string | number, updatedFields: Partial<Tool>) => {
+    const body = buildToolRequestBody(updatedFields);
+    const data = await apiFetch<any>(`/tools/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(updatedFields),
+      body: JSON.stringify(body),
     });
-    setTools((prev) => prev.map((t) => (t.id === id ? data : t)));
-    return data;
-    */
-
-    // --- MOCK MIGRATION ---
-    const currentTool = tools.find(t => t.id === id) || {} as Tool;
-    const data: Tool = { ...currentTool, ...updatedFields };
-    setTools((prev) => prev.map((t) => (t.id === id ? data : t)));
-    return data;
+    const mapped = mapApiTool(data);
+    setTools((prev) => prev.map((t) => (String(t.id) === String(id) ? mapped : t)));
+    return mapped;
   };
 
-  const deleteTool = async (id: string) => {
-    // --- COMMENTED OUT DB DELETE ---
-    /*
+  const deleteTool = async (id: string | number) => {
     await apiFetch(`/tools/${id}`, {
       method: 'DELETE',
     });
-    */
-    
-    // --- MOCK MIGRATION ---
-    setTools((prev) => prev.filter((t) => t.id !== id));
+    setTools((prev) => prev.filter((t) => String(t.id) !== String(id)));
   };
 
-  return { tools, loading, error, refetch: fetchTools, createTool, updateTool, deleteTool };
+  return { tools, total, loading, error, refetch: fetchTools, createTool, updateTool, deleteTool };
+}
+
+/** Converts internal Tool shape to the API request body */
+function buildToolRequestBody(tool: Partial<Tool>): Record<string, any> {
+  const body: Record<string, any> = {};
+
+  if (tool.name !== undefined) body.name = tool.name;
+  if (tool.description !== undefined) body.description = tool.description;
+  if (tool.url !== undefined) body.url = tool.url;
+  if (tool.icon !== undefined) body.icon = tool.icon;
+  if (tool.status !== undefined) body.status = tool.status;
+  if (tool.visibility !== undefined) body.visibility = tool.visibility;
+  if (tool.guide_content !== undefined) body.guide_content = tool.guide_content;
+  if (tool.admin_memo !== undefined) body.admin_memo = tool.admin_memo;
+  if (tool.step_id !== undefined) body.step_id = tool.step_id;
+  if (tool.details !== undefined) body.details = tool.details;
+
+  // Handle categories: accept either API format (categories[]) or legacy format (category[])
+  if (tool.categories !== undefined) {
+    body.category_ids = tool.categories.map((c) => c.id);
+  } else if ((tool as any).category_ids !== undefined) {
+    body.category_ids = (tool as any).category_ids;
+  }
+
+  // Handle roles: accept either API format (roles[]) or legacy format (role string)
+  if (tool.roles !== undefined) {
+    body.roles = tool.roles;
+  }
+
+  // Handle login IDs
+  if (tool.login_ids !== undefined) {
+    body.login_ids = tool.login_ids;
+  } else if (tool.loginIds !== undefined) {
+    body.login_ids = tool.loginIds;
+  }
+
+  // Handle prompts
+  if (tool.prompts !== undefined) {
+    body.prompts = tool.prompts.map((p) => ({
+      title: p.title,
+      description: p.description || '',
+      content: p.content,
+      is_recommended: p.is_recommended ?? p.isRecommended ?? false,
+      order: p.order ?? 0,
+      roles: p.roles || [],
+      category_ids: (p.categories || []).map((c) => c.id),
+    }));
+  }
+
+  return body;
 }

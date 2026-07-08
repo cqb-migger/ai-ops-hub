@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Agent Settings
     MAX_AGENT_ITERATIONS: int = Field(..., env='MAX_AGENT_ITERATIONS')
 
+    # Google OAuth Settings
+    GOOGLE_CLIENT_ID: Optional[str] = Field(None, env='GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET: Optional[str] = Field(None, env='GOOGLE_CLIENT_SECRET')
+
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
 
 

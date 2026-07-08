@@ -119,7 +119,7 @@ async def get_tools_service(
     count_q = select(func.count()).select_from(base_q.subquery())
     total = (await db.execute(count_q)).scalar_one()
 
-    result = await db.execute(base_q.order_by(Tool.id).offset(skip).limit(limit))
+    result = await db.execute(base_q.order_by(Tool.id.desc()).offset(skip).limit(limit))
     tools = list(result.scalars().all())
 
     all_cat_ids = list({tc.category_id for t in tools for tc in t.tool_categories})
@@ -228,11 +228,13 @@ async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> dict:
     db.add(db_tool)
     await db.flush()
 
-    await _upsert_relations(db, db_tool.id, tool_in)
+    tool_id = db_tool.id
+
+    await _upsert_relations(db, tool_id, tool_in)
     await db.flush()
     db.expire_all()
 
-    return await get_tool_service(db, db_tool.id)
+    return await get_tool_service(db, tool_id)
 
 
 async def update_tool_service(db: AsyncSession, tool_id: int, tool_in: ToolUpdate) -> Optional[dict]:

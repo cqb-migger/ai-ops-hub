@@ -83,8 +83,9 @@ Google OAuth callback — đổi `code` lấy token nội bộ.
 **Request Body:**
 ```json
 {
-  "code": "string",
-  "redirect_uri": "string"
+  "code": "string (optional)",
+  "redirect_uri": "string (optional)",
+  "credential": "string (optional - ID Token from Google Client-side SDK)"
 }
 ```
 

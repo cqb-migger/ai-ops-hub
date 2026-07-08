@@ -24,7 +24,7 @@ export default function ComplianceHubView() {
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedStep, setSelectedStep] = useState('');
 
-  const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
+  const { tools, loading: toolsLoading } = useTools({ category: 'compliance', visibility: 'public' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
 
   // Reset page when filter changes

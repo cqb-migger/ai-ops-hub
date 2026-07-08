@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import routes from '@base/configs/routers';
 import useMenuStore from '@base/stores/useMenuStore';
+import useAuthStore from '@base/stores/useAuthStore';
 
 // Icons
 function CompassIcon() {
@@ -144,6 +145,9 @@ export default function Sidebar() {
     state.setIsSidebarCollapsed,
   ]);
 
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+
   const fromPath = router.query.from as string;
   const isToolDetail = router.pathname.startsWith('/tools/');
 
@@ -278,25 +282,27 @@ export default function Sidebar() {
           </div>
 
           {/* Administration Section */}
-          <div className="flex flex-col gap-[8px]">
-            {!isSidebarCollapsed && (
-              <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px]">
-                Administration
-              </span>
-            )}
-            <div className="flex flex-col gap-[4px]">
-              {adminItems.map((item) => (
-                <SidebarLink
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                  active={item.active}
-                  collapsed={isSidebarCollapsed}
-                />
-              ))}
+          {user?.role === 'admin' && (
+            <div className="flex flex-col gap-[8px]">
+              {!isSidebarCollapsed && (
+                <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px]">
+                  Administration
+                </span>
+              )}
+              <div className="flex flex-col gap-[4px]">
+                {adminItems.map((item) => (
+                  <SidebarLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    active={item.active}
+                    collapsed={isSidebarCollapsed}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -309,10 +315,10 @@ export default function Sidebar() {
           }`}>
             <div className="px-[12px] py-[6px] border-b border-[#dee1e6] dark:border-midnight-800 min-w-0">
               <span className="block text-[12px] font-bold text-[#171a1f] dark:text-light truncate">
-                Nguyen Van An
+                {user?.name || user?.email || 'Guest'}
               </span>
               <span className="block text-[10px] text-[#565d6d] dark:text-gray-400 truncate">
-                Admin
+                {user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Guest'}
               </span>
             </div>
 
@@ -341,10 +347,12 @@ export default function Sidebar() {
             </div>
             <button
               onClick={() => {
+                logout();
                 import('react-hot-toast').then(({ default: toast }) => {
-                  toast.success('ログアウトします (シミュレーション)');
+                  toast.success('ログアウトしました');
                 });
                 setShowDropdown(false);
+                router.push('/login');
               }}
               className="flex items-center gap-[8px] w-full px-[12px] py-[8px] text-[13px] text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 text-left font-medium transition-colors cursor-pointer"
             >
@@ -366,27 +374,17 @@ export default function Sidebar() {
           }`}
         >
           <div className="relative flex-shrink-0 flex items-center justify-center w-[32px] h-[32px] rounded-full overflow-hidden bg-[#fce4e7] dark:bg-[#4a2e35]">
-            <img
-              src="http://localhost:3845/assets/709c4e40e160703b4d5465c009c441b8854bf5d0.png"
-              alt="User Avatar"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const sibling = e.currentTarget.nextElementSibling as HTMLElement;
-                if (sibling) sibling.style.display = 'flex';
-              }}
-              className="w-full h-full object-cover"
-            />
-            <div className="hidden absolute inset-0 items-center justify-center text-[12px] font-bold text-[#b3261e] dark:text-red-300 font-base select-none">
-              AN
+            <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#b3261e] dark:text-red-300 font-base select-none">
+              {(user?.name || user?.email || 'AN').substring(0, 2).toUpperCase()}
             </div>
           </div>
           {!isSidebarCollapsed && (
             <div className="flex flex-col min-w-0">
               <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light truncate font-base leading-tight">
-                Nguyen Van An
+                {user?.name || user?.email || 'Guest'}
               </span>
               <span className="text-[11px] text-[#565d6d] dark:text-gray-400 truncate font-base leading-tight">
-                Admin
+                {user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Guest'}
               </span>
             </div>
           )}

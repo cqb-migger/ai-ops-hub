@@ -83,7 +83,7 @@ export default function ToolManagementTable() {
 
   const managedTools = useMemo<ManagedTool[]>(() => {
     return tools.map((t) => ({
-      id: t.id,
+      id: String(t.id),
       name: t.name,
       description: t.description,
       category: t.category,
@@ -319,13 +319,23 @@ export default function ToolManagementTable() {
                         >
                           <PenIcon />
                         </button>
-                        <button
-                          onClick={() => handleDelete(tool.id, tool.name)}
-                          className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
-                          title="削除"
-                        >
-                          <TrashIcon />
-                        </button>
+                        {tool.status === 'public' ? (
+                          <button
+                            className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-40"
+                            title="公開中のため削除できません"
+                            disabled
+                          >
+                            <TrashIcon />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleDelete(tool.id, tool.name)}
+                            className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
+                            title="削除"
+                          >
+                            <TrashIcon />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

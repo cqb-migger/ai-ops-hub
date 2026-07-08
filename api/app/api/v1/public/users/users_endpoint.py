@@ -8,9 +8,9 @@ from app.api.v1.public.users.schemas.user_response import UserListResponse, User
 from app.core.db.dependencies import get_db
 from app.core.modules.user import user_service
 
-router = APIRouter(prefix='/users', tags=['[Public] Users'])
+router = APIRouter(prefix='/users', tags=['[Private] Users'])
 
-@router.get('/', response_model=UserListResponse, summary='Lấy danh sách users')
+@router.get('/', response_model=UserListResponse, summary='Get list of users')
 async def get_users(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
@@ -24,13 +24,13 @@ async def get_users(
     )
     return UserListResponse(items=users, total=total, skip=skip, limit=limit)
 
-@router.post('/', response_model=UserResponse, status_code=status.HTTP_201_CREATED, summary='Tạo user mới')
+@router.post('/', response_model=UserResponse, status_code=status.HTTP_201_CREATED, summary='Create new user')
 async def create_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     """Tạo user mới."""
     user = await user_service.create_user_service(db=db, user_in=user_in)
     return user
 
-@router.get('/{user_id}', response_model=UserResponse, summary='Lấy thông tin chi tiết user')
+@router.get('/{user_id}', response_model=UserResponse, summary='Get user details')
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     """Lấy thông tin chi tiết của một user theo ID."""
     user = await user_service.get_user_service(db=db, user_id=user_id)
@@ -38,7 +38,7 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
     return user
 
-@router.put('/{user_id}', response_model=UserResponse, summary='Cập nhật thông tin user')
+@router.put('/{user_id}', response_model=UserResponse, summary='Update user')
 async def update_user(user_id: int, user_in: UserUpdate, db: AsyncSession = Depends(get_db)):
     """Cập nhật thông tin user (đổi role)."""
     user = await user_service.update_user_service(db=db, user_id=user_id, user_in=user_in)
@@ -46,7 +46,7 @@ async def update_user(user_id: int, user_in: UserUpdate, db: AsyncSession = Depe
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
     return user
 
-@router.delete('/{user_id}', status_code=status.HTTP_204_NO_CONTENT, summary='Xóa user (soft delete)')
+@router.delete('/{user_id}', status_code=status.HTTP_204_NO_CONTENT, summary='Delete user (soft)')
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
     """Xóa user (soft delete)."""
     user = await user_service.delete_user_service(db=db, user_id=user_id)

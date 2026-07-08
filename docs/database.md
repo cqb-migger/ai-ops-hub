@@ -11,12 +11,14 @@ erDiagram
     users {
         int id PK
         varchar email UK
-        varchar password
+        varchar password "Nullable for OAuth"
         varchar name
         varchar first_name
         varchar last_name
         varchar role
-        boolean is_active
+        varchar avatar_url
+        varchar google_id UK
+        int is_active
         timestamp last_login
         timestamp created_at
         timestamp updated_at
@@ -127,12 +129,14 @@ Lưu trữ thông tin tài khoản, phân quyền và dữ liệu đăng nhập.
 | :--- | :--- | :--- | :--- |
 | `id` | `SERIAL` | `PRIMARY KEY` | Khóa chính tự tăng |
 | `email` | `VARCHAR(255)` | `UNIQUE`, `NOT NULL` | Email định danh (dùng index) |
-| `password` | `VARCHAR(255)` | `NOT NULL` | Mật khẩu đã băm (hash) |
+| `password` | `VARCHAR(255)` | | Mật khẩu đã băm (có thể NULL đối với Google Login) |
 | `name` | `VARCHAR(255)` | | Tên đầy đủ hiển thị |
 | `first_name` | `VARCHAR(100)` | | Họ |
 | `last_name` | `VARCHAR(100)` | | Tên |
 | `role` | `VARCHAR(50)` | `DEFAULT 'sale'` | Quyền hạn: `sale`, `marketing`, `backoffice`, `accounting`, `admin` |
-| `is_active` | `BOOLEAN` | `DEFAULT TRUE` | Trạng thái tài khoản |
+| `avatar_url` | `VARCHAR(500)` | | Đường dẫn ảnh đại diện Google OAuth |
+| `google_id` | `VARCHAR(255)` | `UNIQUE` | ID định danh từ Google |
+| `is_active` | `INTEGER` | `DEFAULT 1` | Trạng thái hoạt động (1: active, 0: inactive) |
 | `last_login` | `TIMESTAMP` | | Thời điểm đăng nhập gần nhất |
 | `created_at` | `TIMESTAMP` | `DEFAULT NOW()` | Thời điểm tạo bản ghi |
 | `updated_at` | `TIMESTAMP` | `DEFAULT NOW()` | Thời điểm cập nhật gần nhất |

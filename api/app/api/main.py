@@ -58,7 +58,7 @@ async def application_exception_handler(request: Request, exc: Exception):
 
 
 # Include routers
-@app.get('/', tags=['[Public] Base'])
+@app.get('/', tags=['[Private] Base'])
 async def root():
     return {'message': 'Welcome Base API!'}
 

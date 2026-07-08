@@ -1,84 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
 import { Step } from '../../modules/compliance-hub/constants/steps';
 
-const MOCK_STEPS: Step[] = [
-  {
-    id: 'step-1',
-    order: 1,
-    icon: '🛡️',
-    title: 'セキュリティポリシー確認',
-    description: '社内の安全基準およびセキュリティポリシーへの適合性を自動でスキャンします。',
-  },
-  {
-    id: 'step-2',
-    order: 2,
-    icon: '🔍',
-    title: '機密データ検出',
-    description: '個人情報（PII）や保護すべき重要な機密情報の有無を厳格にチェックします。',
-  },
-  {
-    id: 'step-3',
-    order: 3,
-    icon: '⚖️',
-    title: '知的財産・ライセンス審査',
-    description: '商用利用可能なモデルであるか、またオープンソースライセンスに違反していないか確認します。',
-  },
-  {
-    id: 'step-4',
-    order: 4,
-    icon: '📋',
-    title: '承認ワークフロー',
-    description: '担当管理者へ報告書を送信し、安全性の評価結果に対する最終確認と承認を行います。',
-  },
-];
+function mapApiStep(s: any): Step {
+  return {
+    id: String(s.id),
+    order: s.order,
+    icon: s.icon || '📋',
+    title: s.title,
+    description: s.description,
+  };
+}
 
-export function useSteps() {
+export function useSteps(options: { enabled?: boolean } = {}) {
+  const { enabled = true } = options;
   const [steps, setSteps] = useState<Step[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(enabled);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchSteps = async () => {
+  const fetchSteps = useCallback(async () => {
     setLoading(true);
     try {
-      // --- COMMENTED OUT DB FETCH ---
-      /*
-      const data = await apiFetch<Step[]>('/steps');
-      setSteps(data);
-      */
-
-      // --- MOCK DATA FOR UI DEV ---
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setSteps(MOCK_STEPS);
+      const data = await apiFetch<any[]>('/steps');
+      setSteps((data || []).map(mapApiStep));
       setError(null);
     } catch (err: any) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchSteps();
   }, []);
 
+  useEffect(() => {
+    if (enabled) {
+      fetchSteps();
+    } else {
+      setSteps([]);
+      setLoading(false);
+    }
+  }, [fetchSteps, enabled]);
+
+  /** Bulk-save all steps after drag-drop reorder */
   const saveSteps = async (newSteps: Step[]) => {
     setLoading(true);
     try {
-      // --- COMMENTED OUT DB POST ---
-      /*
-      const data = await apiFetch<Step[]>('/steps', {
+      const body = newSteps.map((s, i) => ({
+        id: Number(s.id),
+        order: i + 1,
+        icon: s.icon,
+        title: s.title,
+        description: s.description,
+      }));
+      const data = await apiFetch<any[]>('/steps', {
         method: 'POST',
-        body: JSON.stringify(newSteps),
+        body: JSON.stringify(body),
       });
-      setSteps(data);
-      */
-
-      // --- MOCK DATA FOR UI DEV ---
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setSteps(newSteps);
+      const mapped = (data || []).map(mapApiStep);
+      setSteps(mapped);
       setError(null);
-      return newSteps;
+      return mapped;
     } catch (err: any) {
       setError(err);
       throw err;
@@ -87,6 +67,50 @@ export function useSteps() {
     }
   };
 
-  return { steps, loading, error, refetch: fetchSteps, saveSteps };
-}
+  const createStep = async (step: Omit<Step, 'id'>) => {
+    const body = {
+      order: step.order,
+      icon: step.icon,
+      title: step.title,
+      description: step.description,
+    };
+    const data = await apiFetch<any>('/steps', {
+      method: 'POST',
+      // For single step creation, send an array of the existing steps + new one
+      body: JSON.stringify([...steps.map((s) => ({
+        id: Number(s.id),
+        order: s.order,
+        icon: s.icon,
+        title: s.title,
+        description: s.description,
+      })), body]),
+    });
+    const mapped = (data || []).map(mapApiStep);
+    setSteps(mapped);
+    return mapped;
+  };
 
+  const updateStep = async (id: string, updatedFields: Partial<Step>) => {
+    const data = await apiFetch<any>(`/steps/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        icon: updatedFields.icon,
+        title: updatedFields.title,
+        description: updatedFields.description,
+        order: updatedFields.order,
+      }),
+    });
+    const mapped = mapApiStep(data);
+    setSteps((prev) => prev.map((s) => (s.id === id ? mapped : s)));
+    return mapped;
+  };
+
+  const deleteStep = async (id: string) => {
+    await apiFetch(`/steps/${id}`, {
+      method: 'DELETE',
+    });
+    setSteps((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  return { steps, loading, error, refetch: fetchSteps, saveSteps, createStep, updateStep, deleteStep };
+}

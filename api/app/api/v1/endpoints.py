@@ -8,7 +8,7 @@ from app.api.v1.public.endpoints import router as public_router
 router = APIRouter(prefix='/v1')
 
 
-@router.get('/health', tags=['[Public] Base'])
+@router.get('/health', tags=['[Private] Base'])
 async def health_check():
     return {'status': 'healthy'}
 

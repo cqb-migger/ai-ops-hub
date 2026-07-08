@@ -8,11 +8,14 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
+    password = Column(String, nullable=True)
     name = Column(String, nullable=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
-    role = Column(String, default='Member', nullable=False)
+    role = Column(String, default='sale', nullable=False)
+    avatar_url = Column(String, nullable=True)
+    google_id = Column(String, unique=True, index=True, nullable=True)
+    is_active = Column(Integer, default=1, nullable=False)
     last_login = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

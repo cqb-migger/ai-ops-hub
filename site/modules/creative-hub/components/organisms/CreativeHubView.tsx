@@ -9,7 +9,7 @@ export default function CreativeHubView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState('');
-  const { tools, loading } = useTools({ category: 'creative' });
+  const { tools, loading } = useTools({ category: 'creative', visibility: 'public' });
 
   // Reset page when filter changes
   useEffect(() => {

@@ -1,16 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.public.auth.schemas.auth_request import LoginRequest
-from app.api.v1.public.auth.schemas.auth_response import RefreshTokenResponse, Token
+from app.api.v1.public.auth.schemas.auth_request import GoogleAuthRequest, LoginRequest
+from app.api.v1.public.auth.schemas.auth_response import (
+    GoogleAuthResponse,
+    GoogleUserInfo,
+    RefreshTokenResponse,
+    Token,
+)
 from app.api.v1.public.users.schemas.user_response import UserResponse
 from app.core.db.dependencies import get_db
 from app.core.modules.auth.auth_dependencies import get_current_user, refresh_token_auth
 from app.core.modules.auth.auth_securities import create_access_token, create_refresh_token
 from app.core.modules.auth.auth_service import authenticate_user
+from app.core.modules.auth.google_auth_service import decode_google_id_token, exchange_google_code, upsert_google_user
 from app.core.modules.user.models.user import User
 
-router = APIRouter(prefix='/auth', tags=['[Public] Auth'])
+router = APIRouter(prefix='/auth', tags=['[Private] Auth'])
 
 
 @router.post('/login', response_model=Token)
@@ -23,20 +29,63 @@ async def login_for_access_token(form_data: LoginRequest, db: AsyncSession = Dep
             detail='Incorrect username or password',
             headers={'WWW-Authenticate': 'Bearer'},
         )
-    # Assuming subject should be user ID
     subject = str(user.id)
-
     access_token = create_access_token(data={'sub': subject})
     refresh_token = create_refresh_token(data={'sub': subject})
-
     return {'access_token': access_token, 'refresh_token': refresh_token, 'token_type': 'bearer'}
+
+
+@router.post('/google', response_model=GoogleAuthResponse)
+async def google_oauth_login(body: GoogleAuthRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Exchange Google OAuth code or verify credential (ID Token) for internal JWT tokens.
+    New users are automatically created with role='sale'.
+    """
+    if body.credential:
+        try:
+            google_user_info = decode_google_id_token(body.credential)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'Failed to parse Google credential: {str(e)}',
+            )
+    elif body.code and body.redirect_uri:
+        try:
+            google_user_info = await exchange_google_code(code=body.code, redirect_uri=body.redirect_uri)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f'Failed to exchange Google code: {str(e)}',
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Either credential or (code and redirect_uri) must be provided.',
+        )
+
+    user = await upsert_google_user(db=db, google_user_info=google_user_info)
+
+    access_token = create_access_token(data={'sub': str(user.id)})
+    refresh_token = create_refresh_token(data={'sub': str(user.id)})
+
+    return GoogleAuthResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type='bearer',
+        user=GoogleUserInfo(
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            avatar_url=user.avatar_url,
+            role=user.role,
+        ),
+    )
 
 
 @router.post('/refresh-token', response_model=RefreshTokenResponse)
 async def refresh_token(current_user: User = Depends(refresh_token_auth)):
     """Refresh access token using refresh token."""
     access_token = create_access_token(data={'sub': str(current_user.id)})
-
     return {'access_token': access_token, 'token_type': 'bearer'}
 
 

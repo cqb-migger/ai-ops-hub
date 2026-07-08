@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
 import { ROLE_OPTIONS } from '../../modules/manage-tools/constants/roles';
 
@@ -10,70 +10,74 @@ export interface SSOUser {
   email: string;
   role: RoleValue;
   lastLogin: string;
+  is_active?: boolean;
 }
 
-export function useUsers() {
+interface UsersResponse {
+  items: any[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+interface UseUsersOptions {
+  search?: string;
+  role?: string;
+  limit?: number;
+  skip?: number;
+}
+
+function mapApiUser(u: any): SSOUser {
+  return {
+    id: u.id,
+    name: u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
+    email: u.email,
+    role: u.role as RoleValue,
+    lastLogin: u.last_login ? new Date(u.last_login).toLocaleDateString('ja-JP') : '—',
+    is_active: u.is_active,
+  };
+}
+
+export function useUsers(options: UseUsersOptions = {}) {
   const [users, setUsers] = useState<SSOUser[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchUsers = async () => {
+  const { search, role, limit = 100, skip = 0 } = options;
+
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      // --- COMMENTED OUT DB FETCH ---
-      /*
-      const data = await apiFetch<any[]>('/users');
-      const mapped = data.map((u) => ({
-        id: u.id,
-        name: u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
-        email: u.email,
-        role: u.role,
-        lastLogin: u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never',
-      }));
-      setUsers(mapped);
-      */
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (role) params.append('role', role);
+      params.append('limit', String(limit));
+      params.append('skip', String(skip));
 
-      // --- MOCK DATA FOR UI DEV ---
-      const mockUsersData: SSOUser[] = [
-        { id: 1, name: '山田 太郎', email: 'taro.yamada@example.com', role: 'sale', lastLogin: '2026-06-25' },
-        { id: 2, name: '佐藤 花子', email: 'hanako.sato@example.com', role: 'marketing', lastLogin: '2026-06-26' },
-        { id: 3, name: '鈴木 健二', email: 'kenji.suzuki@example.com', role: 'backoffice', lastLogin: '2026-06-29' },
-        { id: 4, name: '高橋 由美', email: 'yumi.takahashi@example.com', role: 'accounting', lastLogin: '2026-06-29' },
-        { id: 5, name: '伊藤 博', email: 'hiroshi.ito@example.com', role: 'sale', lastLogin: '2026-06-30' },
-        { id: 6, name: '渡辺 真一', email: 'shinichi.watanabe@example.com', role: 'marketing', lastLogin: '2026-06-28' },
-        { id: 7, name: '中村 美咲', email: 'misaki.nakamura@example.com', role: 'backoffice', lastLogin: '2026-06-27' },
-      ];
-
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setUsers(mockUsersData);
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const data = await apiFetch<UsersResponse>(`/users${queryString}`);
+      setUsers((data.items || []).map(mapApiUser));
+      setTotal(data.total || 0);
       setError(null);
     } catch (err: any) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, role, limit, skip]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   const updateUserRole = async (id: number, newRole: RoleValue) => {
     try {
-      // --- COMMENTED OUT DB PUT ---
-      /*
       const response = await apiFetch<any>(`/users/${id}`, {
         method: 'PUT',
         body: JSON.stringify({ role: newRole }),
       });
-      */
-
-      const targetUser = users.find(u => u.id === id);
-      if (!targetUser) throw new Error('User not found');
-      const updated: SSOUser = { ...targetUser, role: newRole };
-
+      const updated = mapApiUser(response);
       setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
       return updated;
     } catch (err: any) {
@@ -82,5 +86,12 @@ export function useUsers() {
     }
   };
 
-  return { users, loading, error, refetch: fetchUsers, updateUserRole };
+  const deleteUser = async (id: number) => {
+    await apiFetch(`/users/${id}`, {
+      method: 'DELETE',
+    });
+    setUsers((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  return { users, total, loading, error, refetch: fetchUsers, updateUserRole, deleteUser };
 }

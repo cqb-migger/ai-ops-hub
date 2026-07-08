@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
-import { API_BASE } from '../../../../base/utils/api';
+import { API_BASE, apiFetch } from '../../../../base/utils/api';
 import { useTools } from '../../../../base/hooks/useTools';
+import { useCategories } from '../../../../base/hooks/useCategories';
+import { useSteps } from '../../../../base/hooks/useSteps';
 import { ROLE_OPTIONS } from '../../constants/roles';
 
 // SVG Icons
@@ -235,24 +237,39 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
 export default function CreateToolForm() {
   const router = useRouter();
   const { createTool } = useTools();
+  const { categories: apiCategories, loading: categoriesLoading } = useCategories();
 
   // Alert banner state
   const [showSuccessAlert, setShowSuccessAlert] = useState(true);
 
   // Form states
-  const [toolName, setToolName] = useState('商談データ分析アシスタント');
+  const [toolName, setToolName] = useState('');
   const [description, setDescription] = useState(
-    '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。'
+    ''
   );
-  const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
+  const [redirectUrl, setRedirectUrl] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
-  const [stepId, setStepId] = useState<string>('');
+  const [stepIds, setStepIds] = useState<string[]>([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isStepOpen, setIsStepOpen] = useState(false);
   const [loginIds, setLoginIds] = useState<string[]>(['']);
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [iconUrlInput, setIconUrlInput] = useState('');
+  const [fetchingFavicon, setFetchingFavicon] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isComplianceSelected = apiCategories.some(
+    (c) => c.id === 2 && categories.includes(c.name)
+  );
+  const { steps: apiSteps, loading: stepsLoading } = useSteps({ enabled: isComplianceSelected });
+
+  useEffect(() => {
+    if (!isComplianceSelected) {
+      setStepIds([]);
+    }
+  }, [isComplianceSelected]);
 
   // Prompt settings
 
@@ -276,7 +293,6 @@ export default function CreateToolForm() {
   );
 
   // Refs
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const guideFileInputRef = useRef<HTMLInputElement>(null);
   const referenceFileInputRef = useRef<HTMLInputElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -284,7 +300,30 @@ export default function CreateToolForm() {
   const stepDropdownRef = useRef<HTMLDivElement>(null);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
 
-  const handleTriggerUpload = () => fileInputRef.current?.click();
+  const handleFetchFavicon = async () => {
+    if (!iconUrlInput.trim()) {
+      toast.error('URLを入力してください');
+      return;
+    }
+    setFetchingFavicon(true);
+    try {
+      const res = await apiFetch<{ url: string }>('/upload/icon-from-url', {
+        method: 'POST',
+        body: JSON.stringify({ url: iconUrlInput.trim() }),
+      });
+      if (res && res.url) {
+        setThumbnailUrl(res.url);
+        toast.success('ファビコンを取得しました');
+      } else {
+        toast.error('ファビコンの取得に失敗しました');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'ファビコンの取得に失敗しました');
+    } finally {
+      setFetchingFavicon(false);
+    }
+  };
+
   const handleTriggerGuideUpload = () => guideFileInputRef.current?.click();
   const handleTriggerReferenceUpload = () => referenceFileInputRef.current?.click();
 
@@ -313,18 +352,36 @@ export default function CreateToolForm() {
   };
 
   const handleToggleCategory = (cat: string) => {
+    let nextCategories;
     if (categories.includes(cat)) {
-      setCategories(categories.filter((c) => c !== cat));
+      nextCategories = categories.filter((c) => c !== cat);
     } else {
-      setCategories([...categories, cat]);
+      nextCategories = [...categories, cat];
+    }
+    setCategories(nextCategories);
+    if (errors.categories && nextCategories.length > 0) {
+      setErrors((prev) => ({ ...prev, categories: '' }));
+    }
+  };
+
+  const handleToggleStep = (id: string) => {
+    if (stepIds.includes(id)) {
+      setStepIds(stepIds.filter((s) => s !== id));
+    } else {
+      setStepIds([...stepIds, id]);
     }
   };
 
   const handleToggleRole = (roleVal: string) => {
+    let nextRoles;
     if (roles.includes(roleVal)) {
-      setRoles(roles.filter((r) => r !== roleVal));
+      nextRoles = roles.filter((r) => r !== roleVal);
     } else {
-      setRoles([...roles, roleVal]);
+      nextRoles = [...roles, roleVal];
+    }
+    setRoles(nextRoles);
+    if (errors.roles && nextRoles.length > 0) {
+      setErrors((prev) => ({ ...prev, roles: '' }));
     }
   };
 
@@ -342,9 +399,136 @@ export default function CreateToolForm() {
     setLoginIds(loginIds.filter((_, idx) => idx !== index));
   };
 
-  const handleSave = () => {
-    // Implement save logic later
-    toast.success('保存しました');
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    let firstErrorKey = '';
+
+    const setErrorKey = (key: string) => {
+      if (!firstErrorKey) {
+        firstErrorKey = key;
+      }
+    };
+
+    if (!toolName.trim()) {
+      newErrors.toolName = 'ツール名称を入力してください';
+      setErrorKey('toolName');
+    }
+    if (!description.trim()) {
+      newErrors.description = '説明を入力してください';
+      setErrorKey('description');
+    }
+    if (categories.length === 0) {
+      newErrors.categories = 'カテゴリを選択してください';
+      setErrorKey('categories');
+    }
+    if (roles.length === 0) {
+      newErrors.roles = '役割を選択してください';
+      setErrorKey('roles');
+    }
+
+    prompts.forEach((p) => {
+      if (!p.name.trim()) {
+        const key = `prompt_name_${p.id}`;
+        newErrors[key] = 'プロンプト名を入力してください';
+        setErrorKey(key);
+      }
+      if (!p.content.trim()) {
+        const key = `prompt_content_${p.id}`;
+        newErrors[key] = 'プロンプト本文を入力してください';
+        setErrorKey(key);
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error('入力内容を確認してください');
+
+      // Focus on the first error item
+      setTimeout(() => {
+        if (firstErrorKey === 'toolName') {
+          const el = document.getElementById('tool-name-input');
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey === 'description') {
+          const el = document.getElementById('description-input');
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey === 'categories') {
+          const el = document.getElementById('categories-container');
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey === 'roles') {
+          const el = document.getElementById('roles-container');
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey.startsWith('prompt_name_')) {
+          const promptId = firstErrorKey.replace('prompt_name_', '');
+          const el = document.getElementById(`prompt-name-${promptId}`);
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey.startsWith('prompt_content_')) {
+          const promptId = firstErrorKey.replace('prompt_content_', '');
+          const el = document.getElementById(`prompt-content-${promptId}`);
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validate()) {
+      return;
+    }
+    try {
+      // Map selected category names to IDs from API categories
+      const selectedCategories = apiCategories
+        .filter((c) => categories.includes(c.name))
+        .map((c) => ({ id: c.id, name: c.name }));
+
+      // Map selected stepId to numeric (step IDs are strings like "1")
+      const numericStepId = stepIds.length > 0 ? Number(stepIds[0]) : null;
+
+      const toolPayload: Record<string, any> = {
+        name: toolName.trim(),
+        description: description.trim(),
+        url: redirectUrl.trim() || null,
+        icon: thumbnailUrl || null,
+        visibility,
+        categories: selectedCategories,
+        category_ids: selectedCategories.map((c) => c.id),
+        roles,
+        login_ids: loginIds.filter(Boolean),
+        guide_content: guideContent.trim() || null,
+        admin_memo: adminMemo.trim() || null,
+        step_id: numericStepId,
+        prompts: prompts
+          .filter((p) => p.name.trim() || p.content.trim())
+          .map((p, i) => {
+            const promptCategories = apiCategories
+              .filter((c) => (p.categories || []).includes(c.name))
+              .map((c) => ({ id: c.id, name: c.name }));
+            return {
+              title: p.name.trim(),
+              description: '',
+              content: p.content.trim(),
+              is_recommended: p.isPublic ?? true,
+              order: i,
+              roles: [],
+              categories: promptCategories,
+            };
+          }),
+      };
+
+      await createTool(toolPayload as any);
+      toast.success('ツールを保存しました');
+      setShowSuccessAlert(true);
+      router.push('/manage-tools');
+    } catch (err: any) {
+      toast.error(err.message || 'ツールの保存に失敗しました');
+    }
   };
 
   const handleCancel = () => {
@@ -408,11 +592,22 @@ export default function CreateToolForm() {
               ツール名称 <span className="text-[#f25a5a]">*</span>
             </label>
             <input
+              id="tool-name-input"
               type="text"
               value={toolName}
-              onChange={(e) => setToolName(e.target.value)}
-              className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
+              onChange={(e) => {
+                setToolName(e.target.value);
+                if (errors.toolName) {
+                  setErrors((prev) => ({ ...prev, toolName: '' }));
+                }
+              }}
+              className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                errors.toolName ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+              }`}
             />
+            {errors.toolName && (
+              <p className="text-[12px] text-red-500 font-semibold">{errors.toolName}</p>
+            )}
           </div>
 
           {/* Description */}
@@ -421,11 +616,22 @@ export default function CreateToolForm() {
               説明（概要） <span className="text-[#f25a5a]">*</span>
             </label>
             <textarea
+              id="description-input"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) {
+                  setErrors((prev) => ({ ...prev, description: '' }));
+                }
+              }}
               rows={3}
-              className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
+              className={`w-full p-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                errors.description ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+              }`}
             />
+            {errors.description && (
+              <p className="text-[12px] text-red-500 font-semibold">{errors.description}</p>
+            )}
           </div>
 
           {/* URL Row */}
@@ -441,174 +647,97 @@ export default function CreateToolForm() {
             />
           </div>
 
-          {/* Category, Role, Step Row */}
-          <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px]">
-            {/* Category (takes roughly 33%) */}
-            <div ref={categoryDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                カテゴリ <span className="text-[#f25a5a]">*</span>
-              </label>
-
-              {/* Custom Multi-select Dropdown */}
-              <div className="relative">
-                <div
-                  className="w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
-                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                >
-                  <span className={categories.length > 0 ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
-                    {categories.length > 0 ? `${categories.length}件選択中` : 'カテゴリを選択...'}
-                  </span>
-                  <ChevronDownIcon />
-                </div>
-
-                {isCategoryOpen && (
-                  <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col">
-                    {['クリエイティブ', 'コンプライアンス', 'データ'].map((cat) => (
-                      <div
-                        key={cat}
-                        onClick={() => handleToggleCategory(cat)}
-                        className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${categories.includes(cat)
-                          ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
-                          : 'text-[#171a1f] dark:text-light'
-                          }`}
-                      >
-                        <span>{cat}</span>
-                        {categories.includes(cat) && (
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Selected Category Tags */}
-              {categories.length > 0 && (
-                <div className="flex flex-wrap gap-[8px] mt-[4px]">
-                  {categories.map((cat) => (
-                    <span key={cat} className="inline-flex items-center gap-[6px] bg-[#f3f4f6] dark:bg-midnight-850 text-[#1e2128] dark:text-gray-300 text-[12px] font-semibold rounded-[11px] px-[12px] h-[26px]">
-                      {cat}
-                      <button type="button" onClick={() => handleToggleCategory(cat)} className="text-[#9095a1] hover:text-[#f25a5a]">
-                        ×
-                      </button>
+          {/* Category Row (Takes 1 full row) */}
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              カテゴリ <span className="text-[#f25a5a]">*</span>
+            </label>
+            <div id="categories-container" className="flex flex-wrap gap-[20px] py-[6px]">
+              {categoriesLoading ? (
+                <div className="text-[13px] text-gray-400 dark:text-gray-500">読み込み中...</div>
+              ) : (
+                apiCategories.map((cat) => (
+                  <label
+                    key={cat.id}
+                    className="flex items-center gap-[8px] cursor-pointer text-[14px] text-[#171a1f] dark:text-light select-none group"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={categories.includes(cat.name)}
+                      onChange={() => handleToggleCategory(cat.name)}
+                      className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
+                    />
+                    <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
+                      {cat.name}
                     </span>
-                  ))}
-                </div>
+                  </label>
+                ))
               )}
             </div>
+            {errors.categories && (
+              <p className="text-[12px] text-red-500 font-semibold">{errors.categories}</p>
+            )}
+          </div>
 
-            {/* Role (takes roughly 25%) */}
-            <div ref={roleDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                すべての役割 <span className="text-[#f25a5a]">*</span>
-              </label>
-
-              {/* Custom Multi-select Dropdown */}
-              <div className="relative">
-                <div
-                  className="w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
-                  onClick={() => setIsRoleOpen(!isRoleOpen)}
-                >
-                  <span className={roles.length > 0 ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
-                    {roles.length > 0 ? `${roles.length}件選択中` : 'ロールを選択...'}
-                  </span>
-                  <ChevronDownIcon />
-                </div>
-
-                {isRoleOpen && (
-                  <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col font-base">
-                    {ROLE_OPTIONS.map((opt) => (
-                      <div
-                        key={opt.value}
-                        onClick={() => handleToggleRole(opt.value)}
-                        className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${roles.includes(opt.value)
-                          ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
-                          : 'text-[#171a1f] dark:text-light'
-                          }`}
-                      >
-                        <span>{opt.label}</span>
-                        {roles.includes(opt.value) && (
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Selected Role Tags */}
-              {roles.length > 0 && (
-                <div className="flex flex-wrap gap-[8px] mt-[4px]">
-                  {roles.map((roleVal) => {
-                    const label = ROLE_OPTIONS.find(opt => opt.value === roleVal)?.label || roleVal;
-                    return (
-                      <span key={roleVal} className="inline-flex items-center gap-[6px] bg-[#f3f4f6] dark:bg-midnight-850 text-[#1e2128] dark:text-gray-300 text-[12px] font-semibold rounded-[11px] px-[12px] h-[26px]">
-                        {label}
-                        <button type="button" onClick={() => handleToggleRole(roleVal)} className="text-[#9095a1] hover:text-[#f25a5a]">
-                          ×
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
+          {/* Step Row (Takes 1 full row) */}
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              ステップ
+            </label>
+            <div className="flex flex-wrap gap-[20px] py-[6px]">
+              {!isComplianceSelected ? (
+                <span className="text-[13px] text-gray-400 dark:text-gray-500 italic">
+                  ステップを表示するには、カテゴリから「コンプライアンス」を選択してください。
+                </span>
+              ) : stepsLoading ? (
+                <div className="text-[13px] text-gray-400 dark:text-gray-500">読み込み中...</div>
+              ) : (
+                apiSteps.map((step) => (
+                  <label
+                    key={step.id}
+                    className="flex items-center gap-[8px] cursor-pointer text-[14px] text-[#171a1f] dark:text-light select-none group"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={stepIds.includes(step.id)}
+                      onChange={() => handleToggleStep(step.id)}
+                      className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
+                    />
+                    <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
+                      {step.icon} STEP {step.order} — {step.title}
+                    </span>
+                  </label>
+                ))
               )}
             </div>
+          </div>
 
-            {/* Step (takes roughly 33%) */}
-            <div ref={stepDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                ステップ
-              </label>
-
-              <div className="relative">
-                <div
-                  className={`w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between select-none ${
-                    !categories.includes('コンプライアンス') 
-                      ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-midnight-950' 
-                      : 'cursor-pointer'
-                  }`}
-                  onClick={() => {
-                    if (categories.includes('コンプライアンス')) {
-                      setIsStepOpen(!isStepOpen);
-                    }
-                  }}
+          {/* Role Row (Takes 1 full row) */}
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              すべての役割 <span className="text-[#f25a5a]">*</span>
+            </label>
+            <div id="roles-container" className="flex flex-wrap gap-[20px] py-[6px]">
+              {ROLE_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-[8px] cursor-pointer text-[14px] text-[#171a1f] dark:text-light select-none group"
                 >
-                  <span className={stepId ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
-                    {stepId ? `STEP ${stepId.replace('step-', '')}` : 'ステップを選択...'}
+                  <input
+                    type="checkbox"
+                    checked={roles.includes(opt.value)}
+                    onChange={() => handleToggleRole(opt.value)}
+                    className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
+                  />
+                  <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
+                    {opt.label}
                   </span>
-                  <ChevronDownIcon />
-                </div>
-
-                {isStepOpen && categories.includes('コンプライアンス') && (
-                  <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col font-base">
-                    {['step-1', 'step-2', 'step-3', 'step-4'].map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setStepId(opt === stepId ? '' : opt);
-                          setIsStepOpen(false);
-                        }}
-                        className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${stepId === opt
-                          ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
-                          : 'text-[#171a1f] dark:text-light'
-                          }`}
-                      >
-                        <span>STEP {opt.replace('step-', '')}</span>
-                        {stepId === opt && (
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                </label>
+              ))}
             </div>
+            {errors.roles && (
+              <p className="text-[12px] text-red-500 font-semibold">{errors.roles}</p>
+            )}
           </div>
 
           {/* Login ID Row */}
@@ -662,29 +791,32 @@ export default function CreateToolForm() {
               <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                 アイコン
               </span>
-              <div className="flex flex-row items-center gap-[16px]">
+              <div className="flex flex-row items-center gap-[16px] w-full">
                 {/* Image Preview Box */}
                 <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden shrink-0">
-                  <ImageUploadIcon />
+                  {thumbnailUrl ? (
+                    <img src={thumbnailUrl} alt="Favicon Preview" className="w-full h-full object-contain" />
+                  ) : (
+                    <ImageUploadIcon />
+                  )}
                 </div>
-                {/* Upload Button & Text */}
-                <div className="flex flex-col gap-[6px]">
+                {/* URL Input & Button */}
+                <div className="flex gap-[8px] items-center flex-1">
                   <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    className="hidden"
+                    type="text"
+                    value={iconUrlInput}
+                    onChange={(e) => setIconUrlInput(e.target.value)}
+                    placeholder="https://example.com"
+                    className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                   />
                   <button
                     type="button"
-                    onClick={handleTriggerUpload}
-                    className="h-[32px] px-[12px] w-fit bg-white dark:bg-midnight-900 border border-[#171a1f] dark:border-gray-500 hover:bg-[#fafafb] dark:hover:bg-midnight-800 rounded-[6px] text-[12px] font-medium transition-colors"
+                    onClick={handleFetchFavicon}
+                    disabled={fetchingFavicon}
+                    className="h-[40px] px-[16px] bg-[#5570f6] text-white hover:bg-[#395ce0] disabled:bg-gray-400 disabled:cursor-not-allowed rounded-[6px] text-[14px] font-semibold transition-colors shrink-0"
                   >
-                    画像をアップロード
+                    {fetchingFavicon ? '取得中...' : 'ファビコン取得'}
                   </button>
-                  <span className="text-[11px] text-[#565d6d] dark:text-gray-400">
-                    推奨サイズ: 400x400px (JPG/PNG)
-                  </span>
                 </div>
               </div>
             </div>
@@ -792,12 +924,23 @@ export default function CreateToolForm() {
                     プロンプト名 <span className="text-[#f25a5a]">*</span>
                   </label>
                   <input
+                    id={`prompt-name-${prompt.id}`}
                     type="text"
                     value={prompt.name}
-                    onChange={(e) => handleUpdatePrompt(prompt.id, 'name', e.target.value)}
+                    onChange={(e) => {
+                      handleUpdatePrompt(prompt.id, 'name', e.target.value);
+                      if (errors[`prompt_name_${prompt.id}`]) {
+                        setErrors((prev) => ({ ...prev, [`prompt_name_${prompt.id}`]: '' }));
+                      }
+                    }}
                     placeholder="プロンプト名を入力..."
-                    className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] outline-none focus:border-[#5570f6]"
+                    className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[4px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                      errors[`prompt_name_${prompt.id}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                    }`}
                   />
+                  {errors[`prompt_name_${prompt.id}`] && (
+                    <p className="text-[11px] text-red-500 font-semibold">{errors[`prompt_name_${prompt.id}`]}</p>
+                  )}
                 </div>
 
                 {/* Prompt Content */}
@@ -806,12 +949,23 @@ export default function CreateToolForm() {
                     プロンプト本文 <span className="text-[#f25a5a]">*</span>
                   </label>
                   <textarea
+                    id={`prompt-content-${prompt.id}`}
                     value={prompt.content}
-                    onChange={(e) => handleUpdatePrompt(prompt.id, 'content', e.target.value)}
+                    onChange={(e) => {
+                      handleUpdatePrompt(prompt.id, 'content', e.target.value);
+                      if (errors[`prompt_content_${prompt.id}`]) {
+                        setErrors((prev) => ({ ...prev, [`prompt_content_${prompt.id}`]: '' }));
+                      }
+                    }}
                     placeholder="プロンプト本文を入力..."
                     rows={3}
-                    className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[4px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
+                    className={`w-full p-[12px] bg-white dark:bg-midnight-900 border rounded-[4px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                      errors[`prompt_content_${prompt.id}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                    }`}
                   />
+                  {errors[`prompt_content_${prompt.id}`] && (
+                    <p className="text-[11px] text-red-500 font-semibold">{errors[`prompt_content_${prompt.id}`]}</p>
+                  )}
                 </div>
 
                 {/* Prompt Options Row: Visibility & Categories */}
@@ -851,29 +1005,31 @@ export default function CreateToolForm() {
                       カテゴリ
                     </label>
                     <div className="flex flex-wrap items-center gap-[16px] min-h-[40px]">
-                      {categories.length === 0 ? (
+                      {categoriesLoading ? (
+                        <span className="text-[12px] text-gray-400 dark:text-gray-500">読み込み中...</span>
+                      ) : apiCategories.length === 0 ? (
                         <span className="text-[12px] text-gray-400 dark:text-gray-500">
-                          基本情報でカテゴリを選択してください
+                          カテゴリがありません
                         </span>
                       ) : (
-                        categories.map((cat) => {
-                          const isChecked = (prompt.categories || []).includes(cat);
+                        apiCategories.map((cat) => {
+                          const isChecked = (prompt.categories || []).includes(cat.name);
                           return (
-                            <label key={cat} className="flex items-center gap-[8px] cursor-pointer text-[13px]">
+                            <label key={cat.id} className="flex items-center gap-[8px] cursor-pointer text-[13px]">
                               <input
                                 type="checkbox"
                                 checked={isChecked}
                                 onChange={() => {
                                   const currentSelected = prompt.categories || [];
                                   const nextSelected = isChecked
-                                    ? currentSelected.filter((c) => c !== cat)
-                                    : [...currentSelected, cat];
+                                    ? currentSelected.filter((c) => c !== cat.name)
+                                    : [...currentSelected, cat.name];
                                   handleUpdatePrompt(prompt.id, 'categories', nextSelected);
                                 }}
                                 className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
                               />
                               <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
-                                {cat}
+                                {cat.name}
                               </span>
                             </label>
                           );

@@ -11,7 +11,7 @@ from app.core.modules.tool.models.tool import Tool
 from app.core.modules.tool.models.tool_guide_file import ToolGuideFile
 from app.core.modules.tool.tool_schemas import GuideFileResponse
 
-router = APIRouter(tags=['[Public] Tool Guide Files'])
+router = APIRouter(tags=['[Private] Tool Guide Files'])
 
 GUIDE_UPLOAD_DIR = os.path.join('static', 'uploads', 'guides')
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
@@ -24,7 +24,7 @@ async def _get_tool_or_404(tool_id: int, db: AsyncSession) -> Tool:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tool not found')
     return tool
 
-@router.post('/tools/{tool_id}/guide-files', response_model=GuideFileResponse, status_code=status.HTTP_201_CREATED, summary='Upload file hướng dẫn')
+@router.post('/tools/{tool_id}/guide-files', response_model=GuideFileResponse, status_code=status.HTTP_201_CREATED, summary='Upload guide file')
 async def upload_guide_file(
     tool_id: int,
     file: UploadFile = File(...),
@@ -75,7 +75,7 @@ async def upload_guide_file(
     await db.refresh(db_file)
     return db_file
 
-@router.get('/tools/{tool_id}/guide-files', response_model=List[GuideFileResponse], summary='Danh sách file hướng dẫn')
+@router.get('/tools/{tool_id}/guide-files', response_model=List[GuideFileResponse], summary='Get guide files list')
 async def list_guide_files(tool_id: int, db: AsyncSession = Depends(get_db)):
     """Lấy danh sách file đính kèm của tool theo thứ tự."""
     await _get_tool_or_404(tool_id, db)
@@ -84,7 +84,7 @@ async def list_guide_files(tool_id: int, db: AsyncSession = Depends(get_db)):
     )
     return list(result.scalars().all())
 
-@router.delete('/tools/{tool_id}/guide-files/{file_id}', status_code=status.HTTP_204_NO_CONTENT, summary='Xóa file hướng dẫn')
+@router.delete('/tools/{tool_id}/guide-files/{file_id}', status_code=status.HTTP_204_NO_CONTENT, summary='Delete guide file')
 async def delete_guide_file(tool_id: int, file_id: int, db: AsyncSession = Depends(get_db)):
     """Xóa file đính kèm — xóa cả file vật lý."""
     await _get_tool_or_404(tool_id, db)

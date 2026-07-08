@@ -357,7 +357,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
         {/* Prompts Cards List */}
         <div className="flex flex-col gap-[24px]">
-          {details.prompts.map((prompt, idx) => {
+          {(details.prompts || []).map((prompt, idx) => {
             const isRec = prompt.isRecommended;
             return (
               <div

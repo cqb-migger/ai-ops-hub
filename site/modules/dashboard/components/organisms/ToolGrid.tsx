@@ -21,7 +21,7 @@ export default function ToolGrid() {
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { tools, loading } = useTools();
+  const { tools, loading } = useTools({ visibility: 'public' });
 
   // Reset page when filters change
   useEffect(() => {

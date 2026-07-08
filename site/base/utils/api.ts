@@ -2,13 +2,37 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:800
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
+  
+  let headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  } as any;
+
+  if (typeof window !== 'undefined') {
+    const authStorage = localStorage.getItem('auth-storage');
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        const token = parsed?.state?.token;
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      } catch (_) {}
+    }
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
+
+  if (response.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth-storage');
+      window.location.href = '/login';
+    }
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     let errorMessage = `HTTP error! Status: ${response.status}`;

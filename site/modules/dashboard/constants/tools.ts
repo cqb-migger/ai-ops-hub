@@ -1,37 +1,76 @@
-// Static types and categories for tools
+// API-connected types for tools (matching backend response)
+
+export interface ToolCategory {
+  id: number;
+  name: string;
+  order?: number;
+}
 
 export interface ToolPrompt {
+  id?: number;
+  tool_id?: number;
   title: string;
-  isRecommended?: boolean;
-  description: string;
+  description?: string;
   content: string;
+  is_recommended?: boolean;
+  order?: number;
+  roles?: string[];
+  categories?: ToolCategory[];
+  // Legacy FE fields
+  isRecommended?: boolean;
 }
 
 export interface ToolDetails {
-  inputs: string[];
-  outputDescription: string;
-  prompts: ToolPrompt[];
+  inputs?: string[];
+  outputDescription?: string;
+  prompts?: ToolPrompt[];
+}
+
+export interface GuideFile {
+  id: number;
+  tool_id: number;
+  original_name: string;
+  stored_name: string;
+  file_path: string;
+  file_url: string;
+  mime_type: string;
+  file_size: number;
+  order: number;
+  created_at: string;
 }
 
 export interface Tool {
-  id: string;
+  // API fields (numeric id from backend)
+  id: number | string;
   name: string;
-  category: string[];
   description: string;
   url?: string;
   icon?: string;
   status?: string;
-  details?: ToolDetails;
-  role?: string;
   visibility?: 'public' | 'draft';
+  login_ids?: string[];
+  guide_content?: string;
+  admin_memo?: string;
+  details?: ToolDetails;
+  step_id?: number | null;
 
+  // Relational data
+  categories?: ToolCategory[];
+  roles?: string[];
+  guide_files?: GuideFile[];
+  prompts?: ToolPrompt[];
+
+  created_at?: string;
+  updated_at?: string;
+
+  // Legacy FE flat fields (mapped from API for backwards compat)
+  category: string[];
+  role?: string;
+  loginIds?: string[];
   guideContent?: string;
   guideMaterials?: string[];
   adminMemo?: string;
-  loginIds?: string[];
 }
-
-
 
 export const CATEGORIES = [
   'すべてのカテゴリ',
@@ -39,5 +78,3 @@ export const CATEGORIES = [
   'コンプライアンス',
   'データ',
 ];
-
-

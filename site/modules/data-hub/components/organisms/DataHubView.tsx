@@ -9,7 +9,7 @@ export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const { tools, loading } = useTools({ category: 'data' });
+  const { tools, loading } = useTools({ category: 'data', visibility: 'public' });
 
   // Reset page when filter changes
   useEffect(() => {
