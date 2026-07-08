@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from scalar_fastapi import AgentScalarConfig, get_scalar_api_reference
 
 from app.api.middlewares.base_middleware import setup_middlewares
@@ -11,8 +12,6 @@ from app.core.config import settings
 from app.core.db.database import engine
 from app.core.logging.logger import error_logger
 
-
-from fastapi.staticfiles import StaticFiles
 
 # Lifespan
 @asynccontextmanager

@@ -1,5 +1,7 @@
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
+
 
 class UserCreate(BaseModel):
     email: EmailStr = Field(..., description='The email address of the user')

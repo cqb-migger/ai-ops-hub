@@ -1,18 +1,70 @@
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Any, Dict, List, Optional
 
-class ToolBase(BaseModel):
+from pydantic import BaseModel, ConfigDict
+
+
+# Category (nested in tool responses)
+class CategoryInTool(BaseModel):
+    id: int
+    name: str
+    order: int = 0
+    model_config = ConfigDict(from_attributes=True)
+
+# Guide File
+class GuideFileResponse(BaseModel):
+    id: int
+    tool_id: int
+    original_name: str
+    stored_name: str
+    file_path: str
+    file_url: Optional[str] = None
+    mime_type: Optional[str] = None
+    file_size: Optional[int] = None
+    order: int = 0
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+# Prompt
+class PromptCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    content: str
+    is_recommended: bool = False
+    order: int = 0
+    roles: List[str] = []
+    category_ids: List[int] = []
+
+class PromptResponse(BaseModel):
+    id: int
+    tool_id: int
+    title: str
+    description: Optional[str] = None
+    content: str
+    is_recommended: bool
+    order: int
+    roles: List[str] = []
+    categories: List[CategoryInTool] = []
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+# Tool
+class ToolCreate(BaseModel):
     name: str
     description: Optional[str] = None
     icon: Optional[str] = None
     url: Optional[str] = None
     status: Optional[str] = '公開中'
-    category: List[str] = Field(default_factory=list)
+    visibility: Optional[str] = 'public'
+    category_ids: List[int] = []
+    roles: List[str] = []
+    login_ids: List[str] = []
+    guide_content: Optional[str] = None
+    admin_memo: Optional[str] = None
+    step_id: Optional[int] = None
     details: Optional[Dict[str, Any]] = None
-
-class ToolCreate(ToolBase):
-    pass
+    prompts: List[PromptCreate] = []
 
 class ToolUpdate(BaseModel):
     name: Optional[str] = None
@@ -20,12 +72,55 @@ class ToolUpdate(BaseModel):
     icon: Optional[str] = None
     url: Optional[str] = None
     status: Optional[str] = None
-    category: Optional[List[str]] = None
+    visibility: Optional[str] = None
+    category_ids: Optional[List[int]] = None
+    roles: Optional[List[str]] = None
+    login_ids: Optional[List[str]] = None
+    guide_content: Optional[str] = None
+    admin_memo: Optional[str] = None
+    step_id: Optional[int] = None
     details: Optional[Dict[str, Any]] = None
+    prompts: Optional[List[PromptCreate]] = None
 
-class ToolResponse(ToolBase):
-    id: str
+class ToolListItem(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    url: Optional[str] = None
+    status: str
+    visibility: str
+    categories: List[CategoryInTool] = []
+    roles: List[str] = []
+    login_ids: List[str] = []
+    step_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
-
     model_config = ConfigDict(from_attributes=True)
+
+class ToolDetailResponse(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    url: Optional[str] = None
+    status: str
+    visibility: str
+    login_ids: List[str] = []
+    guide_content: Optional[str] = None
+    admin_memo: Optional[str] = None
+    details: Optional[Dict[str, Any]] = None
+    step_id: Optional[int] = None
+    categories: List[CategoryInTool] = []
+    roles: List[str] = []
+    guide_files: List[GuideFileResponse] = []
+    prompts: List[PromptResponse] = []
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class ToolListResponse(BaseModel):
+    items: List[ToolListItem]
+    total: int
+    skip: int
+    limit: int

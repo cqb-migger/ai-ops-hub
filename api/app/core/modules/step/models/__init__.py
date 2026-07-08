@@ -1,1 +1,1 @@
-from .step import Step
+from .step import Step as Step

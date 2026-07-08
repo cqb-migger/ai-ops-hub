@@ -1,7 +1,6 @@
 import typer
 
-from app.cli.commands import user_cli
-from app.cli.commands import seed_cli
+from app.cli.commands import seed_cli, user_cli
 
 app = typer.Typer(help='Base CLI')
 

@@ -37,6 +37,11 @@ from app.core.db.database import Base  # noqa: E402
 from app.core.modules.user.models.user import User  # noqa: E402, F401
 from app.core.modules.tool.models.tool import Tool  # noqa: E402, F401
 from app.core.modules.step.models.step import Step  # noqa: E402, F401
+from app.core.modules.category.models.category import Category  # noqa: E402, F401
+from app.core.modules.tool.models.tool_category import ToolCategory  # noqa: E402, F401
+from app.core.modules.tool.models.tool_role import ToolRole  # noqa: E402, F401
+from app.core.modules.tool.models.tool_guide_file import ToolGuideFile  # noqa: E402, F401
+from app.core.modules.tool.models.tool_prompt import ToolPrompt, ToolPromptRole, ToolPromptCategory  # noqa: E402, F401
 
 target_metadata = Base.metadata  # noqa: E402
 

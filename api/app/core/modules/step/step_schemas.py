@@ -1,15 +1,16 @@
 from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
+
 class StepBase(BaseModel):
-    id: str
     order: int
     icon: Optional[str] = None
     title: str
     description: Optional[str] = None
 
 class StepCreate(StepBase):
-    pass
+    id: Optional[int] = None
 
 class StepUpdate(BaseModel):
     order: Optional[int] = None
@@ -18,4 +19,6 @@ class StepUpdate(BaseModel):
     description: Optional[str] = None
 
 class StepResponse(StepBase):
+    id: int
+
     model_config = ConfigDict(from_attributes=True)
