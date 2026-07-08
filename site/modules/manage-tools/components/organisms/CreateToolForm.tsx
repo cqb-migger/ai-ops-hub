@@ -247,7 +247,9 @@ export default function CreateToolForm() {
   const [redirectUrl, setRedirectUrl] = useState('https://internal.app/tools/sales-analyzer');
   const [categories, setCategories] = useState<string[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
+  const [stepId, setStepId] = useState<string>('');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isStepOpen, setIsStepOpen] = useState(false);
   const [loginIds, setLoginIds] = useState<string[]>(['']);
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -279,6 +281,7 @@ export default function CreateToolForm() {
   const referenceFileInputRef = useRef<HTMLInputElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
+  const stepDropdownRef = useRef<HTMLDivElement>(null);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
 
   const handleTriggerUpload = () => fileInputRef.current?.click();
@@ -293,11 +296,6 @@ export default function CreateToolForm() {
       if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target as Node)) {
         setIsRoleOpen(false);
       }
-    }
-    if (isCategoryOpen || isRoleOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isCategoryOpen, isRoleOpen]);
@@ -430,21 +428,21 @@ export default function CreateToolForm() {
             />
           </div>
 
-          {/* URL, Category, Role Row */}
-          <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px]">
-            {/* URL (takes roughly 50%) */}
-            <div className="flex flex-col gap-[6px] flex-[2]">
-              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                遷移先URL
-              </label>
-              <input
-                type="text"
-                value={redirectUrl}
-                onChange={(e) => setRedirectUrl(e.target.value)}
-                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
-              />
-            </div>
+          {/* URL Row */}
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+              遷移先URL
+            </label>
+            <input
+              type="text"
+              value={redirectUrl}
+              onChange={(e) => setRedirectUrl(e.target.value)}
+              className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
+            />
+          </div>
 
+          {/* Category, Role, Step Row */}
+          <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px]">
             {/* Category (takes roughly 33%) */}
             <div ref={categoryDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
@@ -558,6 +556,58 @@ export default function CreateToolForm() {
                   })}
                 </div>
               )}
+            </div>
+
+            {/* Step (takes roughly 33%) */}
+            <div ref={stepDropdownRef} className="flex flex-col gap-[6px] flex-1 relative">
+              <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+                ステップ
+              </label>
+
+              <div className="relative">
+                <div
+                  className={`w-full min-h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between select-none ${
+                    !categories.includes('コンプライアンス') 
+                      ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-midnight-950' 
+                      : 'cursor-pointer'
+                  }`}
+                  onClick={() => {
+                    if (categories.includes('コンプライアンス')) {
+                      setIsStepOpen(!isStepOpen);
+                    }
+                  }}
+                >
+                  <span className={stepId ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
+                    {stepId ? `STEP ${stepId.replace('step-', '')}` : 'ステップを選択...'}
+                  </span>
+                  <ChevronDownIcon />
+                </div>
+
+                {isStepOpen && categories.includes('コンプライアンス') && (
+                  <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-10 py-[8px] flex flex-col font-base">
+                    {['step-1', 'step-2', 'step-3', 'step-4'].map((opt) => (
+                      <div
+                        key={opt}
+                        onClick={() => {
+                          setStepId(opt === stepId ? '' : opt);
+                          setIsStepOpen(false);
+                        }}
+                        className={`flex items-center justify-between px-[12px] py-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-800 cursor-pointer text-[14px] select-none transition-colors ${stepId === opt
+                          ? 'bg-[#eff6ff] text-[#5570f6] font-semibold dark:bg-[#5570f6]/20 dark:text-primary-400'
+                          : 'text-[#171a1f] dark:text-light'
+                          }`}
+                      >
+                        <span>STEP {opt.replace('step-', '')}</span>
+                        {stepId === opt && (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import CategoryDropdown from './CategoryDropdown';
 import RoleDropdown from './RoleDropdown';
+import StepDropdown from './StepDropdown';
+import { Step } from '../../../compliance-hub/constants/steps';
 
 interface FilterBarProps {
   searchQuery: string;
@@ -9,13 +11,18 @@ interface FilterBarProps {
   onCategoryChange?: (val: string) => void;
   selectedRole?: string;
   onRoleChange?: (val: string) => void;
+  selectedStep?: string;
+  onStepChange?: (val: string) => void;
   categories?: string[];
   roles?: string[];
+  steps?: Step[];
   showFilters?: boolean;
   /** Show only the role dropdown (used in user management page) */
   showRoleFilterOnly?: boolean;
   /** Show both category and role dropdowns simultaneously */
   showBothFilters?: boolean;
+  /** Show step filter (used in compliance hub) */
+  showStepFilter?: boolean;
   placeholder?: string;
 }
 
@@ -44,10 +51,14 @@ export default function FilterBar({
   onCategoryChange = () => { },
   selectedRole = '',
   onRoleChange = () => { },
+  selectedStep = '',
+  onStepChange = () => { },
   categories,
+  steps = [],
   showFilters = true,
   showRoleFilterOnly = false,
   showBothFilters = false,
+  showStepFilter = false,
   placeholder = 'ツール名、キーワードで検索...',
 }: FilterBarProps) {
   return (
@@ -91,7 +102,7 @@ export default function FilterBar({
       )}
 
       {/* Category only */}
-      {showFilters && !showRoleFilterOnly && !showBothFilters && (
+      {showFilters && !showRoleFilterOnly && !showBothFilters && !showStepFilter && (
         <CategoryDropdown
           selectedCategory={selectedCategory}
           onCategoryChange={onCategoryChange}
@@ -101,12 +112,29 @@ export default function FilterBar({
       )}
 
       {/* Role only */}
-      {showRoleFilterOnly && !showBothFilters && (
+      {showFilters && showRoleFilterOnly && !showStepFilter && (
         <RoleDropdown
           selectedRole={selectedRole}
           onRoleChange={onRoleChange}
           width={250}
         />
+      )}
+
+      {/* Step + Role (for Compliance Hub) */}
+      {showStepFilter && (
+        <>
+          <StepDropdown
+            selectedStep={selectedStep}
+            onStepChange={onStepChange}
+            steps={steps}
+            width={180}
+          />
+          <RoleDropdown
+            selectedRole={selectedRole}
+            onRoleChange={onRoleChange}
+            width={180}
+          />
+        </>
       )}
     </div>
   );

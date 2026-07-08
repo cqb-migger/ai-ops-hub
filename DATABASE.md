@@ -25,6 +25,7 @@ Bảng này chứa thông tin cấu hình của các công cụ. Để tối ưu
 - **`role`** (`String`): Đối tượng sử dụng chính của công cụ (Ví dụ: `sales`, `marketing`, `hr`).
 - **`note`** (`Text`): Ghi chú bổ sung dành cho quản trị viên hoặc lưu trữ thông tin mở rộng.
 - **`category`** (`JSONB` / `Array of Strings`): Mảng chứa 1 hoặc nhiều danh mục (Hub) mà công cụ trực thuộc (VD: `['クリエイティブハブ', 'データハブ']`).
+- **`step_id`** (`String`, Nullable): ID của bước (Step) mà công cụ trực thuộc. Vì 1 công cụ chỉ thuộc 1 Step nên trường này lưu chuỗi đơn (hoặc UUID).
 - **`documents`** (`JSONB`): Cột lưu trữ mảng các tài liệu liên quan đến công cụ. Cấu trúc mỗi object:
   - `name` (`String`): Tên tài liệu.
   - `url` (`String`): Đường dẫn tài liệu.
@@ -65,6 +66,7 @@ Bảng quản lý thông tin tài khoản truy cập. Hệ thống tích hợp x
 - **`name`** (`String`): Tên hiển thị đầy đủ của người dùng (tổng hợp từ `first_name` và `last_name`).
 - **`provider`** (`String`): Nền tảng xác thực SSO (Ví dụ: `google`, `microsoft`).
 - **`role`** (`String`): Quyền hạn truy cập của người dùng trên hệ thống (Ví dụ: `admin`, `user`).
+- **`favorite_tools`** (`Array of Strings`): Mảng chứa ID của các công cụ mà người dùng đã thêm vào danh sách yêu thích.
 - **`last_login`** (`DateTime`): Thời gian ghi nhận lần đăng nhập thành công gần nhất.
 - **`created_at`** (`DateTime`): Thời điểm tài khoản được tự động cấp phép (Provisioning) trên hệ thống.
 - **`updated_at`** (`DateTime`): Thời điểm thông tin người dùng được đồng bộ hoặc thay đổi lần cuối.

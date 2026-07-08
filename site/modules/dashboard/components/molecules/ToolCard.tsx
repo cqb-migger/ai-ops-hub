@@ -55,13 +55,23 @@ export default function ToolCard({ tool }: ToolCardProps) {
               {tool.name}
             </h3>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex-shrink-0 w-[28px] h-[28px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-[#f0f3fa] dark:hover:bg-midnight-800 transition-colors"
-            title={`${tool.name}の詳細情報`}
-          >
-            <span className="text-[12px] font-semibold text-[#5a73a3] dark:text-gray-400 leading-none select-none">?</span>
-          </button>
+          <div className="flex items-center gap-[6px]">
+            <button
+              className="flex-shrink-0 w-[28px] h-[28px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-[#ffe3e3] dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-900 transition-colors group"
+              title="お気に入りに追加"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#5a73a3] dark:text-gray-400 group-hover:text-red-500 transition-colors">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+              </svg>
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex-shrink-0 w-[28px] h-[28px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-[#f0f3fa] dark:hover:bg-midnight-800 transition-colors"
+              title={`${tool.name}の詳細情報`}
+            >
+              <span className="text-[12px] font-semibold text-[#5a73a3] dark:text-gray-400 leading-none select-none">?</span>
+            </button>
+          </div>
         </div>
 
         {/* Tags */}

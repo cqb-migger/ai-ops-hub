@@ -86,11 +86,22 @@ export default function ToolGrid() {
             利用可能なツール
           </h3>
         </div>
-        <ItemCount
-          currentPage={currentPageSafe}
-          totalItems={filteredTools.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-        />
+        <div className="flex items-center justify-between w-full">
+          <ItemCount
+            currentPage={currentPageSafe}
+            totalItems={filteredTools.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
+          <button className="flex items-center justify-center w-[36px] h-[36px] rounded-[8px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 text-[#565d6d] dark:text-gray-400 hover:bg-[#f3f4f6] dark:hover:bg-midnight-800 transition-colors" title="名前順で並び替え">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 17h10"/>
+              <path d="M11 13h7"/>
+              <path d="M11 9h4"/>
+              <path d="m3 16 4 4 4-4"/>
+              <path d="M7 20V4"/>
+            </svg>
+          </button>
+        </div>
 
         {/* Cards Grid */}
         {loading ? (

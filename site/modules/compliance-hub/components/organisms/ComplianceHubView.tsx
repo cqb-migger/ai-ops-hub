@@ -22,6 +22,7 @@ export default function ComplianceHubView() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isFlowExpanded, setIsFlowExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedStep, setSelectedStep] = useState('');
 
   const { tools, loading: toolsLoading } = useTools({ category: 'compliance' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
@@ -29,7 +30,7 @@ export default function ComplianceHubView() {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedRole]);
+  }, [searchQuery, selectedRole, selectedStep]);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -82,9 +83,16 @@ export default function ComplianceHubView() {
       const matchesRole =
         selectedRole === '' || resource.role === selectedRole;
 
-      return matchesSearch && matchesRole;
+      // Mock implementation: Since backend doesn't have stepId yet, if a step is selected, 
+      // we filter. Currently we might not have `stepId` on `resource`. 
+      // Let's assume `resource` will have `stepId`. If it doesn't, we can simulate it.
+      // For now, let's just do `resource as any` to avoid TS error if stepId isn't on Tool type.
+      const matchesStep = 
+        selectedStep === '' || (resource as any).stepId === selectedStep;
+
+      return matchesSearch && matchesRole && matchesStep;
     });
-  }, [tools, searchQuery, selectedRole]);
+  }, [tools, searchQuery, selectedRole, selectedStep]);
 
   const ITEMS_PER_PAGE = 16;
   const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
@@ -298,15 +306,29 @@ export default function ComplianceHubView() {
             onSearchChange={setSearchQuery}
             selectedRole={selectedRole}
             onRoleChange={setSelectedRole}
-            showRoleFilterOnly
+            selectedStep={selectedStep}
+            onStepChange={setSelectedStep}
+            steps={steps}
+            showStepFilter={true}
           />
 
           <div className="flex flex-col gap-[12px] w-full">
-          <ItemCount
-            currentPage={currentPageSafe}
-            totalItems={filteredResources.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-          />
+          <div className="flex items-center justify-between w-full">
+            <ItemCount
+              currentPage={currentPageSafe}
+              totalItems={filteredResources.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
+            <button className="flex items-center justify-center w-[36px] h-[36px] rounded-[8px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 text-[#565d6d] dark:text-gray-400 hover:bg-[#f3f4f6] dark:hover:bg-midnight-800 transition-colors" title="名前順で並び替え">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 17h10"/>
+                <path d="M11 13h7"/>
+                <path d="M11 9h4"/>
+                <path d="m3 16 4 4 4-4"/>
+                <path d="M7 20V4"/>
+              </svg>
+            </button>
+          </div>
 
           {/* Cards Grid */}
           {toolsLoading ? (

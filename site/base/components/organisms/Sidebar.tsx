@@ -327,7 +327,11 @@ export default function Sidebar() {
                 <span>言語</span>
               </div>
               <select 
-                defaultValue="ja" 
+                value={router.locale || 'ja'} 
+                onChange={(e) => {
+                  const newLocale = e.target.value;
+                  router.push(router.pathname, router.asPath, { locale: newLocale });
+                }}
                 className="bg-transparent text-[12px] font-medium text-[#171a1f] dark:text-light outline-none cursor-pointer focus:ring-2 focus:ring-[#5570f6] rounded-[4px]"
                 onClick={(e) => e.stopPropagation()}
               >
