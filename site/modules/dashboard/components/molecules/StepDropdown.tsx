@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Step } from '../../../compliance-hub/constants/steps';
+import { useTranslation } from 'next-i18next';
 
 export interface StepDropdownProps {
   selectedStep?: string;
@@ -71,6 +72,7 @@ export default function StepDropdown({
 }: StepDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation('common');
 
   const hasStep = selectedStep !== '';
   const selectedLabel = steps.find((s) => s.id === selectedStep)?.title ?? null;
@@ -123,7 +125,7 @@ export default function StepDropdown({
           <span
             role="button"
             onClick={handleClear}
-            title="クリア"
+            title={t('common.clear', 'クリア') as string}
             className="flex-shrink-0 ml-[6px] flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#5570f6]/15 hover:bg-[#5570f6]/30 text-[#5570f6] dark:text-[#7c91eb] transition-colors"
           >
             <XIcon size={11} />

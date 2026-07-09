@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Step } from '../../constants/steps';
 import { toast } from 'react-hot-toast';
 import { API_BASE, apiFetch } from '../../../../base/utils/api';
+import { useTranslation } from 'next-i18next';
 
 interface StepModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
   const [description, setDescription] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('');
   const [error, setError] = useState('');
+  const { t } = useTranslation('common');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,11 +38,11 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      setError('タイトルを入力してください。');
+      setError(t('compliance.titleRequired', 'タイトルを入力してください。') as string);
       return;
     }
     if (!description.trim()) {
-      setError('説明を入力してください。');
+      setError(t('compliance.descRequired', '説明を入力してください。') as string);
       return;
     }
     onSave({
@@ -60,7 +62,7 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
         {/* Header */}
         <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-[#dee1e6] dark:border-midnight-800">
           <h3 className="text-[18px] font-bold text-[#171a1f] dark:text-light">
-            {initialData ? 'ステップを編集' : 'ステップを追加'}
+            {initialData ? t('compliance.editStep') : t('compliance.addStep')}
           </h3>
           <button
             onClick={onClose}
@@ -84,7 +86,7 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
           {/* Icon Selection - Upload only */}
           <div className="flex flex-col gap-[8px]">
             <label className="text-[14px] font-bold text-[#171a1f] dark:text-light">
-              アイコン
+              {t('compliance.iconLabel')}
             </label>
             <div className="p-[16px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[12px]">
               <div className="flex items-center gap-[16px]">
@@ -107,16 +109,16 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
                       if (file) {
                         const formData = new FormData();
                         formData.append('file', file);
-                        const uploadToastId = toast.loading('画像をアップロード中...');
+                        const uploadToastId = toast.loading(t('compliance.uploading', '画像をアップロード中...'));
                         try {
                           const res = await apiFetch<any>('/upload/file', {
                             method: 'POST',
                             body: formData,
                           });
                           setSelectedIcon(res.file_url);
-                          toast.success('アイコン画像をアップロードしました', { id: uploadToastId });
+                          toast.success(t('compliance.uploadSuccess', 'アイコン画像をアップロードしました'), { id: uploadToastId });
                         } catch (err: any) {
-                          toast.error(err.message || '画像のアップロードに失敗しました', { id: uploadToastId });
+                          toast.error(err.message || t('compliance.uploadFailed', '画像のアップロードに失敗しました'), { id: uploadToastId });
                         }
                       }
                     }}
@@ -128,10 +130,10 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
                     onClick={() => fileInputRef.current?.click()}
                     className="h-[32px] px-[12px] bg-white dark:bg-midnight-900 border border-[#171a1f] dark:border-gray-500 hover:bg-[#fafafb] dark:hover:bg-midnight-800 rounded-[6px] text-[12px] font-medium transition-colors"
                   >
-                    画像を選択
+                    {t('compliance.chooseImage')}
                   </button>
                   <span className="text-[11px] text-[#565d6d] dark:text-gray-400">
-                    推奨サイズ: 400x400px (JPG/PNG)
+                    {t('compliance.recSize')}
                   </span>
                 </div>
               </div>
@@ -141,14 +143,14 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
           {/* Title */}
           <div className="flex flex-col gap-[8px]">
             <label htmlFor="step-title" className="text-[14px] font-bold text-[#171a1f] dark:text-light">
-              タイトル
+              {t('compliance.titleLabel')}
             </label>
             <input
               id="step-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="例: コンテンツの作成"
+              placeholder={t('compliance.titlePlaceholder', '例: コンテンツの作成') as string}
               className="w-full px-[12px] py-[10px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] text-[14px] text-[#171a1f] dark:text-light focus:outline-none focus:border-[#5570f6] dark:focus:border-[#7c91eb] transition-colors"
             />
           </div>
@@ -156,13 +158,13 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
           {/* Description */}
           <div className="flex flex-col gap-[8px]">
             <label htmlFor="step-desc" className="text-[14px] font-bold text-[#171a1f] dark:text-light">
-              説明
+              {t('compliance.descLabel')}
             </label>
             <textarea
               id="step-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="ステップの詳細な説明を入力してください..."
+              placeholder={t('compliance.descPlaceholder', 'ステップの詳細な説明を入力してください...') as string}
               rows={4}
               className="w-full px-[12px] py-[10px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] text-[14px] text-[#171a1f] dark:text-light focus:outline-none focus:border-[#5570f6] dark:focus:border-[#7c91eb] transition-colors resize-none"
             />
@@ -175,13 +177,13 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
               onClick={onClose}
               className="px-[16px] py-[10px] border border-[#dee1e6] dark:border-midnight-800 text-[14px] font-bold rounded-[8px] hover:bg-[#fafafb] dark:hover:bg-midnight-900 transition-colors text-[#565d6d] dark:text-gray-400"
             >
-              キャンセル
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-[16px] py-[10px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-colors shadow-sm"
             >
-              保存
+              {t('common.save')}
             </button>
           </div>
         </form>

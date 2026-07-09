@@ -5,6 +5,7 @@ import { useUsers, SSOUser } from '../../../../base/hooks/useUsers';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { ROLE_OPTIONS, ROLE_BADGE_COLORS } from '../../../manage-tools/constants/roles';
+import { useTranslation } from 'next-i18next';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ interface ChangeRoleModalProps {
 function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
   const [pendingRole, setPendingRole] = useState(user.role);
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation('common');
 
   async function handleSave() {
     if (pendingRole === user.role) { onClose(); return; }
@@ -75,7 +77,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div>
-            <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">役割を変更</h3>
+            <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">{t('users.changeRole', '役割を変更')}</h3>
             <p className="text-[13px] text-[#565d6d] dark:text-gray-400 mt-[2px]">{user.name}</p>
           </div>
           <button
@@ -89,7 +91,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
 
         {/* Body — radio list */}
         <div className="px-[24px] py-[20px] flex flex-col gap-[10px]">
-          <p className="text-[13px] font-medium text-[#565d6d] dark:text-gray-400 mb-[4px]">役割を選択してください</p>
+          <p className="text-[13px] font-medium text-[#565d6d] dark:text-gray-400 mb-[4px]">{t('users.selectRolePrompt', '役割を選択してください')}</p>
           {ROLE_OPTIONS.map((opt) => {
             const checked = pendingRole === opt.value;
             return (
@@ -117,13 +119,13 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
                 />
                 <div className="flex-1 min-w-0">
                   <span className={`text-[14px] font-medium ${checked ? 'text-[#5570f6] dark:text-[#7c91eb]' : 'text-[#171a1f] dark:text-light'}`}>
-                    {opt.label}
+                    {t(`filter.roleOptions.${opt.value}`, opt.label)}
                   </span>
                 </div>
                 {/* Current badge */}
                 {opt.value === user.role && (
                   <span className="flex-shrink-0 text-[10px] font-semibold px-[8px] py-[2px] rounded-full bg-[#f3f4f6] dark:bg-midnight-800 text-[#565d6d] dark:text-gray-400 border border-[#dee1e6] dark:border-midnight-700">
-                    現在
+                    {t('users.currentRole', '現在')}
                   </span>
                 )}
               </label>
@@ -138,7 +140,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
             onClick={onClose}
             className="px-[16px] h-[36px] rounded-[8px] border border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900 text-[14px] font-medium text-[#565d6d] dark:text-gray-400 hover:border-[#9095a0] transition-colors"
           >
-            キャンセル
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -146,7 +148,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
             disabled={saving}
             className="px-[20px] h-[36px] rounded-[8px] bg-[#5570f6] hover:bg-[#4560e6] disabled:opacity-60 text-[14px] font-semibold text-white transition-colors"
           >
-            {saving ? '保存中...' : '保存'}
+            {saving ? t('common.loading') : t('common.save')}
           </button>
         </div>
       </div>
@@ -161,6 +163,7 @@ export default function UserManagementTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { t } = useTranslation('common');
 
   // Modal state
   const [editingUser, setEditingUser] = useState<SSOUser | null>(null);
@@ -189,7 +192,7 @@ export default function UserManagementTable() {
   async function handleSaveRole(newRole: string) {
     if (!editingUser) return;
     await updateUserRole(editingUser.id, newRole as any);
-    toast.success(`「${editingUser.name}」の役割を変更しました。`);
+    toast.success(t('users.saveSuccess', 'ユーザー権限を更新しました'));
   }
 
   return (
@@ -206,10 +209,10 @@ export default function UserManagementTable() {
       {/* Title */}
       <div className="flex flex-col gap-[8px]">
         <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
-          ユーザー管理
+          {t('nav.userManagement')}
         </h2>
         <p className="text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
-          ログインするユーザーの権限とアクセス状態を管理します。
+          {t('users.desc', 'ログインするユーザーの権限とアクセス状態を管理します。')}
         </p>
       </div>
 
@@ -220,7 +223,7 @@ export default function UserManagementTable() {
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
         showRoleFilterOnly={true}
-        placeholder="ユーザー名、メールで検索..."
+        placeholder={t('users.searchPlaceholder', 'ユーザー名、メールで検索...') as string}
       />
 
       <div className="flex flex-col gap-[12px] w-full">
@@ -236,11 +239,11 @@ export default function UserManagementTable() {
           <table className="w-full min-w-[700px] border-collapse text-left">
             <thead>
               <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[60px]">STT</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base">ユーザー</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[220px]">役割</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[160px]">最終ログイン</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[90px]">操作</th>
+                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[60px]">{t('users.stt', 'STT')}</th>
+                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base">{t('users.name', 'ユーザー')}</th>
+                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[220px]">{t('users.role', '役割')}</th>
+                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[160px]">{t('users.lastLogin', '最終ログイン')}</th>
+                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[90px]">{t('common.action', '操作')}</th>
               </tr>
             </thead>
 
@@ -248,7 +251,7 @@ export default function UserManagementTable() {
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-                    読み込み中...
+                    {t('common.loading')}
                   </td>
                 </tr>
               ) : filteredUsers.length > 0 ? (
@@ -282,7 +285,7 @@ export default function UserManagementTable() {
                     {/* Role badge */}
                     <td className="py-[16px] px-[20px]">
                       <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
-                        {ROLE_OPTIONS.find((r) => r.value === user.role)?.label ?? user.role}
+                        {t(`filter.roleOptions.${user.role}`, ROLE_OPTIONS.find((r) => r.value === user.role)?.label ?? user.role)}
                       </span>
                     </td>
 
@@ -299,7 +302,7 @@ export default function UserManagementTable() {
                         <button
                           type="button"
                           onClick={() => setEditingUser(user)}
-                          title="役割を変更"
+                          title={t('users.changeRole', '役割を変更') as string}
                           className="inline-flex items-center justify-center w-[28px] h-[28px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors"
                         >
                           <EditIcon />
@@ -311,7 +314,7 @@ export default function UserManagementTable() {
               ) : (
                 <tr>
                   <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-                    該当するユーザーが見つかりませんでした。
+                    {t('users.noUsers', '該当するユーザーが見つかりませんでした。')}
                   </td>
                 </tr>
               )}

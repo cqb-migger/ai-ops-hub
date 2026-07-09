@@ -7,6 +7,7 @@ import { API_BASE } from '../../../../base/utils/api';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { ROLE_OPTIONS, ROLE_BADGE_COLORS } from '../../constants/roles';
+import { useTranslation } from 'next-i18next';
 
 interface ManagedTool {
   id: string;
@@ -76,6 +77,7 @@ export default function ToolManagementTable() {
   const [selectedRole, setSelectedRole] = useState('');
   const [deletingTool, setDeletingTool] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const { t } = useTranslation('common');
 
   // Reset page when filter changes
   useEffect(() => {
@@ -137,9 +139,9 @@ export default function ToolManagementTable() {
     const { id, name } = deletingTool;
     try {
       await deleteTool(id);
-      toast.success(`${name} を削除しました`);
+      toast.success(t('manageTools.deleteSuccess', '{{name}} を削除しました', { name }));
     } catch (err: any) {
-      toast.error(err.message || 'ツールの削除に失敗しました。');
+      toast.error(err.message || t('manageTools.deleteFailed', 'ツールの削除に失敗しました。'));
     } finally {
       setDeletingTool(null);
     }
@@ -149,9 +151,9 @@ export default function ToolManagementTable() {
     const nextStatus = currentStatus === 'public' ? 'draft' : 'public';
     try {
       await updateTool(id, { visibility: nextStatus });
-      toast.success(`「${name}」のステータスを${nextStatus === 'public' ? '公開' : '下書き'}に変更しました。`);
+      toast.success(t('manageTools.statusChangeSuccess', '「{{name}}」のステータスを{{status}}に変更しました。', { name, status: nextStatus === 'public' ? t('manageTools.public') : t('manageTools.draft') }));
     } catch (err: any) {
-      toast.error(err.message || 'ステータスの更新に失敗しました。');
+      toast.error(err.message || t('manageTools.statusChangeFailed', 'ステータスの更新に失敗しました。'));
     }
   };
 
@@ -161,10 +163,10 @@ export default function ToolManagementTable() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-[16px]">
         <div className="flex flex-col gap-[8px]">
           <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
-            ツール管理
+            {t('nav.manageTools')}
           </h2>
           <p className="text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
-            AIツールのディレクトリを管理します。新しいツールの登録、既存ツールの編集、削除が可能です。
+            {t('manageTools.desc', 'AIツールのディレクトリを管理します。新しいツールの登録、既存ツールの編集、削除が可能です。')}
           </p>
         </div>
         <button
@@ -172,7 +174,7 @@ export default function ToolManagementTable() {
           className="flex items-center justify-center gap-[8px] h-[40px] px-[16px] bg-[#5570f6] text-white hover:bg-primary-600 rounded-[6px] shadow-sm font-base font-medium text-[14px] transition-all duration-200"
         >
           <PlusIcon />
-          <span>新規追加</span>
+          <span>{t('manageTools.add')}</span>
         </button>
       </div>
 
@@ -205,19 +207,19 @@ export default function ToolManagementTable() {
                     No.
                   </th>
                   <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[320px]">
-                    ツール名
+                    {t('manageTools.name')}
                   </th>
                   <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[180px]">
-                    カテゴリ
+                    {t('filter.category')}
                   </th>
                   <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[180px]">
-                    役割
+                    {t('filter.role')}
                   </th>
                   <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-center w-[120px]">
-                    ステータス
+                    {t('common.status')}
                   </th>
                   <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[120px]">
-                    アクション
+                    {t('common.action')}
                   </th>
                 </tr>
               </thead>
@@ -227,7 +229,7 @@ export default function ToolManagementTable() {
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-                      読み込み中...
+                      {t('common.loading')}
                     </td>
                   </tr>
                 ) : filteredTools.length > 0 ? (
@@ -311,7 +313,7 @@ export default function ToolManagementTable() {
                           </button>
                           <span className={`text-[12px] font-semibold font-base whitespace-nowrap ${tool.status === 'public' ? 'text-[#22c55e] dark:text-[#4ade80]' : 'text-[#565d6d] dark:text-gray-400'
                             }`}>
-                            {tool.status === 'public' ? '公開' : '下書き'}
+                            {tool.status === 'public' ? t('manageTools.public') : t('manageTools.draft')}
                           </span>
                         </div>
                       </td>
@@ -321,14 +323,14 @@ export default function ToolManagementTable() {
                           <button
                             onClick={() => handleEdit(tool.id)}
                             className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-300 transition-colors duration-200"
-                            title="編集"
+                            title={t('common.edit') as string}
                           >
                             <PenIcon />
                           </button>
                           {tool.status === 'public' ? (
                             <button
                               className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-40"
-                              title="公開中のため削除できません"
+                              title={t('manageTools.publicDeleteError', '公開中のため削除できません') as string}
                               disabled
                             >
                               <TrashIcon />
@@ -337,7 +339,7 @@ export default function ToolManagementTable() {
                             <button
                               onClick={() => handleDelete(tool.id, tool.name)}
                               className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
-                              title="削除"
+                              title={t('common.delete') as string}
                             >
                               <TrashIcon />
                             </button>
@@ -349,7 +351,7 @@ export default function ToolManagementTable() {
                 ) : (
                   <tr>
                     <td colSpan={6} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-                      条件に一致するツールが見つかりませんでした。
+                      {t('dashboard.noTools')}
                     </td>
                   </tr>
                 )}
@@ -375,7 +377,7 @@ export default function ToolManagementTable() {
           <div className="w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
-              <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">ツールの削除</h3>
+              <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">{t('manageTools.deleteConfirmTitle', 'ツールの削除')}</h3>
               <button
                 type="button"
                 onClick={() => setDeletingTool(null)}
@@ -388,7 +390,7 @@ export default function ToolManagementTable() {
             {/* Body */}
             <div className="px-[24px] py-[20px]">
               <p className="text-[14px] leading-[22px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
-                「<strong>{deletingTool.name}</strong>」を削除してもよろしいですか？この操作は取り消せません。
+                {t('manageTools.deleteConfirmText', '「{{name}}」を削除してもよろしいですか？この操作は取り消せません。', { name: deletingTool.name })}
               </p>
             </div>
 
@@ -399,14 +401,14 @@ export default function ToolManagementTable() {
                 onClick={() => setDeletingTool(null)}
                 className="h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-400 font-base font-medium text-[14px] transition-colors"
               >
-                キャンセル
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
                 onClick={confirmDelete}
                 className="h-[36px] px-[16px] bg-[#f25a5a] hover:bg-[#e04545] text-white rounded-[6px] font-base font-medium text-[14px] shadow-sm transition-colors"
               >
-                削除する
+                {t('common.delete')}
               </button>
             </div>
           </div>

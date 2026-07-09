@@ -5,12 +5,15 @@ import DashboardFooter from '@base/components/organisms/DashboardFooter';
 import ToolDetailView from '../../modules/tools/components/organisms/ToolDetailView';
 import { Tool } from '../../modules/dashboard/constants/tools';
 import { apiFetch } from '../../base/utils/api';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 function ToolDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const [tool, setTool] = useState<Tool | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     if (!router.isReady || !id) return;
@@ -119,7 +122,7 @@ function ToolDetailPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center p-[48px] text-center w-full">
           <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-            読み込み中...
+            {t('common.loading')}
           </p>
         </div>
       ) : tool ? (
@@ -127,12 +130,20 @@ function ToolDetailPage() {
       ) : (
         <div className="flex flex-col items-center justify-center p-[48px] text-center w-full">
           <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-            ツールが見つかりませんでした。
+            {t('toolDetail.notFound')}
           </p>
         </div>
       )}
     </PageTemplate>
   );
+}
+
+export async function getServerSideProps({ locale }: any) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale || 'ja', ['common'])),
+    },
+  };
 }
 
 export default ToolDetailPage;

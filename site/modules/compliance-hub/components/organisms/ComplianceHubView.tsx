@@ -11,6 +11,7 @@ import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { API_BASE } from '../../../../base/utils/api';
 import useAuthStore from '../../../../base/stores/useAuthStore';
+import { useTranslation } from 'next-i18next';
 
 
 export default function ComplianceHubView() {
@@ -30,6 +31,7 @@ export default function ComplianceHubView() {
   const { tools, loading: toolsLoading, toggleFavorite } = useTools({ category: 'compliance', visibility: 'public' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
   const token = useAuthStore((state) => state.token);
+  const { t } = useTranslation('common');
 
   const handleDownloadAll = () => {
     const params = new URLSearchParams();
@@ -120,7 +122,7 @@ export default function ComplianceHubView() {
 
   const handleDeleteStep = (id: string) => {
     if (steps.length <= 1) {
-      alert('最後のステップは削除できません。少なくとも1つのステップが必要です。');
+      alert(t('compliance.lastStepDeleteError', '最後のステップは削除できません。少なくとも1つのステップが必要です。'));
       return;
     }
     setDeletingStepId(id);
@@ -152,7 +154,7 @@ export default function ComplianceHubView() {
     } else {
       // Add mode
       if (steps.length >= 6) {
-        alert('ステップは最大6つまでです。');
+        alert(t('compliance.maxStepsError', 'ステップは最大6つまでです。'));
         return;
       }
       const newStep: Step = {
@@ -190,10 +192,10 @@ export default function ComplianceHubView() {
       <div className="flex flex-col items-start gap-[12px]">
         {/* Title & description */}
         <h2 className="text-[36px] font-extrabold leading-[40px] text-[#171a1f] dark:text-light tracking-[-0.9px] font-base">
-          コンプライアンスハブ
+          {t('nav.complianceHub')}
         </h2>
         <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
-          薬機法（医薬品医療機器等法）および景表法（景品表示法）に準拠した安全なコンテンツ発信のためのガイドラインとツールを提供します。すべての外部公開コンテンツ は 以下のステップに従って確認を行ってください。
+          {t('compliance.flowDescHelp', '薬機法（医薬品医療機器等法）および景表法（景品表示法）に準拠した safeコンテンツ発信のためのガイドラインとツールを提供します。すべての外部公開コンテンツ は 以下のステップに従って確認を行ってください。')}
         </p>
       </div>
 
@@ -206,10 +208,10 @@ export default function ComplianceHubView() {
         >
           <div className="flex flex-col gap-[4px]">
             <h3 className="text-[20px] sm:text-[22px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px]">
-              標準レビューフロー
+              {t('compliance.flowTitle')}
             </h3>
             <p className="text-[13px] sm:text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
-              コンテンツ作成から公開までの必須手順 (ドラッグ＆ドロップで並び替え可能)
+              {t('compliance.flowDesc')}
             </p>
           </div>
 
@@ -228,7 +230,7 @@ export default function ComplianceHubView() {
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                ステップを追加
+                {t('compliance.addStep')}
               </button>
             )}
 
@@ -246,7 +248,7 @@ export default function ComplianceHubView() {
           <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 overflow-x-auto md:overflow-x-visible min-h-[220px]">
             {stepsLoading ? (
               <div className="py-[32px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
-                読み込み中...
+                {t('common.loading')}
               </div>
             ) : (
               <>
@@ -299,10 +301,10 @@ export default function ComplianceHubView() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px]">
           <div>
             <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
-              ツール & リファレンス
+              {t('compliance.toolsTitle')}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
-              チェック業務に必要なシステムや文書へのリンク
+              {t('compliance.toolsDesc')}
             </p>
           </div>
           <button
@@ -314,7 +316,7 @@ export default function ComplianceHubView() {
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            <span>一括ダウンロード</span>
+            <span>{t('compliance.bulkDownload')}</span>
           </button>
         </div>
 
@@ -343,7 +345,7 @@ export default function ComplianceHubView() {
             {/* Cards Grid */}
             {toolsLoading ? (
               <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
-                読み込み中...
+                {t('common.loading')}
               </div>
             ) : filteredResources.length > 0 ? (
               <div className="flex flex-col gap-[28px]">
@@ -364,7 +366,7 @@ export default function ComplianceHubView() {
             ) : (
               <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
                 <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                  条件に一致するツールが見つかりませんでした。
+                  {t('dashboard.noTools')}
                 </p>
                 <button
                   onClick={() => {
@@ -374,7 +376,7 @@ export default function ComplianceHubView() {
                   }}
                   className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
                 >
-                  フィルターをクリア
+                  {t('dashboard.clearFilter')}
                 </button>
               </div>
             )}
@@ -399,7 +401,7 @@ export default function ComplianceHubView() {
           <div className="w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
-              <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">ステップの削除</h3>
+              <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">{t('compliance.deleteStepModalHeader', 'ステップの削除')}</h3>
               <button
                 type="button"
                 onClick={() => setDeletingStepId(null)}
@@ -415,7 +417,7 @@ export default function ComplianceHubView() {
             {/* Body */}
             <div className="px-[24px] py-[20px]">
               <p className="text-[14px] leading-[22px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
-                「<strong>{steps.find(s => s.id === deletingStepId)?.title}</strong>」を削除してもよろしいですか？この操作は取り消せません。
+                {t('compliance.deleteStepConfirmText', '「{{title}}」を削除してもよろしいですか？この操作は取り消せません。', { title: steps.find(s => s.id === deletingStepId)?.title })}
               </p>
             </div>
 
@@ -426,14 +428,14 @@ export default function ComplianceHubView() {
                 onClick={() => setDeletingStepId(null)}
                 className="h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-400 font-base font-medium text-[14px] transition-colors"
               >
-                キャンセル
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
                 onClick={confirmDeleteStep}
                 className="h-[36px] px-[16px] bg-[#f25a5a] hover:bg-[#e04545] text-white rounded-[6px] font-base font-medium text-[14px] shadow-sm transition-colors"
               >
-                削除する
+                {t('common.delete')}
               </button>
             </div>
           </div>

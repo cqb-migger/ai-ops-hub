@@ -1,6 +1,7 @@
 import React from 'react';
 import { Step } from '../../constants/steps';
 import { API_BASE } from '../../../../base/utils/api';
+import { useTranslation } from 'next-i18next';
 
 interface StepCardProps {
   step: Step;
@@ -10,6 +11,7 @@ interface StepCardProps {
 }
 
 export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCardProps) {
+  const { t } = useTranslation('common');
   return (
     <div className="group relative flex flex-col items-center text-center max-w-[200px] w-full select-none">
       
@@ -34,7 +36,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
               e.stopPropagation();
               onEdit();
             }}
-            title="編集"
+            title={t('common.edit') as string}
             className="w-[28px] h-[28px] flex items-center justify-center bg-white dark:bg-[#1c2230] border border-[#dee1e6] dark:border-midnight-800 rounded-full text-[#5570f6] dark:text-[#7c91eb] hover:bg-[#5570f6] hover:text-white dark:hover:bg-[#5570f6] dark:hover:text-white transition-all shadow-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -50,7 +52,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
                 e.stopPropagation();
                 onDelete();
               }}
-              title="削除"
+              title={t('common.delete') as string}
               className="w-[28px] h-[28px] flex items-center justify-center bg-white dark:bg-[#1c2230] border border-[#dee1e6] dark:border-midnight-800 rounded-full text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-all shadow-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -62,7 +64,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
           ) : (
             <button
               disabled
-              title="最後のステップは削除できません"
+              title={t('compliance.lastStepDeleteError', '最後のステップは削除できません') as string}
               className="w-[28px] h-[28px] flex items-center justify-center bg-gray-100 dark:bg-midnight-950 border border-gray-200 dark:border-[#1f2937] rounded-full text-gray-300 dark:text-midnight-800 cursor-not-allowed"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">

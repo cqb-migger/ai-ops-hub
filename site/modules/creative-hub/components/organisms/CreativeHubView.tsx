@@ -4,12 +4,28 @@ import ToolCard from '../../../dashboard/components/molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
+import { useTranslation } from 'next-i18next';
+import { API_BASE } from '../../../../base/utils/api';
+import useAuthStore from '../../../../base/stores/useAuthStore';
 
 export default function CreativeHubView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState('');
   const { tools, loading, toggleFavorite } = useTools({ category: 'creative', visibility: 'public' });
+  const token = useAuthStore((state) => state.token);
+  const { t } = useTranslation('common');
+
+  const handleDownloadAll = () => {
+    const params = new URLSearchParams();
+    params.append('hub', 'creative');
+    if (searchQuery) params.append('search', searchQuery);
+    if (selectedRole) params.append('role', selectedRole);
+    if (token) params.append('token', token);
+
+    const downloadUrl = `${API_BASE}/tools/download-guides?${params.toString()}`;
+    window.open(downloadUrl, '_blank');
+  };
 
   // Reset page when filter changes
   useEffect(() => {
@@ -43,10 +59,10 @@ export default function CreativeHubView() {
       {/* Page Header */}
       <div className="flex flex-col gap-[12px]">
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[30px] leading-[36px] tracking-[-0.75px] text-[#171a1f] dark:text-light">
-          クリエイティブハブ
+          {t('nav.creativeHub')}
         </h1>
         <p className="font-normal text-[16px] leading-[24px] text-[#565d6d] dark:text-gray-400">
-          クリエイティブ制作に関する業務ガイド・テンプレート・ナレッジを集約
+          {t('creative.desc', 'クリエイティブ制作に関する業務ガイド・テンプレート・ナレッジを集約')}
         </p>
       </div>
 
@@ -67,9 +83,8 @@ export default function CreativeHubView() {
               itemsPerPage={ITEMS_PER_PAGE}
             />
             <div className="flex items-center gap-[12px]">
-              <a
-                href="/assets/creative_guideline.txt"
-                download="creative_guideline.txt"
+              <button
+                onClick={handleDownloadAll}
                 className="flex-shrink-0 inline-flex items-center justify-center gap-[8px] h-[40px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -77,13 +92,13 @@ export default function CreativeHubView() {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                <span>一括ダウンロード</span>
-              </a>
+                <span>{t('compliance.bulkDownload')}</span>
+              </button>
             </div>
           </div>
           {loading ? (
             <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-              読み込み中...
+              {t('common.loading')}
             </div>
           ) : filteredCards.length > 0 ? (
             <div className="flex flex-col gap-[28px]">
@@ -104,7 +119,7 @@ export default function CreativeHubView() {
           ) : (
             <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
               <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                条件に一致するツールが見つかりませんでした。
+                {t('dashboard.noTools')}
               </p>
               <button
                 onClick={() => {
@@ -113,7 +128,7 @@ export default function CreativeHubView() {
                 }}
                 className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
               >
-                フィルターをクリア
+                {t('dashboard.clearFilter')}
               </button>
             </div>
           )}

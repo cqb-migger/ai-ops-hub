@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import routes from '@base/configs/routers';
 import useMenuStore from '@base/stores/useMenuStore';
 import useAuthStore from '@base/stores/useAuthStore';
+import { useTranslation } from 'next-i18next';
 
 // Icons
 function CompassIcon() {
@@ -113,18 +114,15 @@ function SidebarLink({ href, label, icon, active, collapsed }: SidebarLinkProps)
   return (
     <Link href={href}>
       <span
-        className={`group relative overflow-hidden flex items-center gap-[12px] h-[36px] rounded-[6px] cursor-pointer transition-all duration-200 ${
-          collapsed ? 'px-0 justify-center' : 'px-[12px]'
-        } ${
-          active
+        className={`group relative overflow-hidden flex items-center gap-[12px] h-[36px] rounded-[6px] cursor-pointer transition-all duration-200 ${collapsed ? 'px-0 justify-center' : 'px-[12px]'
+          } ${active
             ? 'text-white'
             : 'text-[#565d6d] hover:text-white dark:text-gray-300'
-        }`}
+          }`}
       >
         <div
-          className={`absolute inset-0 transition-opacity duration-200 bg-gradient-to-r from-[#2563eb] to-[#60a5fa] ${
-            active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
+          className={`absolute inset-0 transition-opacity duration-200 bg-gradient-to-r from-[#2563eb] to-[#60a5fa] ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}
         />
         <span className="relative z-10 flex-shrink-0">{icon}</span>
         {!collapsed && (
@@ -147,6 +145,7 @@ export default function Sidebar() {
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const { t } = useTranslation('common');
 
   const fromPath = router.query.from as string;
   const isToolDetail = router.pathname.startsWith('/tools/');
@@ -166,25 +165,25 @@ export default function Sidebar() {
   const navItems = [
     {
       href: routes.path.home,
-      label: 'Dashboard',
+      label: t('nav.dashboard'),
       icon: <DashboardIcon />,
       active: checkIsActive(routes.path.home),
     },
     {
       href: routes.path.complianceHub,
-      label: 'Compliance Hub',
+      label: t('nav.complianceHub'),
       icon: <ShieldCheckIcon />,
       active: checkIsActive(routes.path.complianceHub),
     },
     {
       href: routes.path.creativeHub,
-      label: 'Creative Hub',
+      label: t('nav.creativeHub'),
       icon: <PaletteIcon />,
       active: checkIsActive(routes.path.creativeHub),
     },
     {
       href: routes.path.dataHub,
-      label: 'Data Hub',
+      label: t('nav.dataHub'),
       icon: <ChartColumnIcon />,
       active: checkIsActive(routes.path.dataHub),
     },
@@ -193,13 +192,13 @@ export default function Sidebar() {
   const adminItems = [
     {
       href: routes.path.manageTools,
-      label: 'Manage Tools',
+      label: t('nav.manageTools'),
       icon: <WrenchIcon />,
       active: checkIsActive(routes.path.manageTools),
     },
     {
       href: routes.path.users,
-      label: 'Users',
+      label: t('nav.userManagement'),
       icon: <UsersIcon />,
       active: checkIsActive(routes.path.users),
     },
@@ -222,9 +221,8 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col justify-between bg-[#f1f4fe] dark:bg-midnight-950 border-r border-[#dee1e6] dark:border-midnight-800 transition-all duration-300 ${
-        isSidebarCollapsed ? 'w-[60px]' : 'w-[215px]'
-      }`}
+      className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col justify-between bg-[#f1f4fe] dark:bg-midnight-950 border-r border-[#dee1e6] dark:border-midnight-800 transition-all duration-300 ${isSidebarCollapsed ? 'w-[60px]' : 'w-[230px]'
+        }`}
     >
       {/* Top Brand Logo & Toggle Button */}
       <div>
@@ -310,9 +308,8 @@ export default function Sidebar() {
       <div ref={dropdownRef} className="relative border-t border-[#dee1e6] dark:border-midnight-800 flex flex-col p-[12px]">
         {/* Dropdown Menu */}
         {showDropdown && (
-          <div className={`absolute bottom-full mb-[8px] z-50 bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-lg py-[4px] font-base ${
-            isSidebarCollapsed ? 'left-[12px] w-[160px]' : 'left-[12px] right-[12px]'
-          }`}>
+          <div className={`absolute bottom-full mb-[8px] z-50 bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-lg py-[4px] font-base ${isSidebarCollapsed ? 'left-[12px] w-[160px]' : 'left-[12px] right-[12px]'
+            }`}>
             <div className="px-[12px] py-[6px] border-b border-[#dee1e6] dark:border-midnight-800 min-w-0">
               <span className="block text-[12px] font-bold text-[#171a1f] dark:text-light truncate">
                 {user?.name || user?.email || 'Guest'}
@@ -330,10 +327,10 @@ export default function Sidebar() {
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                   <path d="M2 12h20"></path>
                 </svg>
-                <span>言語</span>
+                <span>{t('nav.language')}</span>
               </div>
-              <select 
-                value={router.locale || 'ja'} 
+              <select
+                value={router.locale || 'ja'}
                 onChange={(e) => {
                   const newLocale = e.target.value;
                   router.push(router.pathname, router.asPath, { locale: newLocale });
@@ -349,7 +346,7 @@ export default function Sidebar() {
               onClick={() => {
                 logout();
                 import('react-hot-toast').then(({ default: toast }) => {
-                  toast.success('ログアウトしました');
+                  toast.success(t('login.success') ? (router.locale === 'en' ? 'Logged out successfully' : 'ログアウトしました') : 'ログアウトしました');
                 });
                 setShowDropdown(false);
                 router.push('/login');
@@ -361,7 +358,7 @@ export default function Sidebar() {
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" x2="9" y1="12" y2="12" />
               </svg>
-              <span>ログアウト</span>
+              <span>{t('nav.logout')}</span>
             </button>
           </div>
         )}
@@ -369,9 +366,8 @@ export default function Sidebar() {
         {/* User Profile */}
         <div
           onClick={() => setShowDropdown(!showDropdown)}
-          className={`flex items-center gap-[12px] h-[48px] px-[4px] rounded-[8px] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none transition-colors ${
-            isSidebarCollapsed ? 'justify-center' : 'justify-start'
-          }`}
+          className={`flex items-center gap-[12px] h-[48px] px-[4px] rounded-[8px] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-start'
+            }`}
         >
           <div className="relative flex-shrink-0 flex items-center justify-center w-[32px] h-[32px] rounded-full overflow-hidden bg-[#fce4e7] dark:bg-[#4a2e35]">
             <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-[#b3261e] dark:text-red-300 font-base select-none">

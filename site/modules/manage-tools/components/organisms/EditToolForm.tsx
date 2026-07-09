@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import { API_BASE, apiFetch } from '../../../../base/utils/api';
+import { useTranslation } from 'next-i18next';
 import { useTools, useTool } from '../../../../base/hooks/useTools';
 import { useCategories } from '../../../../base/hooks/useCategories';
 import { useSteps } from '../../../../base/hooks/useSteps';
@@ -145,6 +146,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -189,7 +191,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
           <div className="px-[12px] pb-[8px] mb-[4px] border-b border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900">
             <input
               type="text"
-              placeholder="検索..."
+              placeholder={t('common.search', '検索...') as string}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -212,7 +214,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
                     : 'text-[#171a1f] dark:text-light'
                     }`}
                 >
-                  <span>{opt.label}</span>
+                  <span>{t(`filter.roleOptions.${opt.value}`, opt.label)}</span>
                   {opt.value === value && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
                       <polyline points="20 6 9 17 4 12" />
@@ -222,7 +224,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
               ))
             ) : (
               <div className="px-[12px] py-[8px] text-[13px] text-gray-400 dark:text-gray-500 text-center">
-                一致する結果はありません
+                {t('common.noResults', '一致する結果はありません')}
               </div>
             )}
           </div>
@@ -240,6 +242,7 @@ export default function EditToolForm() {
   const { tool, loading: toolLoading } = useTool(id ? String(id) : undefined);
   const { updateTool } = useTools();
   const { categories: apiCategories, loading: categoriesLoading } = useCategories();
+  const { t } = useTranslation('common');
 
   // Alert banner state
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -702,11 +705,11 @@ export default function EditToolForm() {
       };
 
       await updateTool(id as string, toolPayload as any);
-      toast.success('ツールを保存しました');
+      toast.success(t('manageTools.saveSuccess', 'ツールを保存しました'));
       setShowSuccessAlert(true);
       router.push('/manage-tools');
     } catch (err: any) {
-      toast.error(err.message || 'ツールの保存に失敗しました');
+      toast.error(err.message || t('manageTools.saveFailed', 'ツールの保存に失敗しました'));
     }
   };
 
@@ -720,10 +723,10 @@ export default function EditToolForm() {
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
         <h2 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
-          ツール編集
+          {t('manageTools.edit')}
         </h2>
         <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400">
-          登録済みのAIツール情報を編集します。プロンプトテンプレートなどを修正することができます。
+          {t('manageTools.editDesc', '登録済みのAIツール情報を編集します。プロンプトテンプレートなどを修正することができます。')}
         </p>
       </div>
 

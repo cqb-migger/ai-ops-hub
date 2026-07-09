@@ -4,6 +4,7 @@ import ToolCard from '../molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
+import { useTranslation } from 'next-i18next';
 
 function SparklesIcon() {
   return (
@@ -20,6 +21,7 @@ export default function ToolGrid() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { t } = useTranslation('common');
 
   const { tools, loading, toggleFavorite } = useTools({ visibility: 'public' });
 
@@ -60,10 +62,10 @@ export default function ToolGrid() {
       {/* Title block */}
       <div className="flex flex-col gap-[12px]">
         <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
-          AIツールダッシュボード
+          {t('dashboard.title', 'AIツールダッシュボード')}
         </h2>
         <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
-          業務を効率化するための最適なAIツールを検索・発見できます。役割やカテゴリから絞り込みましょう。
+          {t('dashboard.desc', '業務を効率化するための最適なAIツールを検索・発見できます。役割やカテゴリから絞り込みましょう。')}
         </p>
       </div>
 
@@ -83,7 +85,7 @@ export default function ToolGrid() {
         <div className="flex items-center gap-[8px]">
           <SparklesIcon />
           <h3 className="text-[20px] font-semibold leading-[30px] text-[#171a1f] dark:text-light font-base">
-            利用可能なツール
+            {t('dashboard.availableTools', '利用可能なツール')}
           </h3>
         </div>
         <div className="flex items-center justify-between w-full">
@@ -97,7 +99,7 @@ export default function ToolGrid() {
         {/* Cards Grid */}
         {loading ? (
           <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-            読み込み中...
+            {t('common.loading')}
           </div>
         ) : filteredTools.length > 0 ? (
           <div className="flex flex-col gap-[28px]">
@@ -117,7 +119,7 @@ export default function ToolGrid() {
         ) : (
           <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
             <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-              条件に一致するツールが見つかりませんでした。
+              {t('dashboard.noTools')}
             </p>
             <button
               onClick={() => {
@@ -127,7 +129,7 @@ export default function ToolGrid() {
               }}
               className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
             >
-              フィルターをクリア
+              {t('dashboard.clearFilter')}
             </button>
           </div>
         )}

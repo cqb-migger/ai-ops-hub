@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { Tool } from '../../constants/tools';
+import { useTranslation } from 'next-i18next';
 import { API_BASE } from '../../../../base/utils/api';
 import ToolDetailModal from '../../../tools/components/organisms/ToolDetailModal';
 
@@ -25,6 +26,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(!!tool.is_favorite);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     setIsFavorite(!!tool.is_favorite);
@@ -44,13 +46,13 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
         });
         setIsFavorite(res.is_favorite);
         if (res.is_favorite) {
-          toast.success('お気に入りに追加しました');
+          toast.success(t('dashboard.favAddSuccess', 'お気に入りに追加しました'));
         } else {
-          toast.success('お気に入りから削除しました');
+          toast.success(t('dashboard.favRemoveSuccess', 'お気に入りから削除しました'));
         }
       }
     } catch (err) {
-      toast.error('エラーが発生しました');
+      toast.error(t('common.error', 'エラーが発生しました'));
       setIsFavorite(!!tool.is_favorite);
     }
   };
@@ -60,7 +62,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
       window.open(tool.url, '_blank', 'noopener,noreferrer');
     } else {
       import('react-hot-toast').then(({ default: toast }) => {
-        toast.success(`${tool.name}を起動しています... (シミュレーション)`, { duration: 2000 });
+        toast.success(t('dashboard.simulatingLaunch', '{{name}}を起動しています... (シミュレーション)', { name: tool.name }), { duration: 2000 });
       });
     }
   };
@@ -95,7 +97,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
                   ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900 text-red-500'
                   : 'border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 text-[#5a73a3] dark:text-gray-400 hover:bg-[#ffe3e3] dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-900'
               }`}
-              title={isFavorite ? 'お気に入りから削除' : 'お気に入りに追加'}
+              title={(isFavorite ? t('dashboard.favRemoveTitle', 'お気に入りから削除') : t('dashboard.favAddTitle', 'お気に入りに追加')) as string}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +119,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex-shrink-0 w-[28px] h-[28px] rounded-full border border-[#dbe2f9] dark:border-midnight-700 bg-white dark:bg-midnight-900 flex items-center justify-center hover:bg-[#f0f3fa] dark:hover:bg-midnight-800 transition-colors"
-              title={`${tool.name}の詳細情報`}
+              title={t('dashboard.detailTitle', '{{name}}の詳細情報', { name: tool.name }) as string}
             >
               <span className="text-[12px] font-semibold text-[#5a73a3] dark:text-gray-400 leading-none select-none">?</span>
             </button>
@@ -163,7 +165,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
           className="flex items-center justify-center gap-[6px] w-full h-[40px] text-white rounded-[12px] font-base font-semibold text-[14px] shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow-md active:scale-[0.98]"
           style={{ background: 'linear-gradient(to right, #2563eb, #60a5fa)' }}
         >
-          <span>ツールを起動</span>
+          <span>{t('dashboard.launch')}</span>
           <ArrowRightIcon />
         </button>
       </div>

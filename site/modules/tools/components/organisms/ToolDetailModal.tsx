@@ -4,6 +4,7 @@ import { useTool } from '../../../../base/hooks/useTools';
 import ToolDetailView from './ToolDetailView';
 import { useRouter } from 'next/router';
 import useAuthStore from '@base/stores/useAuthStore';
+import { useTranslation } from 'next-i18next';
 
 interface ToolDetailModalProps {
   toolId: string;
@@ -24,6 +25,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const { tool, loading } = useTool(isOpen ? toolId : undefined);
+  const { t } = useTranslation('common');
 
   // Handle body scroll locking
   useEffect(() => {
@@ -49,9 +51,9 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
         <button
           onClick={onClose}
           className="absolute top-[12px] right-[16px] md:top-[16px] md:right-[20px] p-[8px] bg-white/90 dark:bg-midnight-900/90 backdrop-blur-sm rounded-full hover:bg-gray-100 dark:hover:bg-midnight-800 transition-colors z-20 border border-[#dee1e6] dark:border-midnight-700 shadow-sm"
-          title="閉じる"
+          title={t('common.close', '閉じる') as string}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-[20px] h-[20px] text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2059/svg" className="w-[20px] h-[20px] text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -76,7 +78,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
               {/* Text */}
               <div className="flex flex-col gap-[4px] min-w-0 pr-[40px]">
                 <div className="flex items-center gap-[12px] flex-wrap">
-                  <h2 className="text-[24px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px] font-base truncate">
+                  <h2 className="text-[24px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[0.5px] font-base truncate">
                     {tool.name}
                   </h2>
                 </div>
@@ -95,7 +97,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
                 className="flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200 shrink-0 mr-[40px] md:mr-[48px]"
               >
                 <PenIcon />
-                <span>編集</span>
+                <span>{t('common.edit', '編集')}</span>
               </button>
             )}
           </div>
@@ -107,7 +109,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
           {loading ? (
             <div className="flex flex-col items-center justify-center p-[48px] text-center w-full min-h-[400px]">
               <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                読み込み中...
+                {t('common.loading', '読み込み中...')}
               </p>
             </div>
           ) : tool ? (
@@ -115,7 +117,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
           ) : (
             <div className="flex flex-col items-center justify-center p-[48px] text-center w-full min-h-[400px]">
               <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                ツールが見つかりませんでした。
+                {t('toolDetail.notFound', 'ツールが見つかりませんでした。')}
               </p>
             </div>
           )}
@@ -129,7 +131,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
               onClick={onClose}
               className="px-[20px] py-[10px] text-[#565d6d] dark:text-gray-300 font-semibold text-[14px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-700 rounded-[8px] hover:bg-gray-50 dark:hover:bg-midnight-800 transition-colors shadow-sm"
             >
-              閉じる
+              {t('common.close', '閉じる')}
             </button>
             
             {tool.url && (
@@ -139,10 +141,10 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
                 rel="noopener noreferrer"
                 className="flex items-center gap-[6px] px-[20px] py-[10px] bg-[#5570f6] text-white text-[14px] font-semibold rounded-[8px] hover:bg-[#435bce] transition-colors shadow-sm"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-[16px] h-[16px]">
+                <svg xmlns="http://www.w3.org/2500/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-[16px] h-[16px]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                 </svg>
-                ツールを開く
+                {t('toolDetail.openTool', 'ツールを開く')}
               </a>
             )}
           </div>

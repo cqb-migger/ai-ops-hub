@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ROLE_OPTIONS } from '../../../manage-tools/constants/roles';
+import { useTranslation } from 'next-i18next';
 
 export interface RoleDropdownProps {
   selectedRole?: string;
@@ -77,8 +78,10 @@ export default function RoleDropdown({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const { t } = useTranslation('common');
   const hasRole = selectedRole !== '';
-  const selectedLabel = ROLE_OPTIONS.find((r) => r.value === selectedRole)?.label ?? null;
+  const selectedOption = ROLE_OPTIONS.find((r) => r.value === selectedRole);
+  const selectedLabel = selectedOption ? t(`filter.roleOptions.${selectedOption.value}`, selectedOption.label) : null;
 
   // Close on outside click
   useEffect(() => {
@@ -128,7 +131,7 @@ export default function RoleDropdown({
           <span
             role="button"
             onClick={handleClear}
-            title="クリア"
+            title={t('common.clear', 'クリア') as string}
             className="flex-shrink-0 ml-[6px] flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#5570f6]/15 hover:bg-[#5570f6]/30 text-[#5570f6] dark:text-[#7c91eb] transition-colors"
           >
             <XIcon size={11} />
@@ -154,7 +157,7 @@ export default function RoleDropdown({
                   : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
               }`}
             >
-              {opt.label}
+              {t(`filter.roleOptions.${opt.value}`, opt.label)}
               {selectedRole === opt.value && (
                 <span className="text-[#5570f6] dark:text-[#7c91eb]">
                   <CheckIcon />

@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import { Tool } from '../../../dashboard/constants/tools';
 import { API_BASE } from '../../../../base/utils/api';
 import useAuthStore from '@base/stores/useAuthStore';
+import { useTranslation } from 'next-i18next';
 
 interface ToolDetailViewProps {
   tool: Tool;
@@ -119,6 +120,7 @@ function ShieldAlertIcon() {
 export default function ToolDetailView({ tool, hideHeader = false, hideLaunchButton = false }: ToolDetailViewProps) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation('common');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
   const [isMarkdownPreview, setIsMarkdownPreview] = useState<boolean>(true);
@@ -126,16 +128,16 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const fromPath = router.query.from as string;
   const backHref = fromPath || '/';
 
-  let backLabel = 'ダッシュボードに戻る';
-  if (fromPath?.startsWith('/compliance-hub')) backLabel = 'コンプライアンスハブに戻る';
-  else if (fromPath?.startsWith('/creative-hub')) backLabel = 'クリエイティブハブに戻る';
-  else if (fromPath?.startsWith('/data-hub')) backLabel = 'データハブに戻る';
-  else if (fromPath?.startsWith('/manage-tools')) backLabel = 'ツール管理に戻る';
+  let backLabel = t('toolDetail.backToDashboard', 'ダッシュボードに戻る');
+  if (fromPath?.startsWith('/compliance-hub')) backLabel = t('toolDetail.backToCompliance', 'コンプライアンスハブに戻る');
+  else if (fromPath?.startsWith('/creative-hub')) backLabel = t('toolDetail.backToCreative', 'クリエイティブハブに戻る');
+  else if (fromPath?.startsWith('/data-hub')) backLabel = t('toolDetail.backToData', 'データハブに戻る');
+  else if (fromPath?.startsWith('/manage-tools')) backLabel = t('toolDetail.backToManageTools', 'ツール管理に戻る');
 
   const handleCopy = (content: string, index: number) => {
     navigator.clipboard.writeText(content);
     setCopiedIndex(index);
-    toast.success('プロンプトをコピーしました！');
+    toast.success(t('toolDetail.copySuccessPrompt', 'プロンプトをコピーしました！'));
     setTimeout(() => {
       setCopiedIndex(null);
     }, 2000);
@@ -144,14 +146,14 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const handleCopyLoginId = (content: string, index: number) => {
     navigator.clipboard.writeText(content);
     setCopiedLoginIdIndex(index);
-    toast.success('ログインIDをコピーしました！');
+    toast.success(t('toolDetail.copySuccessLoginId', 'ログインIDをコピーしました！'));
     setTimeout(() => {
       setCopiedLoginIdIndex(null);
     }, 2000);
   };
 
   const handleLaunchTool = () => {
-    toast.success('外部ツールを起動します... (シミュレーション)');
+    toast.success(t('toolDetail.launchSimulation', '外部ツールを起動します... (シミュレーション)'));
   };
 
   const details = tool.details || {
@@ -232,7 +234,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
               className="flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200"
             >
               <PenIcon />
-              <span>編集</span>
+              <span>{t('common.edit')}</span>
             </button>
           )}
         </div>
@@ -247,7 +249,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
               <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
-                接続・ログイン設定
+                {t('toolDetail.connectionSettings', '接続・ログイン設定')}
               </h3>
             </div>
             {!hideLaunchButton && tool.url && (
@@ -257,12 +259,12 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-[#5570f6] hover:bg-[#405bd4] text-white text-[13px] font-bold rounded-[8px] transition-all shadow-sm"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2059/svg" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" x2="21" y1="14" y2="3" />
                 </svg>
-                <span>ツールを開く</span>
+                <span>{t('toolDetail.openTool', 'ツールを開く')}</span>
               </a>
             )}
           </div>
@@ -270,7 +272,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           {tool.loginIds && tool.loginIds.length > 0 && (
             <div className="flex flex-col gap-[12px]">
               <span className="text-[13px] font-semibold text-[#565d6d] dark:text-gray-400">
-                ログインID
+                {t('toolDetail.loginId', 'ログインID')}
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-[12px]">
                 {tool.loginIds.map((loginId, index) => (
@@ -284,7 +286,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                     <button
                       onClick={() => handleCopyLoginId(loginId, index)}
                       className="text-[#64748b] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-[#7c91eb] transition-colors flex-shrink-0"
-                      title="コピー"
+                      title={t('common.copy', 'コピー') as string}
                     >
                       {copiedLoginIdIndex === index ? (
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-[16px] h-[16px] text-green-500">
@@ -311,7 +313,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
             <div className="flex items-center gap-[8px]">
               <BookOpenIcon />
               <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
-                活用ガイド
+                {t('toolDetail.guide', '活用ガイド')}
               </h3>
             </div>
 
@@ -335,7 +337,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                   : 'text-[#565d6d] dark:text-gray-400 hover:text-[#171a1f] dark:hover:text-light'
                   }`}
               >
-                原文 (Raw)
+                {t('toolDetail.raw', '原文 (Raw)')}
               </button>
             </div>
           </div>
@@ -370,7 +372,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           {tool.guideMaterials && tool.guideMaterials.length > 0 && (
             <div className="flex flex-col gap-[8px] mt-[12px] pt-[16px] border-t border-[#dee1e6] dark:border-midnight-800">
               <span className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400 uppercase tracking-[0.5px]">
-                関連資料 (Materials)
+                {t('toolDetail.materials', '関連資料 (Materials)')}
               </span>
               <div className="flex flex-wrap gap-[12px]">
                 {tool.guideMaterials.map((material, idx) => (
@@ -398,12 +400,12 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           <div className="flex items-center gap-[8px]">
             <SparklesIcon />
             <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
-              推奨プロンプト
+              {t('toolDetail.recommendedPrompts', '推奨プロンプト')}
             </h3>
           </div>
         </div>
         <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
-          以下のプロンプトをコピーし、ツール起動後のチャット入力欄に貼り付けて開始してください。[※]の部分はお手元のデータで書き換える必要があります。
+          {t('toolDetail.recommendedPromptsDesc', '以下のプロンプトをコピーし、ツール起動後のチャット入力欄に貼り付けて開始してください。[※]の部分はお手元のデータで書き換える必要があります。')}
         </p>
 
         {/* Prompts Cards List */}
@@ -432,7 +434,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                       className="flex items-center gap-[8px] h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[14px] shadow-sm transition-colors duration-200"
                     >
                       {copiedIndex === idx ? <CheckIcon /> : <CopyIcon />}
-                      <span>{copiedIndex === idx ? 'コピーしました' : 'プロンプトをコピー'}</span>
+                      <span>{copiedIndex === idx ? t('toolDetail.copied', 'コピーしました') : t('toolDetail.copyPrompt', 'プロンプトをコピー')}</span>
                     </button>
                   </div>
 
@@ -447,7 +449,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
             })
           ) : (
             <div className="text-center p-[32px] border border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-gray-500 dark:text-gray-400 font-base font-medium">
-              このカテゴリに関連する推奨プロンプトはありません。
+              {t('toolDetail.noPrompts', 'このカテゴリに関連する推奨プロンプトはありません。')}
             </div>
           )}
         </div>

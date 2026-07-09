@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import useAuthStore, { User } from '@base/stores/useAuthStore';
 import { apiFetch } from '@base/utils/api';
 import toast, { Toaster } from 'react-hot-toast';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -322,4 +323,12 @@ export default function LoginPage() {
       `}</style>
     </div>
   );
+}
+
+export async function getStaticProps({ locale }: any) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale || 'ja', ['common'])),
+    },
+  };
 }

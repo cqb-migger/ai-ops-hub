@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CATEGORIES } from '../../constants/tools';
+import { useTranslation } from 'next-i18next';
 
 export interface CategoryDropdownProps {
   selectedCategory?: string;
@@ -82,6 +83,7 @@ export default function CategoryDropdown({
 }: CategoryDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation('common');
 
   const list = categories ?? REAL_CATEGORIES;
   const hasCategory = selectedCategory !== '';
@@ -125,7 +127,7 @@ export default function CategoryDropdown({
             hasCategory ? 'text-[#5570f6] dark:text-[#7c91eb] font-semibold' : ''
           }`}
         >
-          {hasCategory ? selectedCategory : placeholder}
+          {hasCategory ? t(`filter.categoryOptions.${selectedCategory}`, selectedCategory) : placeholder}
         </span>
 
         {/* Clear × khi đã chọn, chevron ▾ khi mặc định */}
@@ -133,7 +135,7 @@ export default function CategoryDropdown({
           <span
             role="button"
             onClick={handleClear}
-            title="クリア"
+            title={t('common.clear', 'クリア') as string}
             className="flex-shrink-0 ml-[6px] flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#5570f6]/15 hover:bg-[#5570f6]/30 text-[#5570f6] dark:text-[#7c91eb] transition-colors"
           >
             <XIcon size={11} />
@@ -159,7 +161,7 @@ export default function CategoryDropdown({
                   : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
               }`}
             >
-              {cat}
+              {t(`filter.categoryOptions.${cat}`, cat)}
               {selectedCategory === cat && (
                 <span className="text-[#5570f6] dark:text-[#7c91eb]">
                   <CheckIcon />

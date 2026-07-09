@@ -3,6 +3,7 @@ import CategoryDropdown from './CategoryDropdown';
 import RoleDropdown from './RoleDropdown';
 import StepDropdown from './StepDropdown';
 import { Step } from '../../../compliance-hub/constants/steps';
+import { useTranslation } from 'next-i18next';
 
 interface FilterBarProps {
   searchQuery: string;
@@ -61,6 +62,9 @@ export default function FilterBar({
   showStepFilter = false,
   placeholder = 'ツール名、キーワードで検索...',
 }: FilterBarProps) {
+  const { t } = useTranslation('common');
+  const actualPlaceholder = (placeholder === 'ツール名、キーワードで検索...' ? t('dashboard.searchPlaceholder', 'ツール名、キーワードで検索...') : placeholder) as string;
+
   return (
     <div className="w-full h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[12px]">
       {/* Search Input */}
@@ -70,7 +74,7 @@ export default function FilterBar({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder={placeholder}
+          placeholder={actualPlaceholder}
           className="w-full bg-transparent border-none outline-none text-[14px] leading-[22px] text-[#171a1f] dark:text-light placeholder-[#565d6d] dark:placeholder-gray-500 font-base"
         />
         {searchQuery && (
@@ -92,11 +96,13 @@ export default function FilterBar({
             onCategoryChange={onCategoryChange}
             categories={categories}
             width={200}
+            placeholder={t('filter.category', 'すべてのカテゴリ') as string}
           />
           <RoleDropdown
             selectedRole={selectedRole}
             onRoleChange={onRoleChange}
             width={200}
+            placeholder={t('filter.role', 'すべての役割') as string}
           />
         </>
       )}
@@ -108,6 +114,7 @@ export default function FilterBar({
           onCategoryChange={onCategoryChange}
           categories={categories}
           width={250}
+          placeholder={t('filter.category', 'すべてのカテゴリ') as string}
         />
       )}
 
@@ -117,6 +124,7 @@ export default function FilterBar({
           selectedRole={selectedRole}
           onRoleChange={onRoleChange}
           width={250}
+          placeholder={t('filter.role', 'すべての役割') as string}
         />
       )}
 
@@ -128,11 +136,13 @@ export default function FilterBar({
             onStepChange={onStepChange}
             steps={steps}
             width={180}
+            placeholder={t('filter.step', 'すべてのステップ') as string}
           />
           <RoleDropdown
             selectedRole={selectedRole}
             onRoleChange={onRoleChange}
             width={180}
+            placeholder={t('filter.role', 'すべての役割') as string}
           />
         </>
       )}
