@@ -29,8 +29,6 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/ai_ops_hub
     ports:
       - "8000:8000"
-    volumes:
-      - ./static:/app/static
     depends_on:
       db:
         condition: service_healthy
