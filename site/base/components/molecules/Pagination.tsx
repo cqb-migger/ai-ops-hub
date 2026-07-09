@@ -13,7 +13,7 @@ interface PaginationProps {
 export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage, className = 'mt-[20px]', hideItemCount = false }: PaginationProps) {
   const currentPageSafe = Math.max(1, Math.min(currentPage, Math.max(1, totalPages)));
   
-  const showPaginationControls = totalPages > 1;
+  const showPaginationControls = totalPages >= 1;
   const showItemCount = !hideItemCount && totalItems !== undefined && itemsPerPage !== undefined;
 
   const handlePageChange = (page: number) => {

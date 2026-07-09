@@ -21,13 +21,23 @@ async def log_request(request: Request, call_next):
     headers = dict(request.headers)
 
     if request.method in ['POST', 'PUT', 'PATCH']:
-        body_bytes = await request.body()
-        body = body_bytes.decode('utf-8')
-
-        if 'password' in body:
-            body = json.loads(body)
-            body['password'] = '********'
-            body = json.dumps(body)
+        content_type = request.headers.get('content-type', '')
+        if 'multipart/form-data' in content_type:
+            body = f"<multipart/form-data: {request.headers.get('content-length', 'unknown')} bytes>"
+        else:
+            body_bytes = await request.body()
+            try:
+                body = body_bytes.decode('utf-8')
+                if 'password' in body:
+                    try:
+                        body_data = json.loads(body)
+                        if isinstance(body_data, dict) and 'password' in body_data:
+                            body_data['password'] = '********'
+                            body = json.dumps(body_data)
+                    except Exception:
+                        pass
+            except UnicodeDecodeError:
+                body = f"<binary data: {len(body_bytes)} bytes>"
     else:
         body = None
 

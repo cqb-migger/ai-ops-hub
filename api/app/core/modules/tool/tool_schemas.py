@@ -12,6 +12,15 @@ class CategoryInTool(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 # Guide File
+class GuideFileCreate(BaseModel):
+    original_name: str
+    stored_name: str
+    file_path: str
+    file_url: str
+    mime_type: Optional[str] = None
+    file_size: Optional[int] = None
+    order: int = 0
+
 class GuideFileResponse(BaseModel):
     id: int
     tool_id: int
@@ -62,9 +71,10 @@ class ToolCreate(BaseModel):
     login_ids: List[str] = []
     guide_content: Optional[str] = None
     admin_memo: Optional[str] = None
-    step_id: Optional[int] = None
+    step_ids: List[int] = []
     details: Optional[Dict[str, Any]] = None
     prompts: List[PromptCreate] = []
+    guide_files: List[GuideFileCreate] = []
 
 class ToolUpdate(BaseModel):
     name: Optional[str] = None
@@ -78,9 +88,10 @@ class ToolUpdate(BaseModel):
     login_ids: Optional[List[str]] = None
     guide_content: Optional[str] = None
     admin_memo: Optional[str] = None
-    step_id: Optional[int] = None
+    step_ids: Optional[List[int]] = None
     details: Optional[Dict[str, Any]] = None
     prompts: Optional[List[PromptCreate]] = None
+    guide_files: Optional[List[GuideFileCreate]] = None
 
 class ToolListItem(BaseModel):
     id: int
@@ -93,7 +104,8 @@ class ToolListItem(BaseModel):
     categories: List[CategoryInTool] = []
     roles: List[str] = []
     login_ids: List[str] = []
-    step_id: Optional[int] = None
+    step_ids: List[int] = []
+    is_favorite: bool = False
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
@@ -110,7 +122,8 @@ class ToolDetailResponse(BaseModel):
     guide_content: Optional[str] = None
     admin_memo: Optional[str] = None
     details: Optional[Dict[str, Any]] = None
-    step_id: Optional[int] = None
+    step_ids: List[int] = []
+    is_favorite: bool = False
     categories: List[CategoryInTool] = []
     roles: List[str] = []
     guide_files: List[GuideFileResponse] = []

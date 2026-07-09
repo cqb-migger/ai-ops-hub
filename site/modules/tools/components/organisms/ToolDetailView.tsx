@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import { Tool } from '../../../dashboard/constants/tools';
 import { API_BASE } from '../../../../base/utils/api';
+import useAuthStore from '@base/stores/useAuthStore';
 
 interface ToolDetailViewProps {
   tool: Tool;
@@ -79,6 +80,15 @@ function ExternalLinkIcon() {
   );
 }
 
+function PenIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px]">
+      <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
 function BookOpenIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px] text-[#5570f6] dark:text-[#7c91eb]">
@@ -108,6 +118,7 @@ function ShieldAlertIcon() {
 
 export default function ToolDetailView({ tool, hideHeader = false, hideLaunchButton = false }: ToolDetailViewProps) {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
   const [isMarkdownPreview, setIsMarkdownPreview] = useState<boolean>(true);
@@ -155,35 +166,75 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
     ],
   };
 
+  const currentPath = router.pathname;
+  let filterCategoryId: number | null = null;
+  if (currentPath.startsWith('/creative-hub') || fromPath?.startsWith('/creative-hub')) {
+    filterCategoryId = 1;
+  } else if (currentPath.startsWith('/compliance-hub') || fromPath?.startsWith('/compliance-hub')) {
+    filterCategoryId = 2;
+  } else if (currentPath.startsWith('/data-hub') || fromPath?.startsWith('/data-hub')) {
+    filterCategoryId = 3;
+  }
+
+  const displayPrompts = (tool.prompts && tool.prompts.length > 0)
+    ? tool.prompts
+        .filter(p => {
+          if (filterCategoryId === null) return true;
+          return (
+            p.categories?.some((cat: any) => cat.id === filterCategoryId) ||
+            (p as any).category_ids?.includes(filterCategoryId)
+          );
+        })
+        .map(p => ({
+          title: p.title || '',
+          description: p.description || '',
+          content: p.content || '',
+          isRecommended: p.isRecommended ?? p.is_recommended ?? false
+        }))
+    : (details.prompts || []);
+
   return (
     <div className="flex flex-col gap-[28px] w-full">
       {/* Title box */}
       {!hideHeader && (
-        <div className="flex items-start gap-[16px] dark:border-midnight-800">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
-            {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
-              <img
-                src={tool.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.icon}` : tool.icon}
-                alt={tool.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span>{tool.icon || '🔧'}</span>
-            )}
+        <div className="flex items-start justify-between gap-[16px] dark:border-midnight-800">
+          <div className="flex items-start gap-[16px]">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
+              {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
+                <img
+                  src={tool.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.icon}` : tool.icon}
+                  alt={tool.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>{tool.icon || '🔧'}</span>
+              )}
+            </div>
+
+            {/* Text */}
+            <div className="flex flex-col gap-[8px] min-w-0">
+              <div className="flex items-center gap-[12px] flex-wrap">
+                <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
+                  {tool.name}
+                </h2>
+              </div>
+              <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
+                {tool.description}
+              </p>
+            </div>
           </div>
 
-          {/* Text */}
-          <div className="flex flex-col gap-[8px] min-w-0">
-            <div className="flex items-center gap-[12px] flex-wrap">
-              <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
-                {tool.name}
-              </h2>
-            </div>
-            <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
-              {tool.description}
-            </p>
-          </div>
+          {/* Edit Action for Admin */}
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => window.open(`/manage-tools/edit/${tool.id}`, '_blank', 'noopener,noreferrer')}
+              className="flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200"
+            >
+              <PenIcon />
+              <span>編集</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -357,42 +408,48 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
         {/* Prompts Cards List */}
         <div className="flex flex-col gap-[24px]">
-          {(details.prompts || []).map((prompt, idx) => {
-            const isRec = prompt.isRecommended;
-            return (
-              <div
-                key={idx}
-                className={`bg-white dark:bg-midnight-950 border rounded-[16px] p-[24px] flex flex-col gap-[16px] shadow-md transition-colors duration-200 ${isRec
-                  ? 'border-[#5570f6]/50 dark:border-[#5570f6]/40'
-                  : 'border-[#dee1e6] dark:border-midnight-800'
-                  }`}
-              >
-                {/* Header row */}
-                <div className="flex items-center justify-between gap-[16px] flex-wrap">
-                  <div className="flex items-center gap-[12px]">
-                    <h4 className="text-[18px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
-                      {prompt.title}
-                    </h4>
+          {displayPrompts.length > 0 ? (
+            displayPrompts.map((prompt, idx) => {
+              const isRec = prompt.isRecommended;
+              return (
+                <div
+                  key={idx}
+                  className={`bg-white dark:bg-midnight-950 border rounded-[16px] p-[24px] flex flex-col gap-[16px] shadow-md transition-colors duration-200 ${isRec
+                    ? 'border-[#5570f6]/50 dark:border-[#5570f6]/40'
+                    : 'border-[#dee1e6] dark:border-midnight-800'
+                    }`}
+                >
+                  {/* Header row */}
+                  <div className="flex items-center justify-between gap-[16px] flex-wrap">
+                    <div className="flex items-center gap-[12px]">
+                      <h4 className="text-[18px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+                        {prompt.title}
+                      </h4>
+                    </div>
+                    {/* Copy Button */}
+                    <button
+                      onClick={() => handleCopy(prompt.content, idx)}
+                      className="flex items-center gap-[8px] h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[14px] shadow-sm transition-colors duration-200"
+                    >
+                      {copiedIndex === idx ? <CheckIcon /> : <CopyIcon />}
+                      <span>{copiedIndex === idx ? 'コピーしました' : 'プロンプトをコピー'}</span>
+                    </button>
                   </div>
-                  {/* Copy Button */}
-                  <button
-                    onClick={() => handleCopy(prompt.content, idx)}
-                    className="flex items-center gap-[8px] h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[14px] shadow-sm transition-colors duration-200"
-                  >
-                    {copiedIndex === idx ? <CheckIcon /> : <CopyIcon />}
-                    <span>{copiedIndex === idx ? 'コピーしました' : 'プロンプトをコピー'}</span>
-                  </button>
-                </div>
 
-                {/* Content Box */}
-                <div className="bg-[#fafafb]/50 dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] p-[16px] max-h-[330px] overflow-y-auto">
-                  <pre className="text-[14px] leading-[23px] text-[#171a1f] dark:text-light font-mono whitespace-pre-wrap">
-                    {prompt.content}
-                  </pre>
+                  {/* Content Box */}
+                  <div className="bg-[#fafafb]/50 dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] p-[16px] max-h-[330px] overflow-y-auto">
+                    <pre className="text-[14px] leading-[23px] text-[#171a1f] dark:text-light font-mono whitespace-pre-wrap">
+                      {prompt.content}
+                    </pre>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="text-center p-[32px] border border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-gray-500 dark:text-gray-400 font-base font-medium">
+              このカテゴリに関連する推奨プロンプトはありません。
+            </div>
+          )}
         </div>
       </div>
     </div>

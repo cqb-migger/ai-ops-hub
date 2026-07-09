@@ -7,6 +7,8 @@ import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
+from app.core.utils.s3 import upload_file_to_s3_or_local
+
 router = APIRouter(prefix='/upload', tags=['[Public] Upload'])
 
 UPLOAD_DIR = os.path.join("static", "uploads", "icons")
@@ -151,18 +153,47 @@ async def upload_icon(file: UploadFile = File(...)):
         )
 
     filename = f"{uuid.uuid4()}{ext}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
-
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    s3_key = f"icons/{filename}"
 
     try:
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+        content = await file.read()
+        file_url, _ = upload_file_to_s3_or_local(
+            file_data=content,
+            key=s3_key,
+            mime_type=file.content_type
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Could not save file: {str(e)}"
         )
 
-    return {"url": f"/static/uploads/icons/{filename}"}
+    return {"url": file_url}
+
+
+@router.post('/file', summary='Upload any file to S3 or local fallback')
+async def upload_file(file: UploadFile = File(...)):
+    """Upload any file (guides/references) to S3 (or local fallback if S3 not configured/fails) and returns URL and path."""
+    _, ext = os.path.splitext(file.filename or "")
+    ext = ext.lower()
+
+    contents = await file.read()
+    file_size = len(contents)
+
+    stored_name = f"{uuid.uuid4()}{ext}"
+    s3_key = f"general/{stored_name}"
+
+    file_url, file_path = upload_file_to_s3_or_local(
+        file_data=contents,
+        key=s3_key,
+        mime_type=file.content_type
+    )
+
+    return {
+        "original_name": file.filename or stored_name,
+        "stored_name": stored_name,
+        "file_path": file_path,
+        "file_url": file_url,
+        "mime_type": file.content_type,
+        "file_size": file_size
+    }

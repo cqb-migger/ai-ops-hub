@@ -4,9 +4,12 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const url = `${API_BASE}${path}`;
   
   let headers = {
-    'Content-Type': 'application/json',
     ...options.headers,
   } as any;
+
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (typeof window !== 'undefined') {
     const authStorage = localStorage.getItem('auth-storage');

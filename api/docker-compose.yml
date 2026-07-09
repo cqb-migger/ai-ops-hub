@@ -27,10 +27,6 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/ai_ops_hub
-      - AWS_ACCESS_KEY_ID=mock
-      - AWS_SECRET_ACCESS_KEY=mock
-      - AWS_REGION=ap-northeast-1
-      - AWS_S3_BUCKET_NAME=ai-ops-hub-guides
     ports:
       - "8000:8000"
     volumes:

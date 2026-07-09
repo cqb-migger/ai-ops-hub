@@ -42,6 +42,8 @@ from app.core.modules.tool.models.tool_category import ToolCategory  # noqa: E40
 from app.core.modules.tool.models.tool_role import ToolRole  # noqa: E402, F401
 from app.core.modules.tool.models.tool_guide_file import ToolGuideFile  # noqa: E402, F401
 from app.core.modules.tool.models.tool_prompt import ToolPrompt, ToolPromptRole, ToolPromptCategory  # noqa: E402, F401
+from app.core.modules.tool.models.tool_step import ToolStep  # noqa: E402, F401
+from app.core.modules.tool.models.user_tool_favorite import UserToolFavorite  # noqa: E402, F401
 
 target_metadata = Base.metadata  # noqa: E402
 

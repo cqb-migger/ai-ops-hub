@@ -4,14 +4,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.dependencies import get_db
+from app.core.modules.auth.auth_dependencies import get_current_user
 from app.core.modules.tool import tool_service
 from app.core.modules.tool.tool_schemas import ToolCreate, ToolDetailResponse, ToolListResponse, ToolUpdate
+from app.core.modules.user.models.user import User
 
 router = APIRouter(prefix='/tools', tags=['[Private] Tools'])
 
 @router.get('/', response_model=ToolListResponse, summary='Get list of tools')
 async def get_tools(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     category_id: Optional[int] = None,
     hub: Optional[str] = None,
     role: Optional[str] = None,
@@ -30,13 +33,18 @@ async def get_tools(
         visibility=visibility,
         skip=skip,
         limit=limit,
+        user_id=current_user.id,
     )
     return ToolListResponse(items=items, total=total, skip=skip, limit=limit)
 
 @router.get('/{tool_id}', response_model=ToolDetailResponse, summary='Get tool details')
-async def get_tool(tool_id: int, db: AsyncSession = Depends(get_db)):
+async def get_tool(
+    tool_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Lấy chi tiết tool kèm prompts, categories, roles, guide_files."""
-    tool = await tool_service.get_tool_service(db=db, tool_id=tool_id)
+    tool = await tool_service.get_tool_service(db=db, tool_id=tool_id, user_id=current_user.id)
     if tool is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tool not found')
     return tool
@@ -61,3 +69,16 @@ async def delete_tool(tool_id: int, db: AsyncSession = Depends(get_db)):
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tool not found')
     return None
+
+
+@router.post('/{tool_id}/favorite', summary='Toggle favorite status of a tool')
+async def toggle_favorite(
+    tool_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Bật/tắt trạng thái yêu thích của tool."""
+    res = await tool_service.toggle_favorite_service(db=db, tool_id=tool_id, user_id=current_user.id)
+    if res is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tool not found')
+    return res

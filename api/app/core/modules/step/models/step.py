@@ -13,7 +13,7 @@ class Step(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
 
-    tools = relationship('Tool', back_populates='step', lazy='selectin')
+    tools = relationship('Tool', secondary='tool_steps', back_populates='steps', lazy='selectin')
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -34,7 +34,9 @@ function mapApiTool(t: any): Tool {
     guide_content: t.guide_content,
     admin_memo: t.admin_memo,
     details: t.details,
-    step_id: t.step_id,
+    step_id: t.step_id || (t.step_ids && t.step_ids[0]) || null,
+    step_ids: t.step_ids || [],
+    is_favorite: !!t.is_favorite,
     categories: t.categories || [],
     roles: t.roles || [],
     guide_files: t.guide_files || [],
@@ -66,7 +68,7 @@ export function useTools(options: UseToolsOptions = {}) {
     try {
       const params = new URLSearchParams();
       if (hub) params.append('hub', hub);
-      if (category) params.append('category', category);
+      if (category) params.append('hub', category);
       if (search) params.append('search', search);
       if (visibility) params.append('visibility', visibility);
       if (role) params.append('role', role);
@@ -118,8 +120,62 @@ export function useTools(options: UseToolsOptions = {}) {
     setTools((prev) => prev.filter((t) => String(t.id) !== String(id)));
   };
 
-  return { tools, total, loading, error, refetch: fetchTools, createTool, updateTool, deleteTool };
+  const toggleFavorite = async (id: string | number) => {
+    const data = await apiFetch<{ is_favorite: boolean }>(`/tools/${id}/favorite`, {
+      method: 'POST',
+    });
+    setTools((prev) => {
+      const updated = prev.map((t) => {
+        if (String(t.id) === String(id)) {
+          return { ...t, is_favorite: data.is_favorite };
+        }
+        return t;
+      });
+      return [...updated].sort((a, b) => {
+        const aFav = a.is_favorite ? 1 : 0;
+        const bFav = b.is_favorite ? 1 : 0;
+        if (aFav !== bFav) return bFav - aFav;
+        return Number(b.id) - Number(a.id);
+      });
+    });
+    return data;
+  };
+
+  return { tools, total, loading, error, refetch: fetchTools, createTool, updateTool, deleteTool, toggleFavorite };
 }
+
+export function useTool(id?: string | number) {
+  const [tool, setTool] = useState<Tool | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchTool = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const data = await apiFetch<any>(`/tools/${id}`);
+      setTool(mapApiTool(data));
+      setError(null);
+    } catch (err: any) {
+      setError(err);
+      setTool(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchTool();
+    } else {
+      setTool(null);
+      setLoading(false);
+    }
+  }, [id, fetchTool]);
+
+  return { tool, loading, error, refetch: fetchTool };
+}
+
 
 /** Converts internal Tool shape to the API request body */
 function buildToolRequestBody(tool: Partial<Tool>): Record<string, any> {
@@ -133,7 +189,8 @@ function buildToolRequestBody(tool: Partial<Tool>): Record<string, any> {
   if (tool.visibility !== undefined) body.visibility = tool.visibility;
   if (tool.guide_content !== undefined) body.guide_content = tool.guide_content;
   if (tool.admin_memo !== undefined) body.admin_memo = tool.admin_memo;
-  if (tool.step_id !== undefined) body.step_id = tool.step_id;
+  if (tool.step_ids !== undefined) body.step_ids = tool.step_ids;
+  else if ((tool as any).step_ids !== undefined) body.step_ids = (tool as any).step_ids;
   if (tool.details !== undefined) body.details = tool.details;
 
   // Handle categories: accept either API format (categories[]) or legacy format (category[])
@@ -166,6 +223,21 @@ function buildToolRequestBody(tool: Partial<Tool>): Record<string, any> {
       roles: p.roles || [],
       category_ids: (p.categories || []).map((c) => c.id),
     }));
+  }
+
+  // Handle guide_files
+  if (tool.guide_files !== undefined) {
+    body.guide_files = tool.guide_files.map((gf) => ({
+      original_name: gf.original_name,
+      stored_name: gf.stored_name,
+      file_path: gf.file_path,
+      file_url: gf.file_url,
+      mime_type: gf.mime_type || null,
+      file_size: gf.file_size || null,
+      order: gf.order || 0,
+    }));
+  } else if ((tool as any).guideFiles !== undefined) {
+    body.guide_files = (tool as any).guideFiles;
   }
 
   return body;

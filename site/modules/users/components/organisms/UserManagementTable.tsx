@@ -325,7 +325,6 @@ export default function UserManagementTable() {
             totalItems={filteredUsers.length}
             itemsPerPage={ITEMS_PER_PAGE}
             className="mt-0"
-            hideItemCount={true}
           />
         </div>
       </div>

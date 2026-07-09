@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Step } from '../../constants/steps';
 import { toast } from 'react-hot-toast';
-import { API_BASE } from '../../../../base/utils/api';
+import { API_BASE, apiFetch } from '../../../../base/utils/api';
 
 interface StepModalProps {
   isOpen: boolean;
@@ -109,16 +109,11 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
                         formData.append('file', file);
                         const uploadToastId = toast.loading('画像をアップロード中...');
                         try {
-                          const res = await fetch(`${API_BASE}/upload/icon`, {
+                          const res = await apiFetch<any>('/upload/file', {
                             method: 'POST',
                             body: formData,
                           });
-                          if (!res.ok) {
-                            const errData = await res.json();
-                            throw new Error(errData.detail || 'アップロードに失敗しました');
-                          }
-                          const data = await res.json();
-                          setSelectedIcon(data.url);
+                          setSelectedIcon(res.file_url);
                           toast.success('アイコン画像をアップロードしました', { id: uploadToastId });
                         } catch (err: any) {
                           toast.error(err.message || '画像のアップロードに失敗しました', { id: uploadToastId });

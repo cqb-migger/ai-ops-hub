@@ -23,8 +23,9 @@ export default function ComplianceHubView() {
   const [isFlowExpanded, setIsFlowExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedStep, setSelectedStep] = useState('');
+  const [deletingStepId, setDeletingStepId] = useState<string | null>(null);
 
-  const { tools, loading: toolsLoading } = useTools({ category: 'compliance', visibility: 'public' });
+  const { tools, loading: toolsLoading, toggleFavorite } = useTools({ category: 'compliance', visibility: 'public' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
 
   // Reset page when filter changes
@@ -73,7 +74,7 @@ export default function ComplianceHubView() {
   };
 
   const filteredResources = useMemo(() => {
-    const complianceTools = [...tools, ...tools];
+    const complianceTools = tools;
     return complianceTools.filter((resource) => {
       const matchesSearch =
         resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,12 +84,12 @@ export default function ComplianceHubView() {
       const matchesRole =
         selectedRole === '' || resource.role === selectedRole;
 
-      // Mock implementation: Since backend doesn't have stepId yet, if a step is selected, 
-      // we filter. Currently we might not have `stepId` on `resource`. 
-      // Let's assume `resource` will have `stepId`. If it doesn't, we can simulate it.
-      // For now, let's just do `resource as any` to avoid TS error if stepId isn't on Tool type.
-      const matchesStep = 
-        selectedStep === '' || (resource as any).stepId === selectedStep;
+      // Filter by checking if selected step is within tool's step_ids array (or step_id for fallback)
+      const matchesStep =
+        selectedStep === '' ||
+        (resource.step_ids && resource.step_ids.includes(Number(selectedStep))) ||
+        (resource.step_id && String(resource.step_id) === String(selectedStep)) ||
+        (resource as any).stepId === selectedStep;
 
       return matchesSearch && matchesRole && matchesStep;
     });
@@ -102,20 +103,24 @@ export default function ComplianceHubView() {
     return filteredResources.slice(startIdx, startIdx + ITEMS_PER_PAGE);
   }, [filteredResources, currentPageSafe]);
 
-  const handleDeleteStep = async (id: string) => {
+  const handleDeleteStep = (id: string) => {
     if (steps.length <= 1) {
       alert('最後のステップは削除できません。少なくとも1つのステップが必要です。');
       return;
     }
-    if (window.confirm('このステップを削除してもよろしいですか？')) {
-      const remaining = steps.filter(s => s.id !== id);
-      // Re-map orders
-      const updated = remaining.map((s, idx) => ({
-        ...s,
-        order: idx + 1
-      }));
-      await saveSteps(updated);
-    }
+    setDeletingStepId(id);
+  };
+
+  const confirmDeleteStep = async () => {
+    if (!deletingStepId) return;
+    const remaining = steps.filter(s => s.id !== deletingStepId);
+    // Re-map orders
+    const updated = remaining.map((s, idx) => ({
+      ...s,
+      order: idx + 1
+    }));
+    await saveSteps(updated);
+    setDeletingStepId(null);
   };
 
   const handleAddStepAt = (index: number) => {
@@ -313,61 +318,53 @@ export default function ComplianceHubView() {
           />
 
           <div className="flex flex-col gap-[12px] w-full">
-          <div className="flex items-center justify-between w-full">
-            <ItemCount
-              currentPage={currentPageSafe}
-              totalItems={filteredResources.length}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
-            <button className="flex items-center justify-center w-[36px] h-[36px] rounded-[8px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-900 text-[#565d6d] dark:text-gray-400 hover:bg-[#f3f4f6] dark:hover:bg-midnight-800 transition-colors" title="名前順で並び替え">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 17h10"/>
-                <path d="M11 13h7"/>
-                <path d="M11 9h4"/>
-                <path d="m3 16 4 4 4-4"/>
-                <path d="M7 20V4"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Cards Grid */}
-          {toolsLoading ? (
-            <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
-              読み込み中...
-            </div>
-          ) : filteredResources.length > 0 ? (
-            <div className="flex flex-col gap-[28px]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px]">
-                {paginatedResources.map((resource, index) => (
-                  <ToolCard key={`${resource.id}-${index}`} tool={resource} />
-                ))}
-              </div>
-              <Pagination
+            <div className="flex items-center justify-between w-full">
+              <ItemCount
                 currentPage={currentPageSafe}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
                 totalItems={filteredResources.length}
                 itemsPerPage={ITEMS_PER_PAGE}
-                hideItemCount={true}
               />
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
-              <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                条件に一致するツールが見つかりませんでした。
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedRole('');
-                }}
-                className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
-              >
-                フィルターをクリア
-              </button>
-            </div>
-          )}
-        </div>
+
+            {/* Cards Grid */}
+            {toolsLoading ? (
+              <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
+                読み込み中...
+              </div>
+            ) : filteredResources.length > 0 ? (
+              <div className="flex flex-col gap-[28px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px]">
+                  {paginatedResources.map((resource, index) => (
+                    <ToolCard key={`${resource.id}-${index}`} tool={resource} onToggleFavorite={toggleFavorite} />
+                  ))}
+                </div>
+                <Pagination
+                  currentPage={currentPageSafe}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  totalItems={filteredResources.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  hideItemCount={true}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
+                <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
+                  条件に一致するツールが見つかりませんでした。
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedRole('');
+                    setSelectedStep('');
+                  }}
+                  className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
+                >
+                  フィルターをクリア
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -381,6 +378,53 @@ export default function ComplianceHubView() {
         onSave={handleSaveStep}
         initialData={editingStep}
       />
+
+      {/* Step Delete Confirmation Modal */}
+      {deletingStepId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+          <div className="w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
+              <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">ステップの削除</h3>
+              <button
+                type="button"
+                onClick={() => setDeletingStepId(null)}
+                className="flex items-center justify-center w-[32px] h-[32px] rounded-full hover:bg-[#f3f4f6] dark:hover:bg-midnight-800 text-[#9095a0] hover:text-[#171a1f] dark:hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px]">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-[24px] py-[20px]">
+              <p className="text-[14px] leading-[22px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
+                「<strong>{steps.find(s => s.id === deletingStepId)?.title}</strong>」を削除してもよろしいですか？この操作は取り消せません。
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="px-[24px] py-[16px] bg-[#fafafb] dark:bg-midnight-900 border-t border-[#dee1e6] dark:border-midnight-800 flex justify-end gap-[12px]">
+              <button
+                type="button"
+                onClick={() => setDeletingStepId(null)}
+                className="h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-400 font-base font-medium text-[14px] transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteStep}
+                className="h-[36px] px-[16px] bg-[#f25a5a] hover:bg-[#e04545] text-white rounded-[6px] font-base font-medium text-[14px] shadow-sm transition-colors"
+              >
+                削除する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

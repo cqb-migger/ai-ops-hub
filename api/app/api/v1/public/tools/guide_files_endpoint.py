@@ -10,6 +10,7 @@ from app.core.db.dependencies import get_db
 from app.core.modules.tool.models.tool import Tool
 from app.core.modules.tool.models.tool_guide_file import ToolGuideFile
 from app.core.modules.tool.tool_schemas import GuideFileResponse
+from app.core.utils.s3 import upload_file_to_s3_or_local
 
 router = APIRouter(tags=['[Private] Tool Guide Files'])
 
@@ -50,21 +51,19 @@ async def upload_guide_file(
         )
 
     stored_name = f"{uuid.uuid4()}{ext}"
-    tool_dir = os.path.join(GUIDE_UPLOAD_DIR, str(tool_id))
-    os.makedirs(tool_dir, exist_ok=True)
-    file_path_local = os.path.join(tool_dir, stored_name)
-
-    with open(file_path_local, 'wb') as f:
-        f.write(contents)
-
     s3_key = f"guides/{tool_id}/{stored_name}"
-    file_url = f"/static/uploads/guides/{tool_id}/{stored_name}"
+
+    file_url, file_path = upload_file_to_s3_or_local(
+        file_data=contents,
+        key=s3_key,
+        mime_type=file.content_type
+    )
 
     db_file = ToolGuideFile(
         tool_id=tool_id,
         original_name=file.filename or stored_name,
         stored_name=stored_name,
-        file_path=s3_key,
+        file_path=file_path,
         file_url=file_url,
         mime_type=file.content_type,
         file_size=len(contents),

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import { API_BASE, apiFetch } from '../../../../base/utils/api';
-import { useTools } from '../../../../base/hooks/useTools';
+import { useTools, useTool } from '../../../../base/hooks/useTools';
 import { useCategories } from '../../../../base/hooks/useCategories';
 import { useSteps } from '../../../../base/hooks/useSteps';
 import { ROLE_OPTIONS } from '../../constants/roles';
@@ -234,19 +234,19 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
 
 
 
-export default function CreateToolForm() {
+export default function EditToolForm() {
   const router = useRouter();
-  const { createTool } = useTools();
+  const { id } = router.query;
+  const { tool, loading: toolLoading } = useTool(id ? String(id) : undefined);
+  const { updateTool } = useTools();
   const { categories: apiCategories, loading: categoriesLoading } = useCategories();
 
   // Alert banner state
-  const [showSuccessAlert, setShowSuccessAlert] = useState(true);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   // Form states
   const [toolName, setToolName] = useState('');
-  const [description, setDescription] = useState(
-    ''
-  );
+  const [description, setDescription] = useState('');
   const [redirectUrl, setRedirectUrl] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
@@ -272,7 +272,6 @@ export default function CreateToolForm() {
   }, [isComplianceSelected]);
 
   // Prompt settings
-
   const [prompts, setPrompts] = useState<PromptItem[]>([
     {
       id: 'p1',
@@ -384,9 +383,7 @@ export default function CreateToolForm() {
   };
 
   // Supplementary states
-  const [adminMemo, setAdminMemo] = useState(
-    '2023/11: プロンプトV2に更新。営業部からのフィードバックを反映し、確度判定を追加。'
-  );
+  const [adminMemo, setAdminMemo] = useState('');
 
   // Refs
   const guideFileInputRef = useRef<HTMLInputElement>(null);
@@ -395,6 +392,103 @@ export default function CreateToolForm() {
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   const stepDropdownRef = useRef<HTMLDivElement>(null);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
+
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  useEffect(() => {
+    if (tool && !hasInitialized) {
+      if (tool.name) setToolName(tool.name);
+      if (tool.description) setDescription(tool.description);
+      if (tool.url) setRedirectUrl(tool.url);
+      if (tool.categories) {
+        setCategories(tool.categories.map((c) => c.name));
+      }
+      if (tool.roles) {
+        setRoles(tool.roles);
+      }
+      if (tool.step_ids) {
+        setStepIds(tool.step_ids.map(String));
+      } else if (tool.step_id) {
+        setStepIds([String(tool.step_id)]);
+      } else {
+        setStepIds([]);
+      }
+      if (tool.login_ids && tool.login_ids.length > 0) {
+        setLoginIds(tool.login_ids);
+      } else {
+        setLoginIds(['']);
+      }
+      if (tool.visibility) {
+        setVisibility(tool.visibility);
+      }
+      if (tool.icon) {
+        setThumbnailUrl(tool.icon);
+        setIconUrlInput(tool.icon);
+      }
+      if (tool.guide_content) {
+        setGuideContent(tool.guide_content);
+      }
+      if (tool.admin_memo) {
+        setAdminMemo(tool.admin_memo);
+      }
+      if (tool.prompts && tool.prompts.length > 0) {
+        setPrompts(
+          tool.prompts.map((p: any, idx: number) => ({
+            id: p.id ? String(p.id) : `p-${idx}`,
+            name: p.title || '',
+            content: p.content || '',
+            isPublic: p.is_recommended ?? p.isRecommended ?? true,
+            categories: (p.categories || []).map((c: any) => c.name),
+          }))
+        );
+      } else {
+        setPrompts([
+          {
+            id: 'p1',
+            name: '',
+            content: '',
+            isPublic: true,
+            categories: [],
+          }
+        ]);
+      }
+      if (tool.guide_files) {
+        const refs = tool.guide_files.filter((gf: any) => gf.mime_type?.startsWith('reference/')).map((gf: any) => ({
+          ...gf,
+          mime_type: gf.mime_type.replace('reference/', '')
+        }));
+        const guides = tool.guide_files.filter((gf: any) => !gf.mime_type?.startsWith('reference/')).map((gf: any) => ({
+          ...gf,
+          mime_type: gf.mime_type?.startsWith('guide/') ? gf.mime_type.replace('guide/', '') : gf.mime_type
+        }));
+        setReferenceFiles(refs);
+        setGuideFiles(guides);
+      }
+      setHasInitialized(true);
+    }
+  }, [tool, hasInitialized]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target as Node)) {
+        setIsRoleOpen(false);
+      }
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCategoryOpen, isRoleOpen]);
+
+  if (toolLoading || (id && !tool)) {
+    return (
+      <div className="flex flex-col items-center justify-center p-[48px] text-center w-full">
+        <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
+          読み込み中...
+        </p>
+      </div>
+    );
+  }
 
   const handleFetchFavicon = async () => {
     if (!iconUrlInput.trim()) {
@@ -422,18 +516,6 @@ export default function CreateToolForm() {
 
   const handleTriggerGuideUpload = () => guideFileInputRef.current?.click();
   const handleTriggerReferenceUpload = () => referenceFileInputRef.current?.click();
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
-        setIsCategoryOpen(false);
-      }
-      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target as Node)) {
-        setIsRoleOpen(false);
-      }
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isCategoryOpen, isRoleOpen]);
 
   const handleAddPrompt = () => {
     setPrompts([...prompts, { id: `p${Date.now()}`, name: '', content: '', isPublic: true, categories: [] }]);
@@ -619,7 +701,7 @@ export default function CreateToolForm() {
         ],
       };
 
-      await createTool(toolPayload as any);
+      await updateTool(id as string, toolPayload as any);
       toast.success('ツールを保存しました');
       setShowSuccessAlert(true);
       router.push('/manage-tools');
@@ -638,10 +720,10 @@ export default function CreateToolForm() {
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
         <h2 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
-          新規ツール作成
+          ツール編集
         </h2>
         <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400">
-          ユーザーが利用できる新しいAIツールを登録します。プロンプトテンプレートを事前設定することで、ユーザーの入力手間を省くことができます。
+          登録済みのAIツール情報を編集します。プロンプトテンプレートなどを修正することができます。
         </p>
       </div>
 
@@ -654,10 +736,10 @@ export default function CreateToolForm() {
             </div>
             <div className="flex flex-col gap-[2px]">
               <span className="text-[14px] font-medium text-[#166534] dark:text-green-300">
-                ツールとプロンプトを保存しました（デモ表示）
+                ツールとプロンプトを更新しました
               </span>
               <span className="text-[14px] font-normal text-[#15803d] dark:text-green-400">
-                設定が正常に保存されました。引き続き編集するか、一覧に戻ることができます。
+                設定が正常に更新されました。
               </span>
             </div>
           </div>

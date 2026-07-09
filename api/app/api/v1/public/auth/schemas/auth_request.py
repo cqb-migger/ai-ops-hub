@@ -8,6 +8,7 @@ class LoginRequest(BaseModel):
 
 from typing import Optional
 
+
 class GoogleAuthRequest(BaseModel):
     code: Optional[str] = None
     redirect_uri: Optional[str] = None

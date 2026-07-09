@@ -1,6 +1,8 @@
 from typing import List, Optional, Tuple
 
+from fastapi import HTTPException, status
 from sqlalchemy import delete, func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,6 +11,9 @@ from app.core.modules.tool.models.tool import Tool
 from app.core.modules.tool.models.tool_category import ToolCategory
 from app.core.modules.tool.models.tool_prompt import ToolPrompt, ToolPromptCategory, ToolPromptRole
 from app.core.modules.tool.models.tool_role import ToolRole
+from app.core.modules.tool.models.tool_step import ToolStep
+from app.core.modules.tool.models.tool_guide_file import ToolGuideFile
+from app.core.modules.tool.models.user_tool_favorite import UserToolFavorite
 from app.core.modules.tool.tool_schemas import PromptCreate, ToolCreate, ToolUpdate
 
 
@@ -24,7 +29,7 @@ async def _format_categories(category_ids: List[int], cats_map: dict) -> List[di
     ]
 
 
-async def _enrich_tool(db: AsyncSession, tool: Tool) -> dict:
+async def _enrich_tool(db: AsyncSession, tool: Tool, user_id: Optional[int] = None) -> dict:
     """Build full dictionary for ToolDetailResponse."""
     cat_ids = [tc.category_id for tc in tool.tool_categories]
     cats_map: dict = {}
@@ -54,13 +59,26 @@ async def _enrich_tool(db: AsyncSession, tool: Tool) -> dict:
             'updated_at': p.updated_at,
         })
 
+    is_favorite = False
+    if user_id:
+        fav_res = await db.execute(
+            select(UserToolFavorite.tool_id)
+            .where(
+                UserToolFavorite.user_id == user_id,
+                UserToolFavorite.tool_id == tool.id
+            )
+        )
+        is_favorite = fav_res.scalar() is not None
+
     return {
         **{c: getattr(tool, c) for c in [
             'id', 'name', 'description', 'icon', 'url', 'status', 'visibility',
-            'login_ids', 'guide_content', 'admin_memo', 'details', 'step_id',
+            'login_ids', 'guide_content', 'admin_memo', 'details',
             'created_at', 'updated_at',
         ]},
         'login_ids': tool.login_ids or [],
+        'step_ids': [ts.step_id for ts in tool.tool_steps],
+        'is_favorite': is_favorite,
         'categories': await _format_categories(cat_ids, cats_map),
         'roles': [tr.role for tr in tool.tool_roles],
         'guide_files': [
@@ -83,6 +101,7 @@ async def get_tools_service(
     visibility: Optional[str] = 'public',
     skip: int = 0,
     limit: int = 20,
+    user_id: Optional[int] = None,
 ) -> Tuple[List[dict], int]:
     """List tools with filters and pagination."""
     base_q = (
@@ -91,6 +110,7 @@ async def get_tools_service(
         .options(
             selectinload(Tool.tool_categories),
             selectinload(Tool.tool_roles),
+            selectinload(Tool.tool_steps),
         )
     )
 
@@ -119,8 +139,29 @@ async def get_tools_service(
     count_q = select(func.count()).select_from(base_q.subquery())
     total = (await db.execute(count_q)).scalar_one()
 
-    result = await db.execute(base_q.order_by(Tool.id.desc()).offset(skip).limit(limit))
+    if user_id:
+        is_fav_col = select(UserToolFavorite.tool_id).where(
+            UserToolFavorite.tool_id == Tool.id,
+            UserToolFavorite.user_id == user_id
+        ).exists()
+        q = base_q.order_by(is_fav_col.desc(), Tool.id.desc())
+    else:
+        q = base_q.order_by(Tool.id.desc())
+
+    result = await db.execute(q.offset(skip).limit(limit))
     tools = list(result.scalars().all())
+
+    fav_tool_ids = set()
+    if user_id and tools:
+        tool_ids = [t.id for t in tools]
+        fav_res = await db.execute(
+            select(UserToolFavorite.tool_id)
+            .where(
+                UserToolFavorite.user_id == user_id,
+                UserToolFavorite.tool_id.in_(tool_ids)
+            )
+        )
+        fav_tool_ids = set(fav_res.scalars().all())
 
     all_cat_ids = list({tc.category_id for t in tools for tc in t.tool_categories})
     cats_map: dict = {}
@@ -139,8 +180,9 @@ async def get_tools_service(
             'url': tool.url,
             'status': tool.status,
             'visibility': tool.visibility,
-            'step_id': tool.step_id,
+            'step_ids': [ts.step_id for ts in tool.tool_steps],
             'login_ids': tool.login_ids or [],
+            'is_favorite': tool.id in fav_tool_ids,
             'categories': [
                 {'id': cid, 'name': cats_map.get(cid, {}).get('name', ''), 'order': cats_map.get(cid, {}).get('order', 0)}
                 for cid in cat_ids if cid in cats_map
@@ -152,7 +194,7 @@ async def get_tools_service(
     return items, total
 
 
-async def get_tool_service(db: AsyncSession, tool_id: int) -> Optional[dict]:
+async def get_tool_service(db: AsyncSession, tool_id: int, user_id: Optional[int] = None) -> Optional[dict]:
     """Get full tool detail."""
     result = await db.execute(
         select(Tool)
@@ -160,6 +202,7 @@ async def get_tool_service(db: AsyncSession, tool_id: int) -> Optional[dict]:
         .options(
             selectinload(Tool.tool_categories),
             selectinload(Tool.tool_roles),
+            selectinload(Tool.tool_steps),
             selectinload(Tool.guide_files),
             selectinload(Tool.prompts).selectinload(ToolPrompt.prompt_roles),
             selectinload(Tool.prompts).selectinload(ToolPrompt.prompt_categories),
@@ -168,7 +211,7 @@ async def get_tool_service(db: AsyncSession, tool_id: int) -> Optional[dict]:
     tool = result.scalars().first()
     if not tool:
         return None
-    return await _enrich_tool(db, tool)
+    return await _enrich_tool(db, tool, user_id=user_id)
 
 
 async def _upsert_relations(db: AsyncSession, tool_id: int, tool_in: ToolCreate | ToolUpdate):
@@ -187,6 +230,12 @@ async def _upsert_relations(db: AsyncSession, tool_id: int, tool_in: ToolCreate 
         await db.execute(delete(ToolRole).where(ToolRole.tool_id == tool_id))
         for r in (tool_in.roles or []):
             db.add(ToolRole(tool_id=tool_id, role=r))
+
+    # Steps
+    if is_create or 'step_ids' in fields_set:
+        await db.execute(delete(ToolStep).where(ToolStep.tool_id == tool_id))
+        for sid in (tool_in.step_ids or []):
+            db.add(ToolStep(tool_id=tool_id, step_id=sid))
 
     # Prompts
     if is_create or 'prompts' in fields_set:
@@ -209,6 +258,24 @@ async def _upsert_relations(db: AsyncSession, tool_id: int, tool_in: ToolCreate 
                 for cid in (p.category_ids or []):
                     db.add(ToolPromptCategory(prompt_id=prompt.id, category_id=cid))
 
+    # Guide files
+    if is_create or 'guide_files' in fields_set:
+        guide_files_list = tool_in.guide_files
+        if guide_files_list is not None:
+            await db.execute(delete(ToolGuideFile).where(ToolGuideFile.tool_id == tool_id))
+            for idx, gf in enumerate(guide_files_list):
+                db_gf = ToolGuideFile(
+                    tool_id=tool_id,
+                    original_name=gf.original_name,
+                    stored_name=gf.stored_name,
+                    file_path=gf.file_path,
+                    file_url=gf.file_url,
+                    mime_type=gf.mime_type,
+                    file_size=gf.file_size,
+                    order=gf.order if gf.order is not None else idx
+                )
+                db.add(db_gf)
+
 
 async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> dict:
     """Create tool + categories + roles + prompts in a single transaction."""
@@ -223,15 +290,28 @@ async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> dict:
         guide_content=tool_in.guide_content,
         admin_memo=tool_in.admin_memo,
         details=tool_in.details,
-        step_id=tool_in.step_id,
     )
-    db.add(db_tool)
-    await db.flush()
+    try:
+        db.add(db_tool)
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tool name already exists"
+        )
 
     tool_id = db_tool.id
 
-    await _upsert_relations(db, tool_id, tool_in)
-    await db.flush()
+    try:
+        await _upsert_relations(db, tool_id, tool_in)
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tool name already exists"
+        )
     db.expire_all()
 
     return await get_tool_service(db, tool_id)
@@ -245,17 +325,31 @@ async def update_tool_service(db: AsyncSession, tool_id: int, tool_in: ToolUpdat
         return None
 
     scalar_fields = ['name', 'description', 'icon', 'url', 'status', 'visibility',
-                     'login_ids', 'guide_content', 'admin_memo', 'details', 'step_id']
-    update_data = tool_in.model_dump(exclude_unset=True, exclude={'category_ids', 'roles', 'prompts'})
+                     'login_ids', 'guide_content', 'admin_memo', 'details']
+    update_data = tool_in.model_dump(exclude_unset=True, exclude={'category_ids', 'roles', 'prompts', 'step_ids'})
     for field in scalar_fields:
         if field in update_data:
             setattr(db_tool, field, update_data[field])
 
-    db.add(db_tool)
-    await db.flush()
+    try:
+        db.add(db_tool)
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tool name already exists"
+        )
 
-    await _upsert_relations(db, tool_id, tool_in)
-    await db.flush()
+    try:
+        await _upsert_relations(db, tool_id, tool_in)
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tool name already exists"
+        )
     db.expire_all()
 
     return await get_tool_service(db, tool_id)
@@ -271,3 +365,28 @@ async def delete_tool_service(db: AsyncSession, tool_id: int) -> bool:
     db.add(db_tool)
     await db.flush()
     return True
+
+
+async def toggle_favorite_service(db: AsyncSession, tool_id: int, user_id: int) -> Optional[dict]:
+    """Toggle favorite status of a tool for a user and return status."""
+    tool_check = await db.execute(select(Tool.id).where(Tool.id == tool_id, Tool.deleted_at.is_(None)))
+    if not tool_check.scalar():
+        return None
+
+    result = await db.execute(
+        select(UserToolFavorite)
+        .where(UserToolFavorite.user_id == user_id, UserToolFavorite.tool_id == tool_id)
+    )
+    fav = result.scalars().first()
+
+    if fav:
+        await db.delete(fav)
+        await db.flush()
+        is_favorite = False
+    else:
+        new_fav = UserToolFavorite(user_id=user_id, tool_id=tool_id)
+        db.add(new_fav)
+        await db.flush()
+        is_favorite = True
+
+    return {"is_favorite": is_favorite}

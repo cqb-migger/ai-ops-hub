@@ -30,7 +30,16 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = Field(None, env='GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET: Optional[str] = Field(None, env='GOOGLE_CLIENT_SECRET')
 
+    # AWS S3 Settings
+    AWS_ACCESS_KEY_ID: Optional[str] = Field(None, env='AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY: Optional[str] = Field(None, env='AWS_SECRET_ACCESS_KEY')
+    AWS_REGION: Optional[str] = Field(None, env='AWS_REGION')
+    AWS_S3_BUCKET_NAME: Optional[str] = Field(None, env='AWS_S3_BUCKET_NAME')
+    AWS_S3_ENDPOINT_URL: Optional[str] = Field(None, env='AWS_S3_ENDPOINT_URL')
+    AWS_S3_TENANT_ID: Optional[str] = Field(None, env='AWS_S3_TENANT_ID')
+
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
 
 
 settings = Settings()
+

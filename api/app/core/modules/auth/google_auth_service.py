@@ -1,19 +1,17 @@
-from typing import Optional
 
 import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import insert
 
 from app.core.config import settings
 from app.core.modules.user.models.user import User
-
 
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
 
 
 import jwt
+
 
 def decode_google_id_token(credential: str) -> dict:
     """Decodes Google ID token (credential) without verifying signature for simplicity in local test/dev."""

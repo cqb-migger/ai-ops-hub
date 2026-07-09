@@ -53,6 +53,8 @@ export interface Tool {
   admin_memo?: string;
   details?: ToolDetails;
   step_id?: number | null;
+  step_ids?: number[];
+  is_favorite?: boolean;
 
   // Relational data
   categories?: ToolCategory[];

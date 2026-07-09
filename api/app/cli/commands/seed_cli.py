@@ -14,6 +14,7 @@ from app.core.modules.tool.models.tool import Tool
 from app.core.modules.tool.models.tool_category import ToolCategory
 from app.core.modules.tool.models.tool_prompt import ToolPrompt, ToolPromptCategory, ToolPromptRole
 from app.core.modules.tool.models.tool_role import ToolRole
+from app.core.modules.tool.models.tool_step import ToolStep
 from app.core.modules.user.models.user import User
 
 app = typer.Typer()
@@ -131,10 +132,13 @@ async def seed_tools_async(step_mapping=None):
                 guide_content=f"## 使い方\n\n1. `{t['name']}`を開きます。\n2. ログインを行います。\n3. ガイドラインに従って利用します。",
                 admin_memo="Seeded via mock data",
                 details={"inputs": ["商談データ"], "outputDescription": "分析レポート"},
-                step_id=assigned_step_id
             )
             session.add(db_tool)
             await session.flush()
+
+            # Add step
+            if assigned_step_id:
+                session.add(ToolStep(tool_id=db_tool.id, step_id=assigned_step_id))
 
             # Add categories
             for cat_slug in t.get("category", []):

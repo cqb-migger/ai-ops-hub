@@ -2,6 +2,7 @@ import { AppProps } from 'next/app';
 import { appWithTranslation } from 'next-i18next';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { Toaster } from 'react-hot-toast';
 import useAuthStore from '@base/stores/useAuthStore';
 import '../styles/index.scss';
 
@@ -56,7 +57,12 @@ function ZikJobApp({ Component, pageProps }: AppProps) {
     );
   }
 
-  return <Component {...pageProps} />;
+  return (
+    <>
+      <Component {...pageProps} />
+      <Toaster position="top-right" reverseOrder={false} />
+    </>
+  );
 }
 
 export default appWithTranslation(ZikJobApp);
