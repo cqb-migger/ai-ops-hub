@@ -9,6 +9,8 @@ import StepModal from '../molecules/StepModal';
 import StepConnector from '../molecules/StepConnector';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
+import { API_BASE } from '../../../../base/utils/api';
+import useAuthStore from '../../../../base/stores/useAuthStore';
 
 
 export default function ComplianceHubView() {
@@ -27,6 +29,19 @@ export default function ComplianceHubView() {
 
   const { tools, loading: toolsLoading, toggleFavorite } = useTools({ category: 'compliance', visibility: 'public' });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
+  const token = useAuthStore((state) => state.token);
+
+  const handleDownloadAll = () => {
+    const params = new URLSearchParams();
+    params.append('hub', 'compliance');
+    if (searchQuery) params.append('search', searchQuery);
+    if (selectedRole) params.append('role', selectedRole);
+    if (selectedStep) params.append('step_id', selectedStep);
+    if (token) params.append('token', token);
+
+    const downloadUrl = `${API_BASE}/tools/download-guides?${params.toString()}`;
+    window.open(downloadUrl, '_blank');
+  };
 
   // Reset page when filter changes
   useEffect(() => {
@@ -290,9 +305,8 @@ export default function ComplianceHubView() {
               チェック業務に必要なシステムや文書へのリンク
             </p>
           </div>
-          <a
-            href="/assets/compliance_guideline.txt"
-            download="compliance_guideline.txt"
+          <button
+            onClick={handleDownloadAll}
             className="flex-shrink-0 inline-flex items-center justify-center gap-[8px] h-[40px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -301,7 +315,7 @@ export default function ComplianceHubView() {
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
             <span>一括ダウンロード</span>
-          </a>
+          </button>
         </div>
 
         {/* Filter Bar */}

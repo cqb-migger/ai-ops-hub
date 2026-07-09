@@ -295,14 +295,16 @@ export default function UserManagementTable() {
 
                     {/* Action */}
                     <td className="py-[16px] px-[20px] text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => setEditingUser(user)}
-                        title="役割を変更"
-                        className="inline-flex items-center justify-center w-[28px] h-[28px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors"
-                      >
-                        <EditIcon />
-                      </button>
+                      {user.role !== 'admin' && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingUser(user)}
+                          title="役割を変更"
+                          className="inline-flex items-center justify-center w-[28px] h-[28px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors"
+                        >
+                          <EditIcon />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

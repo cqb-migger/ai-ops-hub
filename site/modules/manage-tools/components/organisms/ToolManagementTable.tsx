@@ -14,6 +14,7 @@ interface ManagedTool {
   description: string;
   category: string[];
   role: string;
+  roles: string[];
   status: 'public' | 'draft';
   imageUrl: string;
 }
@@ -88,6 +89,7 @@ export default function ToolManagementTable() {
       description: t.description,
       category: t.category,
       role: t.role || '',
+      roles: t.roles || [],
       status: (t.visibility === 'draft' ? 'draft' : 'public') as 'public' | 'draft',
       imageUrl: t.icon || '',
     }));
@@ -275,10 +277,14 @@ export default function ToolManagementTable() {
 
                       {/* Role */}
                       <td className="py-[16px] px-[20px]">
-                        {tool.role ? (
-                          <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[tool.role] || ROLE_BADGE_COLORS.default}`}>
-                            {ROLE_OPTIONS.find(r => r.value === tool.role)?.label || tool.role}
-                          </span>
+                        {tool.roles && tool.roles.length > 0 ? (
+                          <div className="flex flex-wrap gap-[6px] items-center">
+                            {tool.roles.map((rVal) => (
+                              <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
+                                {ROLE_OPTIONS.find(r => r.value === rVal)?.label || rVal}
+                              </span>
+                            ))}
+                          </div>
                         ) : (
                           <span className="text-[12px] text-gray-400 dark:text-gray-500 italic font-base">
                             未設定
