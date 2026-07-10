@@ -74,6 +74,10 @@ async def _enrich_tool(db: AsyncSession, tool: Tool, user_id: Optional[int] = No
         **{c: getattr(tool, c) for c in [
             'id', 'name', 'description', 'icon', 'url', 'status', 'visibility',
             'login_ids', 'guide_content', 'admin_memo', 'details',
+            'mcp_name', 'mcp_type', 'mcp_stdio_command', 'mcp_stdio_args',
+            'mcp_stdio_env', 'mcp_stdio_env_passthrough', 'mcp_stdio_work_dir',
+            'mcp_http_url', 'mcp_http_bearer_token_env', 'mcp_http_headers',
+            'mcp_http_headers_from_env',
             'created_at', 'updated_at',
         ]},
         'login_ids': tool.login_ids or [],
@@ -188,6 +192,17 @@ async def get_tools_service(
                 for cid in cat_ids if cid in cats_map
             ],
             'roles': [tr.role for tr in tool.tool_roles],
+            'mcp_name': tool.mcp_name,
+            'mcp_type': tool.mcp_type,
+            'mcp_stdio_command': tool.mcp_stdio_command,
+            'mcp_stdio_args': tool.mcp_stdio_args or [],
+            'mcp_stdio_env': tool.mcp_stdio_env or [],
+            'mcp_stdio_env_passthrough': tool.mcp_stdio_env_passthrough or [],
+            'mcp_stdio_work_dir': tool.mcp_stdio_work_dir,
+            'mcp_http_url': tool.mcp_http_url,
+            'mcp_http_bearer_token_env': tool.mcp_http_bearer_token_env,
+            'mcp_http_headers': tool.mcp_http_headers or [],
+            'mcp_http_headers_from_env': tool.mcp_http_headers_from_env or [],
             'created_at': tool.created_at,
             'updated_at': tool.updated_at,
         })
@@ -290,6 +305,17 @@ async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> dict:
         guide_content=tool_in.guide_content,
         admin_memo=tool_in.admin_memo,
         details=tool_in.details,
+        mcp_name=tool_in.mcp_name,
+        mcp_type=tool_in.mcp_type,
+        mcp_stdio_command=tool_in.mcp_stdio_command,
+        mcp_stdio_args=tool_in.mcp_stdio_args,
+        mcp_stdio_env=tool_in.mcp_stdio_env,
+        mcp_stdio_env_passthrough=tool_in.mcp_stdio_env_passthrough,
+        mcp_stdio_work_dir=tool_in.mcp_stdio_work_dir,
+        mcp_http_url=tool_in.mcp_http_url,
+        mcp_http_bearer_token_env=tool_in.mcp_http_bearer_token_env,
+        mcp_http_headers=tool_in.mcp_http_headers,
+        mcp_http_headers_from_env=tool_in.mcp_http_headers_from_env,
     )
     try:
         db.add(db_tool)
@@ -325,7 +351,11 @@ async def update_tool_service(db: AsyncSession, tool_id: int, tool_in: ToolUpdat
         return None
 
     scalar_fields = ['name', 'description', 'icon', 'url', 'status', 'visibility',
-                     'login_ids', 'guide_content', 'admin_memo', 'details']
+                     'login_ids', 'guide_content', 'admin_memo', 'details',
+                     'mcp_name', 'mcp_type', 'mcp_stdio_command', 'mcp_stdio_args',
+                     'mcp_stdio_env', 'mcp_stdio_env_passthrough', 'mcp_stdio_work_dir',
+                     'mcp_http_url', 'mcp_http_bearer_token_env', 'mcp_http_headers',
+                     'mcp_http_headers_from_env']
     update_data = tool_in.model_dump(exclude_unset=True, exclude={'category_ids', 'roles', 'prompts', 'step_ids'})
     for field in scalar_fields:
         if field in update_data:

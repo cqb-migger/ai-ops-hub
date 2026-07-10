@@ -128,7 +128,18 @@
     "copied": "コピーしました",
     "copyPrompt": "プロンプトをコピー",
     "noPrompts": "このカテゴリに関連する推奨プロンプトはありません。",
-    "notFound": "ツールが見つかりませんでした。"
+    "notFound": "ツールが見つかりませんでした。",
+    "mcpConnectionSettings": "MCP接続設定",
+    "mcpConnectionType": "接続タイプ",
+    "mcpStdioCommand": "起動用コマンド",
+    "mcpStdioArgs": "引数",
+    "mcpStdioEnv": "環境変数",
+    "mcpStdioEnvPassthrough": "環境変数パススルー",
+    "mcpStdioWorkDir": "作業ディレクトリ",
+    "mcpHttpUrl": "接続URL (SSE/HTTP)",
+    "mcpHttpBearerTokenEnv": "Bearerトークン環境変数",
+    "mcpHttpHeaders": "追加ヘッダー",
+    "mcpHttpHeadersFromEnv": "環境変数から取得するヘッダー"
   },
   "users": {
     "title": "ユーザー一覧",

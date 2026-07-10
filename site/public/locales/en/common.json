@@ -128,7 +128,18 @@
     "copied": "Copied",
     "copyPrompt": "Copy Prompt",
     "noPrompts": "No recommended prompts available for this category.",
-    "notFound": "Tool not found."
+    "notFound": "Tool not found.",
+    "mcpConnectionSettings": "MCP Connection Settings",
+    "mcpConnectionType": "Connection Type",
+    "mcpStdioCommand": "Startup Command",
+    "mcpStdioArgs": "Arguments",
+    "mcpStdioEnv": "Environment Variables",
+    "mcpStdioEnvPassthrough": "Env Passthrough",
+    "mcpStdioWorkDir": "Working Directory",
+    "mcpHttpUrl": "Connection URL (SSE/HTTP)",
+    "mcpHttpBearerTokenEnv": "Bearer Token Env Var",
+    "mcpHttpHeaders": "Headers",
+    "mcpHttpHeadersFromEnv": "Headers from Env"
   },
   "users": {
     "title": "Users List",

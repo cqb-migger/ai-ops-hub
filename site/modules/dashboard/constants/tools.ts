@@ -24,6 +24,23 @@ export interface ToolDetails {
   inputs?: string[];
   outputDescription?: string;
   prompts?: ToolPrompt[];
+  mcp?: {
+    name: string;
+    type: 'stdio' | 'http';
+    stdio?: {
+      command: string;
+      args?: string[];
+      env?: { key: string; value: string }[];
+      env_passthrough?: string[];
+      work_dir?: string;
+    };
+    http?: {
+      url: string;
+      bearer_token_env?: string;
+      headers?: { key: string; value: string }[];
+      headers_from_env?: { key: string; value: string }[];
+    };
+  };
 }
 
 export interface GuideFile {
@@ -52,6 +69,17 @@ export interface Tool {
   guide_content?: string;
   admin_memo?: string;
   details?: ToolDetails;
+  mcp_name?: string;
+  mcp_type?: 'stdio' | 'http';
+  mcp_stdio_command?: string;
+  mcp_stdio_args?: string[];
+  mcp_stdio_env?: { key: string; value: string }[];
+  mcp_stdio_env_passthrough?: string[];
+  mcp_stdio_work_dir?: string;
+  mcp_http_url?: string;
+  mcp_http_bearer_token_env?: string;
+  mcp_http_headers?: { key: string; value: string }[];
+  mcp_http_headers_from_env?: { key: string; value: string }[];
   step_id?: number | null;
   step_ids?: number[];
   is_favorite?: boolean;

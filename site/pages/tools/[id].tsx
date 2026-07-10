@@ -19,35 +19,40 @@ function ToolDetailPage() {
     if (!router.isReady || !id) return;
 
     setLoading(true);
-    // apiFetch<Tool>(`/tools/${id}`)
-    //   .then((data) => {
-    //     setTool(data);
-    //     setLoading(false);
-    //   })
-    //   .catch((err) => {
-    //     console.error(err);
-    //     setLoading(false);
-    //   });
-
-    // Simulating API loading with rich mock data corresponding to /manage-tools/new schema
-    const timer = setTimeout(() => {
-      const mockTool: Tool = {
-        id: String(id || '2'),
-        name: '商談データ分析アシスタント',
-        category: ['クリエイティブ', 'コンプライアンス', 'データ'],
-        description: '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。',
-        url: 'https://internal.app/tools/sales-analyzer',
-        icon: '📊',
-        status: 'active',
-        role: 'sales', // 営業
-        visibility: 'public',
-        loginIds: [
-          'sales-analyzer-user01@company.local',
-          'sales-analyzer-user02@company.local',
-          'sales-analyzer-admin@company.local'
-        ],
-
-        guideContent: `# 商談データ分析アシスタント 活用ガイド
+    apiFetch<Tool>(`/tools/${id}`)
+      .then((data) => {
+        setTool(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch tool, using mock data:', err);
+        // Simulating API loading with rich mock data corresponding to /manage-tools/new schema
+        const mockTool: Tool = {
+          id: String(id || '2'),
+          name: '商談データ分析アシスタント',
+          category: ['クリエイティブ', 'コンプライアンス', 'データ'],
+          description: '入力された商談メモやCRMデータから、顧客の課題、ネクストアクション、受注確度を自動で分析・抽出するツールです。',
+          url: 'https://internal.app/tools/sales-analyzer',
+          icon: '📊',
+          status: 'active',
+          role: 'sales', // 営業
+          visibility: 'public',
+          loginIds: [
+            'sales-analyzer-user01@company.local',
+            'sales-analyzer-user02@company.local',
+            'sales-analyzer-admin@company.local'
+          ],
+          mcp_name: 'sales-analysis-mcp',
+          mcp_type: 'stdio',
+          mcp_stdio_command: 'python',
+          mcp_stdio_args: ['-m', 'sales_mcp_server', '--verbose'],
+          mcp_stdio_env: [
+            { key: 'API_KEY', value: 'sk-proj-••••••••••••••••' },
+            { key: 'DATABASE_URL', value: 'postgresql://localhost/sales_db' }
+          ],
+          mcp_stdio_env_passthrough: ['PATH', 'HOME'],
+          mcp_stdio_work_dir: '/var/www/sales-mcp',
+          guideContent: `# 商談データ分析アシスタント 活用ガイド
   
 このツールは、商談中の会話メモや議事録、CRMに登録されている履歴データから、**「顧客の潜在課題」「次に取るべき具体的なアクション」「見込まれる受注確度 (A/B/C/D)」**を自動的に分析し、レポートを作成します。
 
@@ -62,21 +67,21 @@ function ToolDetailPage() {
 3. \`[※ここにデータをペーストしてください]\` の部分に、コピーした会話内容を上書きして送信します。
 4. 数十秒で分析レポートが生成されるので、それをCRMや社内日報にコピー＆ペーストして共有してください。
 `,
-        guideMaterials: ['sales_analyzer_guide_v2.pdf'],
-        adminMemo: '2026/06: プロンプトV2に更新しました。営業部からのフィードバック（受注確度判定の精度向上）を反映し、BANTCフレームワークでの抽出ロジックを追加しています。',
-        details: {
-          inputs: [
-            '商談時のミーティング書き起こしテキスト',
-            '顧客の会社概要（業界、規模など）',
-            '既存システム等の課題ヒアリングシート'
-          ],
-          outputDescription: '顧客의課題リスト、次のアクション提案、受注確度分析レポート（Markdown形式で出力されます）。',
-          prompts: [
-            {
-              title: '基本商談分析プロンプト',
-              isRecommended: true,
-              description: '標準的な商談メモからBANTCを分析するプロンプトです。',
-              content: `あなたは優秀な営業支援AIアシスタントです。
+          guideMaterials: ['sales_analyzer_guide_v2.pdf'],
+          adminMemo: '2026/06: プロンプトV2に更新しました。営業部からのフィードバック（受注確度判定の精度向上）を反映し、BANTCフレームワークでの抽出ロジックを追加しています。',
+          details: {
+            inputs: [
+              '商談時のミーティング書き起こしテキスト',
+              '顧客の会社概要（業界、規模など）',
+              '既存システム等の課題ヒアリングシート'
+            ],
+            outputDescription: '顧客의課題リスト、次のアクション提案、受注確度分析レポート（Markdown形式で出力されます）。',
+            prompts: [
+              {
+                title: '基本商談分析プロンプト',
+                isRecommended: true,
+                description: '標準的な商談メモからBANTCを分析するプロンプトです。',
+                content: `あなたは優秀な営業支援AIアシスタントです。
 以下の【商談メモ】を読み込み、次のフォーマットに従って分析レポートを出力してください。
 
 ### 1. 顧客の現状と本質的課題
@@ -97,24 +102,22 @@ function ToolDetailPage() {
 
 【商談メモ】:
 [※ここにデータをペーストしてください]`
-            },
-            {
-              title: 'アプローチメール文案作成',
-              description: '商談の分析結果をもとに、顧客への次回フォローメールをドラフトします。',
-              content: `以下の【商談分析結果】に基づいて、次回フォローのためのビジネスメールの文案を作成してください。
+              },
+              {
+                title: 'アプローチメール文案作成',
+                description: '商談の分析結果をもとに、顧客への次回フォローメールをドラフトします。',
+                content: `以下の【商談分析結果】に基づいて、次回フォローのためのビジネスメールの文案を作成してください。
 丁寧かつフランクになりすぎないよう、最適なトーンでお願いします。
 
 【商談分析結果】:
 [※ここにデータをペーストしてください]`
-            }
-          ]
-        }
-      };
-      setTool(mockTool);
-      setLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
+              }
+            ]
+          }
+        };
+        setTool(mockTool);
+        setLoading(false);
+      });
   }, [router.isReady, id]);
 
   return (

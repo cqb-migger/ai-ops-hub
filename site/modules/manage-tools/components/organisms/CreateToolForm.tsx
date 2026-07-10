@@ -77,6 +77,27 @@ function GripIcon() {
   );
 }
 
+function ServerIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px] text-[#5570f6] dark:text-[#7c91eb]">
+      <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+      <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+      <line x1="6" x2="6.01" y1="6" y2="6" />
+      <line x1="6" x2="6.01" y1="18" y2="18" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px]">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" x2="22" y1="12" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
 function TrashIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
@@ -236,6 +257,16 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
 
 
 
+const isValidUrl = (url: string): boolean => {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
+};
+
 export default function CreateToolForm() {
   const router = useRouter();
   const { createTool } = useTools();
@@ -262,6 +293,53 @@ export default function CreateToolForm() {
   const [iconUrlInput, setIconUrlInput] = useState('');
   const [fetchingFavicon, setFetchingFavicon] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // MCP connection states
+  const [mcpName, setMcpName] = useState('');
+  const [mcpType, setMcpType] = useState<'stdio' | 'http'>('stdio');
+  // STDIO
+  const [stdioCommand, setStdioCommand] = useState('');
+  const [stdioArgs, setStdioArgs] = useState<string[]>(['']);
+  const [stdioEnv, setStdioEnv] = useState<{ key: string; value: string }[]>([{ key: '', value: '' }]);
+  const [stdioEnvPassthrough, setStdioEnvPassthrough] = useState<string[]>(['']);
+  const [stdioWorkDir, setStdioWorkDir] = useState('');
+  // HTTP
+  const [httpUrl, setHttpUrl] = useState('');
+  const [httpBearerTokenEnv, setHttpBearerTokenEnv] = useState('');
+  const [httpHeaders, setHttpHeaders] = useState<{ key: string; value: string }[]>([{ key: '', value: '' }]);
+  const [httpHeadersFromEnv, setHttpHeadersFromEnv] = useState<{ key: string; value: string }[]>([{ key: '', value: '' }]);
+
+  // MCP input helper functions
+  const handleAddMcpArg = () => setStdioArgs((prev) => [...prev, '']);
+  const handleUpdateMcpArg = (idx: number, val: string) =>
+    setStdioArgs((prev) => prev.map((item, i) => (i === idx ? val : item)));
+  const handleRemoveMcpArg = (idx: number) =>
+    setStdioArgs((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleAddMcpEnv = () => setStdioEnv((prev) => [...prev, { key: '', value: '' }]);
+  const handleUpdateMcpEnv = (idx: number, field: 'key' | 'value', val: string) =>
+    setStdioEnv((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
+  const handleRemoveMcpEnv = (idx: number) =>
+    setStdioEnv((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleAddMcpEnvPassthrough = () => setStdioEnvPassthrough((prev) => [...prev, '']);
+  const handleUpdateMcpEnvPassthrough = (idx: number, val: string) =>
+    setStdioEnvPassthrough((prev) => prev.map((item, i) => (i === idx ? val : item)));
+  const handleRemoveMcpEnvPassthrough = (idx: number) =>
+    setStdioEnvPassthrough((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleAddMcpHeader = () => setHttpHeaders((prev) => [...prev, { key: '', value: '' }]);
+  const handleUpdateMcpHeader = (idx: number, field: 'key' | 'value', val: string) =>
+    setHttpHeaders((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
+  const handleRemoveMcpHeader = (idx: number) =>
+    setHttpHeaders((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleAddMcpHeaderFromEnv = () => setHttpHeadersFromEnv((prev) => [...prev, { key: '', value: '' }]);
+  const handleUpdateMcpHeaderFromEnv = (idx: number, field: 'key' | 'value', val: string) =>
+    setHttpHeadersFromEnv((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
+  const handleRemoveMcpHeaderFromEnv = (idx: number) =>
+    setHttpHeadersFromEnv((prev) => prev.filter((_, i) => i !== idx));
+
 
   const isComplianceSelected = apiCategories.some(
     (c) => c.id === 2 && categories.includes(c.name)
@@ -538,6 +616,34 @@ export default function CreateToolForm() {
       }
     });
 
+    // Validate redirectUrl (URL)
+    const trimmedUrl = redirectUrl.trim();
+    if (trimmedUrl) {
+      if (trimmedUrl.length < 10 || !isValidUrl(trimmedUrl)) {
+        newErrors.redirectUrl = "遷移先URLは 'http://' または 'https://' から始まる有効なURL形式で入力してください (10文字以上)";
+        setErrorKey('redirectUrl');
+      } else if (trimmedUrl.length > 500) {
+        newErrors.redirectUrl = '遷移先URLは500文字以内で入力してください';
+        setErrorKey('redirectUrl');
+      }
+    }
+
+    // Validate MCP settings
+    if (mcpName.trim()) {
+      if (mcpType === 'http') {
+        const trimmedMcpUrl = httpUrl.trim();
+        if (trimmedMcpUrl) {
+          if (trimmedMcpUrl.length < 10 || !isValidUrl(trimmedMcpUrl)) {
+            newErrors.httpUrl = "MCP URLは 'http://' または 'https://' から始まる有効なURL形式で入力してください (10文字以上)";
+            setErrorKey('httpUrl');
+          } else if (trimmedMcpUrl.length > 2048) {
+            newErrors.httpUrl = 'MCP URLは2048文字以内で入力してください';
+            setErrorKey('httpUrl');
+          }
+        }
+      }
+    }
+
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
@@ -567,6 +673,18 @@ export default function CreateToolForm() {
         } else if (firstErrorKey.startsWith('prompt_content_')) {
           const promptId = firstErrorKey.replace('prompt_content_', '');
           const el = document.getElementById(`prompt-content-${promptId}`);
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey === 'stdioCommand') {
+          const el = document.getElementById('stdio-command-input');
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey === 'httpUrl') {
+          const el = document.getElementById('http-url-input');
+          el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey === 'redirectUrl') {
+          const el = document.getElementById('redirect-url-input');
           el?.focus();
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
@@ -600,6 +718,18 @@ export default function CreateToolForm() {
         guide_content: guideContent.trim() || null,
         admin_memo: adminMemo.trim() || null,
         step_ids: stepIds.map(Number),
+        details: null,
+        mcp_name: mcpName.trim() || null,
+        mcp_type: mcpName.trim() ? mcpType : null,
+        mcp_stdio_command: (mcpName.trim() && mcpType === 'stdio') ? (stdioCommand.trim() || null) : null,
+        mcp_stdio_args: (mcpName.trim() && mcpType === 'stdio') ? stdioArgs.filter(Boolean) : [],
+        mcp_stdio_env: (mcpName.trim() && mcpType === 'stdio') ? stdioEnv.filter((item) => item.key.trim() !== '') : [],
+        mcp_stdio_env_passthrough: (mcpName.trim() && mcpType === 'stdio') ? stdioEnvPassthrough.filter(Boolean) : [],
+        mcp_stdio_work_dir: (mcpName.trim() && mcpType === 'stdio') ? (stdioWorkDir.trim() || null) : null,
+        mcp_http_url: (mcpName.trim() && mcpType === 'http') ? (httpUrl.trim() || null) : null,
+        mcp_http_bearer_token_env: (mcpName.trim() && mcpType === 'http') ? (httpBearerTokenEnv.trim() || null) : null,
+        mcp_http_headers: (mcpName.trim() && mcpType === 'http') ? httpHeaders.filter((item) => item.key.trim() !== '') : [],
+        mcp_http_headers_from_env: (mcpName.trim() && mcpType === 'http') ? httpHeadersFromEnv.filter((item) => item.key.trim() !== '') : [],
         prompts: prompts
           .filter((p) => p.name.trim() || p.content.trim())
           .map((p, i) => {
@@ -740,11 +870,22 @@ export default function CreateToolForm() {
               遷移先URL
             </label>
             <input
+              id="redirect-url-input"
               type="text"
               value={redirectUrl}
-              onChange={(e) => setRedirectUrl(e.target.value)}
-              className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
+              onChange={(e) => {
+                setRedirectUrl(e.target.value);
+                if (!e.target.value.trim() || isValidUrl(e.target.value.trim())) {
+                  setErrors((prev) => ({ ...prev, redirectUrl: '' }));
+                }
+              }}
+              className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                errors.redirectUrl ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+              }`}
             />
+            {errors.redirectUrl && (
+              <p className="text-[12px] text-red-500 font-semibold">{errors.redirectUrl}</p>
+            )}
           </div>
 
           {/* Category Row (Takes 1 full row) */}
@@ -904,7 +1045,6 @@ export default function CreateToolForm() {
                 <div className="flex gap-[8px] items-center flex-1">
                   <input
                     type="text"
-                    value={iconUrlInput}
                     onChange={(e) => setIconUrlInput(e.target.value)}
                     placeholder="https://example.com"
                     className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
@@ -1004,6 +1144,354 @@ export default function CreateToolForm() {
           </div>
 
         </div>
+      </section>
+
+      {/* Custom MCP Connection Settings Section */}
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+        {/* Section Title */}
+        <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
+          <div className="flex items-center gap-[8px]">
+            <ServerIcon />
+            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+              カスタム MCP に接続する
+            </h3>
+          </div>
+          <a
+            href="https://modelcontextprotocol.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-[4px] text-[13px] text-gray-500 hover:text-[#5570f6] transition-colors"
+          >
+            <span>ドキュメント</span>
+            <GlobeIcon />
+          </a>
+        </div>
+
+        {/* Name Input */}
+        <div className="flex flex-col gap-[6px]">
+          <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
+            名前
+          </label>
+          <input
+            type="text"
+            value={mcpName}
+            onChange={(e) => setMcpName(e.target.value)}
+            placeholder="MCP server name"
+            className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+          />
+        </div>
+
+        {/* Tab Buttons Segmented Control */}
+        <div className="flex border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] overflow-hidden p-[2px] bg-[#f3f4f6] dark:bg-midnight-900">
+          <button
+            type="button"
+            onClick={() => setMcpType('stdio')}
+            className={`flex-1 py-[8px] text-center text-[13px] font-semibold rounded-[4px] transition-all duration-250 ${
+              mcpType === 'stdio'
+                ? 'bg-[#c5c7cb] dark:bg-midnight-700 text-[#171a1f] dark:text-light shadow-sm'
+                : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            STDIO
+          </button>
+          <button
+            type="button"
+            onClick={() => setMcpType('http')}
+            className={`flex-1 py-[8px] text-center text-[13px] font-semibold rounded-[4px] transition-all duration-250 ${
+              mcpType === 'http'
+                ? 'bg-[#c5c7cb] dark:bg-midnight-700 text-[#171a1f] dark:text-light shadow-sm'
+                : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            ストリーミング可能な HTTP
+          </button>
+        </div>
+
+        {/* Tab Content Box */}
+        {mcpType === 'stdio' ? (
+          <div className="border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 flex flex-col gap-[20px]">
+            {/* Command */}
+            <div className="flex flex-col gap-[6px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                起動用コマンド
+              </label>
+              <input
+                id="stdio-command-input"
+                type="text"
+                value={stdioCommand}
+                onChange={(e) => {
+                  setStdioCommand(e.target.value);
+                  if (e.target.value.trim()) {
+                    setErrors((prev) => ({ ...prev, stdioCommand: '' }));
+                  }
+                }}
+                placeholder="openai-dev-mcp serve-sqlite"
+                className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                  errors.stdioCommand ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                }`}
+              />
+              {errors.stdioCommand && (
+                <p className="text-[12px] text-red-500 font-semibold">{errors.stdioCommand}</p>
+              )}
+            </div>
+
+            {/* Arguments */}
+            <div className="flex flex-col gap-[8px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                引数
+              </label>
+              <div className="flex flex-col gap-[8px]">
+                {stdioArgs.map((arg, idx) => (
+                  <div key={idx} className="flex items-center gap-[12px]">
+                    <input
+                      type="text"
+                      value={arg}
+                      onChange={(e) => handleUpdateMcpArg(idx, e.target.value)}
+                      placeholder="引数を入力..."
+                      className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMcpArg(idx)}
+                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      title="削除"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddMcpArg}
+                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
+                >
+                  <PlusIcon />
+                  <span>引数を追加</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Env Vars */}
+            <div className="flex flex-col gap-[8px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                環境変数
+              </label>
+              <div className="flex flex-col gap-[8px]">
+                {stdioEnv.map((env, idx) => (
+                  <div key={idx} className="flex items-center gap-[12px]">
+                    <input
+                      type="text"
+                      value={env.key}
+                      onChange={(e) => handleUpdateMcpEnv(idx, 'key', e.target.value)}
+                      placeholder="キー"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <input
+                      type="text"
+                      value={env.value}
+                      onChange={(e) => handleUpdateMcpEnv(idx, 'value', e.target.value)}
+                      placeholder="値"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMcpEnv(idx)}
+                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      title="削除"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddMcpEnv}
+                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
+                >
+                  <PlusIcon />
+                  <span>環境変数を追加</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Env Vars Passthrough */}
+            <div className="flex flex-col gap-[8px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                環境変数パススルー
+              </label>
+              <div className="flex flex-col gap-[8px]">
+                {stdioEnvPassthrough.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-[12px]">
+                    <input
+                      type="text"
+                      value={item}
+                      onChange={(e) => handleUpdateMcpEnvPassthrough(idx, e.target.value)}
+                      placeholder="変数を入力..."
+                      className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMcpEnvPassthrough(idx)}
+                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      title="削除"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddMcpEnvPassthrough}
+                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
+                >
+                  <PlusIcon />
+                  <span>変数を追加</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Working Directory */}
+            <div className="flex flex-col gap-[6px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                作業ディレクトリ
+              </label>
+              <input
+                type="text"
+                value={stdioWorkDir}
+                onChange={(e) => setStdioWorkDir(e.target.value)}
+                placeholder="~/code"
+                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 flex flex-col gap-[20px]">
+            {/* URL */}
+            <div className="flex flex-col gap-[6px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                URL
+              </label>
+              <input
+                id="http-url-input"
+                type="text"
+                value={httpUrl}
+                onChange={(e) => {
+                  setHttpUrl(e.target.value);
+                  if (e.target.value.trim()) {
+                    setErrors((prev) => ({ ...prev, httpUrl: '' }));
+                  }
+                }}
+                placeholder="https://mcp.example.com/mcp"
+                className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
+                  errors.httpUrl ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                }`}
+              />
+              {errors.httpUrl && (
+                <p className="text-[12px] text-red-500 font-semibold">{errors.httpUrl}</p>
+              )}
+            </div>
+
+            {/* Bearer Token */}
+            <div className="flex flex-col gap-[6px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                Bearer トークン環境変数
+              </label>
+              <input
+                type="text"
+                value={httpBearerTokenEnv}
+                onChange={(e) => setHttpBearerTokenEnv(e.target.value)}
+                placeholder="MCP_BEARER_TOKEN"
+                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+              />
+            </div>
+
+            {/* Headers */}
+            <div className="flex flex-col gap-[8px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                ヘッダー
+              </label>
+              <div className="flex flex-col gap-[8px]">
+                {httpHeaders.map((header, idx) => (
+                  <div key={idx} className="flex items-center gap-[12px]">
+                    <input
+                      type="text"
+                      value={header.key}
+                      onChange={(e) => handleUpdateMcpHeader(idx, 'key', e.target.value)}
+                      placeholder="キー"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <input
+                      type="text"
+                      value={header.value}
+                      onChange={(e) => handleUpdateMcpHeader(idx, 'value', e.target.value)}
+                      placeholder="値"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMcpHeader(idx)}
+                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      title="削除"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddMcpHeader}
+                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
+                >
+                  <PlusIcon />
+                  <span>ヘッダーを追加</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Headers from Env */}
+            <div className="flex flex-col gap-[8px]">
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
+                環境変数からのヘッダー
+              </label>
+              <div className="flex flex-col gap-[8px]">
+                {httpHeadersFromEnv.map((hEnv, idx) => (
+                  <div key={idx} className="flex items-center gap-[12px]">
+                    <input
+                      type="text"
+                      value={hEnv.key}
+                      onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'key', e.target.value)}
+                      placeholder="キー"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <input
+                      type="text"
+                      value={hEnv.value}
+                      onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'value', e.target.value)}
+                      placeholder="値"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMcpHeaderFromEnv(idx)}
+                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      title="削除"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddMcpHeaderFromEnv}
+                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
+                >
+                  <PlusIcon />
+                  <span>変数を追加</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Box 2: プロンプト設定 (Prompt Settings) */}
