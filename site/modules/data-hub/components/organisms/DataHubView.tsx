@@ -57,7 +57,7 @@ export default function DataHubView() {
       {/* Page Header */}
       <div className="flex flex-col gap-[12px]">
         {/* Title */}
-        <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-extrabold text-[30px] leading-[36px] tracking-[-0.75px] text-[#171a1f] dark:text-light">
+        <h1 className="font-base font-bold text-[30px] leading-[36px] tracking-[-0.75px] text-[#171a1f] dark:text-light">
           {t('nav.dataHub')}
         </h1>
 

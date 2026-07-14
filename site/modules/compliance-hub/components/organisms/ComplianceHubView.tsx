@@ -182,7 +182,7 @@ export default function ComplianceHubView() {
       {/* Category Pill Badge & Header title */}
       <div className="flex flex-col items-start gap-[12px]">
         {/* Title & description */}
-        <h2 className="text-[36px] font-extrabold leading-[40px] text-[#171a1f] dark:text-light tracking-[-0.9px] font-base">
+        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('nav.complianceHub')}
         </h2>
         <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
@@ -198,7 +198,7 @@ export default function ComplianceHubView() {
           className="flex justify-between items-center cursor-pointer select-none"
         >
           <div className="flex flex-col gap-[4px]">
-            <h3 className="text-[20px] sm:text-[22px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px]">
+            <h3 className="text-[20px] sm:text-[22px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px] font-base">
               {t('compliance.flowTitle')}
             </h3>
             <p className="text-[13px] sm:text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
@@ -291,7 +291,7 @@ export default function ComplianceHubView() {
       <section className="flex flex-col gap-[28px]">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px]">
           <div>
-            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px] font-base">
               {t('compliance.toolsTitle')}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">

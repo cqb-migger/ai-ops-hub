@@ -929,7 +929,7 @@ export default function EditToolForm() {
 
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
-        <h2 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('manageTools.edit')}
         </h2>
         <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400">
@@ -965,7 +965,7 @@ export default function EditToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <SettingsIcon />
-          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">{t('form.basicInfo')}</h3>
+          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">{t('form.basicInfo')}</h3>
         </div>
 
         {/* Form Fields */}
@@ -1303,7 +1303,7 @@ export default function EditToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <ServerIcon />
-            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('mcp.title')}
             </h3>
           </div>
@@ -1645,7 +1645,7 @@ export default function EditToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <MessageSquareIcon />
-            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('prompt.title')}
             </h3>
           </div>
@@ -1821,7 +1821,7 @@ export default function EditToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <BookIcon />
-            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('guide.title')}
             </h3>
           </div>
@@ -1947,7 +1947,7 @@ export default function EditToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <FileTextIcon />
-          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
             {t('form.supplementary')}
           </h3>
         </div>
