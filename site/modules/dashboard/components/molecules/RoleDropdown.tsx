@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ROLE_OPTIONS } from '../../../manage-tools/constants/roles';
 import { useTranslation } from 'next-i18next';
+import { translateRole } from '../../../../base/utils/labels';
 
 export interface RoleDropdownProps {
   selectedRole?: string;
@@ -81,7 +82,7 @@ export default function RoleDropdown({
   const { t } = useTranslation('common');
   const hasRole = selectedRole !== '';
   const selectedOption = ROLE_OPTIONS.find((r) => r.value === selectedRole);
-  const selectedLabel = selectedOption ? selectedOption.label : null;
+  const selectedLabel = selectedOption ? translateRole(selectedOption.value, t) : null;
 
   // Close on outside click
   useEffect(() => {
@@ -157,7 +158,7 @@ export default function RoleDropdown({
                   : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
               }`}
             >
-              {opt.label}
+              {translateRole(opt.value, t)}
               {selectedRole === opt.value && (
                 <span className="text-[#5570f6] dark:text-[#7c91eb]">
                   <CheckIcon />

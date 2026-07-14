@@ -4,10 +4,10 @@ export interface RoleOption {
 }
 
 export const ROLE_OPTIONS: RoleOption[] = [
-  { value: 'sale', label: '営業 (sale)' },
-  { value: 'marketing', label: 'マーケティング (marketing)' },
-  { value: 'backoffice', label: 'バックオフィス (backoffice)' },
-  { value: 'accounting', label: '経理 (accounting)' },
+  { value: 'sale', label: '営業' },
+  { value: 'marketing', label: 'マーケティング' },
+  { value: 'backoffice', label: 'バックオフィス' },
+  { value: 'accounting', label: '経理' },
 ];
 
 export const ROLE_BADGE_COLORS: Record<string, string> = {

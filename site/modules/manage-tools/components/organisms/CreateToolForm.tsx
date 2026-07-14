@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import { API_BASE, apiFetch } from '../../../../base/utils/api';
 import { useTranslation } from 'next-i18next';
+import { translateCategory } from '../../../../base/utils/labels';
 import { useTools } from '../../../../base/hooks/useTools';
 import { useCategories } from '../../../../base/hooks/useCategories';
 import { useSteps } from '../../../../base/hooks/useSteps';
@@ -104,15 +105,6 @@ function TrashIcon() {
       <path d="M3 6h18" />
       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>
-  );
-}
-
-function CircleCheckIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   );
 }
@@ -275,7 +267,6 @@ export default function CreateToolForm() {
   const { t } = useTranslation('common');
 
   // Alert banner state
-  const [showSuccessAlert, setShowSuccessAlert] = useState(true);
 
   // Form states
   const [toolName, setToolName] = useState('');
@@ -755,7 +746,6 @@ export default function CreateToolForm() {
 
       await createTool(toolPayload as any);
       toast.success(t('manageTools.saveSuccess', 'ツールを保存しました'));
-      setShowSuccessAlert(true);
       router.push('/manage-tools');
     } catch (err: any) {
       toast.error(err.message || t('manageTools.saveFailed', 'ツールの保存に失敗しました'));
@@ -778,27 +768,6 @@ export default function CreateToolForm() {
           {t('manageTools.addDesc', 'ユーザーが利用できる新しいAIツールを登録します。プロンプトテンプレートを事前設定することで、ユーザーの入力手間を省くことができます。')}
         </p>
       </div>
-
-      {/* Success Alert Banner */}
-      {showSuccessAlert && (
-        <div className="flex items-start justify-between bg-[#f0fdf4] dark:bg-midnight-900 border border-[#bbf7d0] dark:border-green-800 rounded-[6px] p-[16px] gap-[12px]">
-          <div className="flex items-start gap-[12px]">
-            <div className="mt-[2px]">
-              <CircleCheckIcon />
-            </div>
-            <div className="flex flex-col gap-[2px]">
-              <span className="text-[14px] font-medium text-[#166534] dark:text-green-300">{t('toast.toolSavedDemo')}</span>
-              <span className="text-[14px] font-normal text-[#15803d] dark:text-green-400">{t('toast.settingsSavedDetail')}</span>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowSuccessAlert(false)}
-            className="text-[#15803d] dark:text-green-400 hover:opacity-80 p-[4px] text-[16px]"
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* Box 1: 基本情報 (Basic Information) */}
       <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
@@ -899,7 +868,7 @@ export default function CreateToolForm() {
                       className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
                     />
                     <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
-                      {cat.name}
+                      {translateCategory(cat.name, t)}
                     </span>
                   </label>
                 ))
@@ -1618,7 +1587,7 @@ export default function CreateToolForm() {
                                 className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
                               />
                               <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
-                                {cat.name}
+                                {translateCategory(cat.name, t)}
                               </span>
                             </label>
                           );

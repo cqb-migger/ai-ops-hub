@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { Tool } from '../../constants/tools';
 import { useTranslation } from 'next-i18next';
+import { translateCategory } from '../../../../base/utils/labels';
 import { API_BASE } from '../../../../base/utils/api';
 import ToolDetailModal from '../../../tools/components/organisms/ToolDetailModal';
 
@@ -131,7 +132,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
           {visibleTags.map((tag) => {
             return (
               <span key={tag} className="bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[10px] font-medium text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] flex items-center justify-center whitespace-nowrap">
-                {tag}
+                {translateCategory(tag, t)}
               </span>
             );
           })}

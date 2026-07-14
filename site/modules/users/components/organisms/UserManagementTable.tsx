@@ -5,6 +5,7 @@ import { useUsers, SSOUser } from '../../../../base/hooks/useUsers';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { ROLE_OPTIONS, ROLE_BADGE_COLORS } from '../../../manage-tools/constants/roles';
+import { translateRole } from '../../../../base/utils/labels';
 import { useTranslation } from 'next-i18next';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -285,7 +286,7 @@ export default function UserManagementTable() {
                       {/* Role badge */}
                       <td className="py-[16px] px-[20px]">
                         <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
-                          {ROLE_OPTIONS.find((r) => r.value === user.role)?.label ?? user.role}
+                          {translateRole(user.role, t)}
                         </span>
                       </td>
 

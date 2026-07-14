@@ -27,7 +27,7 @@
     "failed": "ログインに失敗しました"
   },
   "footer": {
-    "copyright": "© 2026 AI Ops Hub. All rights reserved.",
+    "copyright": "© 2026 AI Ops Hub. 全著作権所有。",
     "disclaimer": "本システムは、医療機器や診断等の目的には利用できません。"
   },
   "common": {
@@ -98,9 +98,9 @@
       "planning": "企画",
       "writing": "ライティング",
       "design": "デザイン",
-      "sale": "営業 (sale)",
-      "backoffice": "バックオフィス (backoffice)",
-      "accounting": "経理 (accounting)"
+      "sale": "営業",
+      "backoffice": "バックオフィス",
+      "accounting": "経理"
     }
   },
   "compliance": {

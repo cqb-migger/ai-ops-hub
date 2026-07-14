@@ -33,7 +33,16 @@ function mapApiUser(u: any): SSOUser {
     name: u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
     email: u.email,
     role: u.role as RoleValue,
-    lastLogin: u.last_login ? new Date(u.last_login).toLocaleDateString('ja-JP') : '—',
+    lastLogin: u.last_login
+      ? new Date(u.last_login).toLocaleString('ja-JP', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      : '—',
     is_active: u.is_active,
   };
 }

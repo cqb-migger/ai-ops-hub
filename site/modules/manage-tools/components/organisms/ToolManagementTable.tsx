@@ -7,7 +7,8 @@ import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { API_BASE } from '../../../../base/utils/api';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
-import { ROLE_OPTIONS, ROLE_BADGE_COLORS } from '../../constants/roles';
+import { ROLE_BADGE_COLORS } from '../../constants/roles';
+import { translateCategory, translateRole } from '../../../../base/utils/labels';
 import { useTranslation } from 'next-i18next';
 
 interface ManagedTool {
@@ -277,7 +278,7 @@ export default function ToolManagementTable() {
                           {tool.category.map((cat) => {
                             return (
                               <span key={cat} className="inline-flex items-center justify-center bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] font-base whitespace-nowrap">
-                                {cat}
+                                {translateCategory(cat, t)}
                               </span>
                             );
                           })}
@@ -290,7 +291,7 @@ export default function ToolManagementTable() {
                           <div className="flex flex-wrap gap-[6px] items-center">
                             {tool.roles.map((rVal) => (
                               <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                                {ROLE_OPTIONS.find(r => r.value === rVal)?.label ?? rVal}
+                                {translateRole(rVal, t)}
                               </span>
                             ))}
                           </div>

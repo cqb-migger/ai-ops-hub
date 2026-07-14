@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import { API_BASE, apiFetch } from '../../../../base/utils/api';
 import { useTranslation } from 'next-i18next';
+import { translateCategory } from '../../../../base/utils/labels';
 import { useTools, useTool } from '../../../../base/hooks/useTools';
 import { useCategories } from '../../../../base/hooks/useCategories';
 import { useSteps } from '../../../../base/hooks/useSteps';
@@ -1006,7 +1007,7 @@ export default function EditToolForm() {
                       className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
                     />
                     <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
-                      {cat.name}
+                      {translateCategory(cat.name, t)}
                     </span>
                   </label>
                 ))
@@ -1719,7 +1720,7 @@ export default function EditToolForm() {
                                 className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
                               />
                               <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
-                                {cat.name}
+                                {translateCategory(cat.name, t)}
                               </span>
                             </label>
                           );
