@@ -235,104 +235,104 @@ export default function UserManagementTable() {
 
         {/* Table */}
         <div className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] overflow-hidden shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] border-collapse text-left">
-            <thead>
-              <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[60px]">{t('users.stt', 'STT')}</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base">{t('users.name', 'ユーザー')}</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[220px]">{t('users.role', '役割')}</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[160px]">{t('users.lastLogin', '最終ログイン')}</th>
-                <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[90px]">{t('common.action', '操作')}</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-                    {t('common.loading')}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px] border-collapse text-left">
+              <thead>
+                <tr className="bg-[#fafafb] dark:bg-midnight-900 border-b border-[#dee1e6] dark:border-midnight-800">
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[60px]">{t('users.stt', 'No')}</th>
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base">{t('users.name', 'ユーザー')}</th>
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[220px]">{t('users.role', '役割')}</th>
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[160px]">{t('users.lastLogin', '最終ログイン')}</th>
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[90px]">{t('common.action', '操作')}</th>
                 </tr>
-              ) : filteredUsers.length > 0 ? (
-                paginatedUsers.map((user, index) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
-                  >
-                    {/* STT */}
-                    <td className="py-[16px] px-[20px] text-[14px] text-[#565d6d] dark:text-gray-400 font-base font-medium">
-                      {(currentPageSafe - 1) * ITEMS_PER_PAGE + index + 1}
-                    </td>
+              </thead>
 
-                    {/* User */}
-                    <td className="py-[16px] px-[20px]">
-                      <div className="flex items-center gap-[12px]">
-                        <div className="flex-shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] font-bold font-base select-none bg-[#e0e7ff] text-[#5570f6] dark:bg-[#1e1b4b]/50 dark:text-[#c7d2fe]">
-                          {getInitials(user.name)}
-                        </div>
-                        <div className="flex flex-col gap-[2px] min-w-0">
-                          <span className="text-[14px] font-medium leading-[20px] text-[#171a1f] dark:text-light font-base truncate">
-                            {user.name}
-                          </span>
-                          <span className="text-[12px] font-normal leading-[16px] text-[#565d6d] dark:text-gray-400 font-base truncate">
-                            {user.email}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Role badge */}
-                    <td className="py-[16px] px-[20px]">
-                      <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
-                        {t(`filter.roleOptions.${user.role}`, ROLE_OPTIONS.find((r) => r.value === user.role)?.label ?? user.role)}
-                      </span>
-                    </td>
-
-                    {/* Last login */}
-                    <td className="py-[16px] px-[20px]">
-                      <span className="text-[13px] font-normal text-[#565d6d] dark:text-gray-400 font-base">
-                        {user.lastLogin}
-                      </span>
-                    </td>
-
-                    {/* Action */}
-                    <td className="py-[16px] px-[20px] text-right whitespace-nowrap">
-                      {user.role !== 'admin' && (
-                        <button
-                          type="button"
-                          onClick={() => setEditingUser(user)}
-                          title={t('users.changeRole', '役割を変更') as string}
-                          className="inline-flex items-center justify-center w-[28px] h-[28px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors"
-                        >
-                          <EditIcon />
-                        </button>
-                      )}
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                      {t('common.loading')}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
-                    {t('users.noUsers', '該当するユーザーが見つかりませんでした。')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : filteredUsers.length > 0 ? (
+                  paginatedUsers.map((user, index) => (
+                    <tr
+                      key={user.id}
+                      className="border-b border-[#dee1e6] dark:border-midnight-800 hover:bg-[#fafafb]/50 dark:hover:bg-midnight-900/50 transition-colors duration-150"
+                    >
+                      {/* STT */}
+                      <td className="py-[16px] px-[20px] text-[14px] text-[#565d6d] dark:text-gray-400 font-base font-medium">
+                        {(currentPageSafe - 1) * ITEMS_PER_PAGE + index + 1}
+                      </td>
 
-        <div className="px-[20px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-gray-50 dark:bg-midnight-950">
-          <Pagination
-            currentPage={currentPageSafe}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            totalItems={filteredUsers.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-            className="mt-0"
-          />
+                      {/* User */}
+                      <td className="py-[16px] px-[20px]">
+                        <div className="flex items-center gap-[12px]">
+                          <div className="flex-shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] font-bold font-base select-none bg-[#e0e7ff] text-[#5570f6] dark:bg-[#1e1b4b]/50 dark:text-[#c7d2fe]">
+                            {getInitials(user.name)}
+                          </div>
+                          <div className="flex flex-col gap-[2px] min-w-0">
+                            <span className="text-[14px] font-medium leading-[20px] text-[#171a1f] dark:text-light font-base truncate">
+                              {user.name}
+                            </span>
+                            <span className="text-[12px] font-normal leading-[16px] text-[#565d6d] dark:text-gray-400 font-base truncate">
+                              {user.email}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Role badge */}
+                      <td className="py-[16px] px-[20px]">
+                        <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
+                          {ROLE_OPTIONS.find((r) => r.value === user.role)?.label ?? user.role}
+                        </span>
+                      </td>
+
+                      {/* Last login */}
+                      <td className="py-[16px] px-[20px]">
+                        <span className="text-[13px] font-normal text-[#565d6d] dark:text-gray-400 font-base">
+                          {user.lastLogin}
+                        </span>
+                      </td>
+
+                      {/* Action */}
+                      <td className="py-[16px] px-[20px] text-right whitespace-nowrap">
+                        {user.role !== 'admin' && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingUser(user)}
+                            title={t('users.changeRole', '役割を変更') as string}
+                            className="inline-flex items-center justify-center w-[28px] h-[28px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors"
+                          >
+                            <EditIcon />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-[48px] px-[20px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+                      {t('users.noUsers', '該当するユーザーが見つかりませんでした。')}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-[20px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-gray-50 dark:bg-midnight-950">
+            <Pagination
+              currentPage={currentPageSafe}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={filteredUsers.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              className="mt-0"
+            />
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

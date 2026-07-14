@@ -186,7 +186,7 @@
     "saveFailed": "ユーザー権限の更新に失敗しました",
     "selectRolePrompt": "役割を選択してください",
     "currentRole": "現在",
-    "stt": "STT",
+    "stt": "No.",
     "noUsers": "該当するユーザーが見つかりませんでした。"
   },
   "manageTools": {

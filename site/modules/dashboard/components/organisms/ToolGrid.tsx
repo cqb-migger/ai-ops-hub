@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../molecules/FilterBar';
 import ToolCard from '../molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
+import { useCategories } from '../../../../base/hooks/useCategories';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { useTranslation } from 'next-i18next';
@@ -17,57 +18,51 @@ function SparklesIcon() {
 }
 
 export default function ToolGrid() {
+  const ITEMS_PER_PAGE = 16;
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
 
-  const { tools, loading, toggleFavorite } = useTools({ visibility: 'public' });
+  const { categories } = useCategories();
 
-  // Extract unique categories from tools
-  const uniqueCategories = useMemo(() => {
-    const cats = new Set<string>();
-    tools.forEach(tool => {
-      if (Array.isArray(tool.category)) {
-        tool.category.forEach(c => cats.add(c));
-      }
-    });
-    return Array.from(cats);
-  }, [tools]);
+  // Category options (names) for the dropdown, from the full category list
+  const uniqueCategories = useMemo(
+    () => categories.map((c) => c.name),
+    [categories]
+  );
 
+  // Map selected category name -> id for the API filter
+  const selectedCategoryId = useMemo(() => {
+    if (!selectedCategory) return undefined;
+    return categories.find((c) => c.name === selectedCategory)?.id;
+  }, [categories, selectedCategory]);
+
+  // Debounce the search input so we don't hit the API on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedRole]);
+  }, [debouncedSearch, selectedCategory, selectedRole]);
 
-  // Filter tools logic
-  const filteredTools = useMemo(() => {
-    return tools.filter((tool) => {
-      const matchesSearch =
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
+  const { tools, total, loading, toggleFavorite } = useTools({
+    visibility: 'public',
+    search: debouncedSearch || undefined,
+    categoryId: selectedCategoryId,
+    role: selectedRole || undefined,
+    limit: ITEMS_PER_PAGE,
+    skip: (currentPage - 1) * ITEMS_PER_PAGE,
+  });
 
-      const matchesCategory =
-        selectedCategory === '' || tool.category.includes(selectedCategory);
-
-      const matchesRole =
-        selectedRole === '' || tool.role === selectedRole;
-
-      return matchesSearch && matchesCategory && matchesRole;
-    });
-  }, [tools, searchQuery, selectedCategory, selectedRole]);
-
-  const ITEMS_PER_PAGE = 16;
-  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
-  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
-
-  const paginatedTools = useMemo(() => {
-    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
-    return filteredTools.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-  }, [filteredTools, currentPageSafe]);
+  const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const currentPageSafe = Math.min(currentPage, totalPages);
+  const paginatedTools = tools;
 
   return (
     <div className="flex flex-col gap-[28px] w-full">
@@ -104,7 +99,7 @@ export default function ToolGrid() {
         <div className="flex items-center justify-between w-full">
           <ItemCount
             currentPage={currentPageSafe}
-            totalItems={filteredTools.length}
+            totalItems={total}
             itemsPerPage={ITEMS_PER_PAGE}
           />
         </div>
@@ -114,7 +109,7 @@ export default function ToolGrid() {
           <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
             {t('common.loading')}
           </div>
-        ) : filteredTools.length > 0 ? (
+        ) : paginatedTools.length > 0 ? (
           <div className="flex flex-col gap-[28px]">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
               {paginatedTools.map((tool) => (

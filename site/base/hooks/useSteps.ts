@@ -21,7 +21,7 @@ export function useSteps(options: { enabled?: boolean } = {}) {
   const fetchSteps = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch<any[]>('/steps');
+      const data = await apiFetch<any[]>('/steps/');
       setSteps((data || []).map(mapApiStep));
       setError(null);
     } catch (err: any) {
@@ -51,7 +51,7 @@ export function useSteps(options: { enabled?: boolean } = {}) {
         title: s.title,
         description: s.description,
       }));
-      const data = await apiFetch<any[]>('/steps', {
+      const data = await apiFetch<any[]>('/steps/', {
         method: 'POST',
         body: JSON.stringify(body),
       });
@@ -74,7 +74,7 @@ export function useSteps(options: { enabled?: boolean } = {}) {
       title: step.title,
       description: step.description,
     };
-    const data = await apiFetch<any>('/steps', {
+    const data = await apiFetch<any>('/steps/', {
       method: 'POST',
       // For single step creation, send an array of the existing steps + new one
       body: JSON.stringify([...steps.map((s) => ({

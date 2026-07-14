@@ -5,9 +5,11 @@ import { Tool, ToolCategory } from '../../modules/dashboard/constants/tools';
 interface UseToolsOptions {
   hub?: string;
   category?: string;
+  categoryId?: number;
   search?: string;
   visibility?: 'public' | 'draft' | 'all';
   role?: string;
+  stepId?: string | number;
   limit?: number;
   skip?: number;
 }
@@ -72,22 +74,26 @@ export function useTools(options: UseToolsOptions = {}) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const { hub, category, search, visibility, role, limit = 20, skip = 0 } = options;
+  const { hub, category, categoryId, search, visibility, role, stepId, limit = 20, skip = 0 } = options;
 
   const fetchTools = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (hub) params.append('hub', hub);
-      if (category) params.append('hub', category);
+      if (categoryId) params.append('category_id', String(categoryId));
+      else if (category) params.append('hub', category);
       if (search) params.append('search', search);
       if (visibility) params.append('visibility', visibility);
       if (role) params.append('role', role);
+      if (stepId) params.append('step_id', String(stepId));
       params.append('limit', String(limit));
       params.append('skip', String(skip));
 
+      // Call the trailing-slash route directly to avoid a 307 redirect that can
+      // drop the query string (which would silently disable all filters).
       const queryString = params.toString() ? `?${params.toString()}` : '';
-      const data = await apiFetch<ToolsResponse>(`/tools${queryString}`);
+      const data = await apiFetch<ToolsResponse>(`/tools/${queryString}`);
       setTools((data.items || []).map(mapApiTool));
       setTotal(data.total || 0);
       setError(null);
@@ -96,7 +102,7 @@ export function useTools(options: UseToolsOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [hub, category, search, visibility, role, limit, skip]);
+  }, [hub, category, categoryId, search, visibility, role, stepId, limit, skip]);
 
   useEffect(() => {
     fetchTools();
@@ -104,7 +110,7 @@ export function useTools(options: UseToolsOptions = {}) {
 
   const createTool = async (newTool: Partial<Tool>) => {
     const body = buildToolRequestBody(newTool);
-    const data = await apiFetch<any>('/tools', {
+    const data = await apiFetch<any>('/tools/', {
       method: 'POST',
       body: JSON.stringify(body),
     });

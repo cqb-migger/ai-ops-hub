@@ -15,7 +15,7 @@ export function useCategories() {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch<Category[]>('/categories');
+      const data = await apiFetch<Category[]>('/categories/');
       setCategories(data || []);
       setError(null);
     } catch (err: any) {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import ToolCard from '../../../dashboard/components/molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
@@ -8,11 +8,21 @@ import { useTranslation } from 'next-i18next';
 import { API_BASE } from '../../../../base/utils/api';
 import useAuthStore from '../../../../base/stores/useAuthStore';
 
+const ITEMS_PER_PAGE = 16;
+
 export default function DataHubView() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const { tools, loading, toggleFavorite } = useTools({ category: 'data', visibility: 'public' });
+  const { tools, total, loading, toggleFavorite } = useTools({
+    category: 'data',
+    visibility: 'public',
+    search: debouncedSearch || undefined,
+    role: selectedRole || undefined,
+    limit: ITEMS_PER_PAGE,
+    skip: (currentPage - 1) * ITEMS_PER_PAGE,
+  });
   const token = useAuthStore((state) => state.token);
   const { t } = useTranslation('common');
 
@@ -27,32 +37,20 @@ export default function DataHubView() {
     window.open(downloadUrl, '_blank');
   };
 
+  // Debounce the search input so we don't hit the API on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedRole]);
+  }, [debouncedSearch, selectedRole]);
 
-  const filteredTools = useMemo(() => {
-    return tools.filter((tool) => {
-      const matchesSearch =
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.category.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesRole =
-        selectedRole === '' || tool.role === selectedRole;
-
-      return matchesSearch && matchesRole;
-    });
-  }, [tools, searchQuery, selectedRole]);
-
-  const ITEMS_PER_PAGE = 16;
-  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
-  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
-  const paginatedTools = useMemo(() => {
-    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
-    return filteredTools.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-  }, [filteredTools, currentPageSafe]);
+  const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const currentPageSafe = Math.min(currentPage, totalPages);
+  const paginatedTools = tools;
 
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
@@ -82,7 +80,7 @@ export default function DataHubView() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[16px] w-full">
             <ItemCount
               currentPage={currentPageSafe}
-              totalItems={filteredTools.length}
+              totalItems={total}
               itemsPerPage={ITEMS_PER_PAGE}
             />
             <div className="flex items-center gap-[12px]">
@@ -103,7 +101,7 @@ export default function DataHubView() {
             <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
               {t('common.loading')}
             </div>
-          ) : filteredTools.length > 0 ? (
+          ) : paginatedTools.length > 0 ? (
             <div className="flex flex-col gap-[28px]">
               {/* Tool Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
@@ -115,7 +113,7 @@ export default function DataHubView() {
                 currentPage={currentPageSafe}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
-                totalItems={filteredTools.length}
+                totalItems={total}
                 itemsPerPage={ITEMS_PER_PAGE}
                 hideItemCount={true}
               />

@@ -81,7 +81,7 @@ export default function RoleDropdown({
   const { t } = useTranslation('common');
   const hasRole = selectedRole !== '';
   const selectedOption = ROLE_OPTIONS.find((r) => r.value === selectedRole);
-  const selectedLabel = selectedOption ? t(`filter.roleOptions.${selectedOption.value}`, selectedOption.label) : null;
+  const selectedLabel = selectedOption ? selectedOption.label : null;
 
   // Close on outside click
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function RoleDropdown({
                   : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
               }`}
             >
-              {t(`filter.roleOptions.${opt.value}`, opt.label)}
+              {opt.label}
               {selectedRole === opt.value && (
                 <span className="text-[#5570f6] dark:text-[#7c91eb]">
                   <CheckIcon />

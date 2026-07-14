@@ -9,14 +9,20 @@ interface PaginationProps {
   itemsPerPage?: number;
   className?: string;
   hideItemCount?: boolean;
+  /** Explicitly toggle the record-count text. Overrides `hideItemCount` when provided. */
+  showItemCount?: boolean;
 }
 
-export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage, className = 'mt-[20px]', hideItemCount = false }: PaginationProps) {
+export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage, className = 'mt-[20px]', hideItemCount = false, showItemCount: showItemCountProp }: PaginationProps) {
   const { t } = useTranslation('common');
   const currentPageSafe = Math.max(1, Math.min(currentPage, Math.max(1, totalPages)));
-  
+
   const showPaginationControls = totalPages >= 1;
-  const showItemCount = !hideItemCount && totalItems !== undefined && itemsPerPage !== undefined;
+  const canShowItemCount = totalItems !== undefined && itemsPerPage !== undefined;
+  const showItemCount = (showItemCountProp ?? !hideItemCount) && canShowItemCount;
+  // Keep record count at the start and page controls at the end. When the count
+  // is intentionally hidden (hideItemCount) the controls stay centered.
+  const alignEdges = showItemCount || showItemCountProp === false;
 
   const handlePageChange = (page: number) => {
     onPageChange(page);
@@ -29,8 +35,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
   const endItem = Math.min(currentPageSafe * (itemsPerPage || 1), totalItems || 0);
 
   return (
-    <div className={`flex items-center ${hideItemCount ? 'justify-center' : 'justify-between'} w-full font-base ${className}`}>
-      {!hideItemCount && (
+    <div className={`flex items-center ${alignEdges ? 'justify-between' : 'justify-center'} w-full font-base ${className}`}>
+      {/* Left slot: record count (reserved so controls stay pinned to the end) */}
+      {alignEdges && (
         <div className="text-[14px] text-[#565d6d] dark:text-gray-400 font-medium">
           {showItemCount && totalItems !== undefined && totalItems > 0 && (
             <>{t('common.showingItems', { total: totalItems, start: startItem, end: endItem })}</>

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { useTools } from '../../../../base/hooks/useTools';
+import { useCategories } from '../../../../base/hooks/useCategories';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { API_BASE } from '../../../../base/utils/api';
 import Pagination from '../../../../base/components/molecules/Pagination';
@@ -69,20 +70,44 @@ function XIcon() {
   );
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ToolManagementTable() {
   const router = useRouter();
-  const { tools, loading, updateTool, deleteTool } = useTools();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [deletingTool, setDeletingTool] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
 
+  const { categories } = useCategories();
+
+  // Map selected category name -> id for the API filter
+  const selectedCategoryId = useMemo(() => {
+    if (!selectedCategory) return undefined;
+    return categories.find((c) => c.name === selectedCategory)?.id;
+  }, [categories, selectedCategory]);
+
+  // Debounce the search input so we don't hit the API on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedRole]);
+  }, [debouncedSearch, selectedCategory, selectedRole]);
+
+  const { tools, total, loading, updateTool, deleteTool } = useTools({
+    search: debouncedSearch || undefined,
+    categoryId: selectedCategoryId,
+    role: selectedRole || undefined,
+    limit: ITEMS_PER_PAGE,
+    skip: (currentPage - 1) * ITEMS_PER_PAGE,
+  });
 
   const managedTools = useMemo<ManagedTool[]>(() => {
     return tools.map((t) => ({
@@ -97,30 +122,9 @@ export default function ToolManagementTable() {
     }));
   }, [tools]);
 
-  const filteredTools = useMemo(() => {
-    return managedTools.filter((tool) => {
-      const matchesSearch =
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesCategory =
-        selectedCategory === '' || tool.category.includes(selectedCategory);
-
-      const matchesRole =
-        selectedRole === '' || tool.role === selectedRole;
-
-      return matchesSearch && matchesCategory && matchesRole;
-    });
-  }, [managedTools, searchQuery, selectedCategory, selectedRole]);
-
-  const ITEMS_PER_PAGE = 10;
-  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE);
-  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
-  const paginatedTools = useMemo(() => {
-    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
-    return filteredTools.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-  }, [filteredTools, currentPageSafe]);
+  const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const currentPageSafe = Math.min(currentPage, totalPages);
+  const paginatedTools = managedTools;
 
   const handleAddNew = () => {
     router.push('/manage-tools/new');
@@ -186,13 +190,14 @@ export default function ToolManagementTable() {
         onCategoryChange={setSelectedCategory}
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
+        categories={categories.map((c) => c.name)}
         showBothFilters
       />
 
       <div className="flex flex-col gap-[12px] w-full">
         <ItemCount
           currentPage={currentPageSafe}
-          totalItems={filteredTools.length}
+          totalItems={total}
           itemsPerPage={ITEMS_PER_PAGE}
         />
 
@@ -232,7 +237,7 @@ export default function ToolManagementTable() {
                       {t('common.loading')}
                     </td>
                   </tr>
-                ) : filteredTools.length > 0 ? (
+                ) : paginatedTools.length > 0 ? (
                   paginatedTools.map((tool, index) => (
                     <tr
                       key={tool.id}
@@ -285,7 +290,7 @@ export default function ToolManagementTable() {
                           <div className="flex flex-wrap gap-[6px] items-center">
                             {tool.roles.map((rVal) => (
                               <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                                {ROLE_OPTIONS.find(r => r.value === rVal) ? t(`filter.roleOptions.${rVal}`) : rVal}
+                                {ROLE_OPTIONS.find(r => r.value === rVal)?.label ?? rVal}
                               </span>
                             ))}
                           </div>
@@ -365,8 +370,9 @@ export default function ToolManagementTable() {
               currentPage={currentPageSafe}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
-              totalItems={filteredTools.length}
+              totalItems={total}
               itemsPerPage={ITEMS_PER_PAGE}
+              showItemCount={false}
               className="mt-0"
             />
           </div>

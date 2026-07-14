@@ -102,6 +102,7 @@ async def get_tools_service(
     hub: Optional[str] = None,
     role: Optional[str] = None,
     search: Optional[str] = None,
+    step_id: Optional[int] = None,
     visibility: Optional[str] = 'public',
     skip: int = 0,
     limit: int = 20,
@@ -139,6 +140,10 @@ async def get_tools_service(
     if search:
         like = f'%{search}%'
         base_q = base_q.where(or_(Tool.name.ilike(like), Tool.description.ilike(like)))
+
+    if step_id:
+        step_sub = select(ToolStep.tool_id).where(ToolStep.step_id == step_id)
+        base_q = base_q.where(Tool.id.in_(step_sub))
 
     count_q = select(func.count()).select_from(base_q.subquery())
     total = (await db.execute(count_q)).scalar_one()

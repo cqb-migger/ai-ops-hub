@@ -56,7 +56,7 @@ export function useUsers(options: UseUsersOptions = {}) {
       params.append('skip', String(skip));
 
       const queryString = params.toString() ? `?${params.toString()}` : '';
-      const data = await apiFetch<UsersResponse>(`/users${queryString}`);
+      const data = await apiFetch<UsersResponse>(`/users/${queryString}`);
       setUsers((data.items || []).map(mapApiUser));
       setTotal(data.total || 0);
       setError(null);
