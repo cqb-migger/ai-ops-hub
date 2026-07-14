@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'next-i18next';
 
 interface ItemCountProps {
   currentPage: number;
@@ -8,6 +9,8 @@ interface ItemCountProps {
 }
 
 export default function ItemCount({ currentPage, totalItems, itemsPerPage, className = '' }: ItemCountProps) {
+  const { t } = useTranslation('common');
+
   if (totalItems === undefined || itemsPerPage === undefined) return null;
 
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -19,9 +22,9 @@ export default function ItemCount({ currentPage, totalItems, itemsPerPage, class
   return (
     <div className={`text-[14px] text-[#565d6d] dark:text-gray-400 font-medium ${className}`}>
       {totalItems > 0 ? (
-        <>全 {totalItems} 件中 {startItem} - {endItem} 件を表示</>
+        <>{t('common.showingItems', { total: totalItems, start: startItem, end: endItem })}</>
       ) : (
-        <>全 0 件中 0 件を表示</>
+        <>{t('common.showingNoItems')}</>
       )}
     </div>
   );

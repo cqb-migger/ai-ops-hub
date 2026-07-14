@@ -163,11 +163,12 @@ interface RoleSelectProps {
   placeholder?: string;
 }
 
-function RoleSelect({ value, onChange, options, placeholder = '選択...' }: RoleSelectProps) {
+function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation('common');
+  const actualPlaceholder = (placeholder || t('common.select')) as string;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -201,7 +202,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
         className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
       >
         <span className={selectedOption ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? (t(`filter.roleOptions.${selectedOption.value}`, selectedOption.label) as string) : actualPlaceholder}
         </span>
         <ChevronDownIcon />
       </div>
@@ -212,7 +213,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
           <div className="px-[12px] pb-[8px] mb-[4px] border-b border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900">
             <input
               type="text"
-              placeholder={t('common.search', '検索...') as string}
+              placeholder={t('common.search', t('common.search')) as string}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -245,7 +246,7 @@ function RoleSelect({ value, onChange, options, placeholder = '選択...' }: Rol
               ))
             ) : (
               <div className="px-[12px] py-[8px] text-[13px] text-gray-400 dark:text-gray-500 text-center">
-                {t('common.noResults', '一致する結果はありません')}
+                {t('common.noResults', t('common.noResults'))}
               </div>
             )}
           </div>
@@ -389,11 +390,11 @@ export default function EditToolForm() {
 
     const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     if (!['.jpg', '.jpeg', '.png', '.pdf'].includes(ext)) {
-      toast.error('JPG, PNG, PDF形式のみ対応しています。');
+      toast.error(t('validation.jpgPngPdfOnly'));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('ファイルサイズは10MB以下にする必要があります。');
+      toast.error(t('validation.fileSize10MB'));
       return;
     }
 
@@ -416,9 +417,9 @@ export default function EditToolForm() {
         file_size: res.file_size,
         order: prev.length
       }]);
-      toast.success('ファイルをアップロードしました');
+      toast.success(t('toast.fileUploaded'));
     } catch (err: any) {
-      toast.error(err.message || 'アップロードに失敗しました');
+      toast.error(err.message || t('toast.uploadFailed'));
     } finally {
       setUploadingGuide(false);
       if (guideFileInputRef.current) guideFileInputRef.current.value = '';
@@ -431,7 +432,7 @@ export default function EditToolForm() {
     const file = files[0];
 
     if (file.size > 50 * 1024 * 1024) {
-      toast.error('ファイルサイズは50MB以下にする必要があります。');
+      toast.error(t('validation.fileSize50MB'));
       return;
     }
 
@@ -454,9 +455,9 @@ export default function EditToolForm() {
         file_size: res.file_size,
         order: prev.length
       }]);
-      toast.success('ファイルをアップロードしました');
+      toast.success(t('toast.fileUploaded'));
     } catch (err: any) {
-      toast.error(err.message || 'アップロードに失敗しました');
+      toast.error(err.message || t('toast.uploadFailed'));
     } finally {
       setUploadingReference(false);
       if (referenceFileInputRef.current) referenceFileInputRef.current.value = '';
@@ -592,16 +593,14 @@ export default function EditToolForm() {
   if (toolLoading || (id && !tool)) {
     return (
       <div className="flex flex-col items-center justify-center p-[48px] text-center w-full">
-        <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-          読み込み中...
-        </p>
+        <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">{t('common.loading')}</p>
       </div>
     );
   }
 
   const handleFetchFavicon = async () => {
     if (!iconUrlInput.trim()) {
-      toast.error('URLを入力してください');
+      toast.error(t('toast.enterUrl'));
       return;
     }
     setFetchingFavicon(true);
@@ -612,12 +611,12 @@ export default function EditToolForm() {
       });
       if (res && res.url) {
         setThumbnailUrl(res.url);
-        toast.success('ファビコンを取得しました');
+        toast.success(t('toast.faviconSuccess'));
       } else {
-        toast.error('ファビコンの取得に失敗しました');
+        toast.error(t('toast.faviconFailed'));
       }
     } catch (err: any) {
-      toast.error(err.message || 'ファビコンの取得に失敗しました');
+      toast.error(err.message || t('toast.faviconFailed'));
     } finally {
       setFetchingFavicon(false);
     }
@@ -697,31 +696,31 @@ export default function EditToolForm() {
     };
 
     if (!toolName.trim()) {
-      newErrors.toolName = 'ツール名称を入力してください';
+      newErrors.toolName = t('validation.toolNameRequired');
       setErrorKey('toolName');
     }
     if (!description.trim()) {
-      newErrors.description = '説明を入力してください';
+      newErrors.description = t('validation.descRequired');
       setErrorKey('description');
     }
     if (categories.length === 0) {
-      newErrors.categories = 'カテゴリを選択してください';
+      newErrors.categories = t('validation.categoryRequired');
       setErrorKey('categories');
     }
     if (roles.length === 0) {
-      newErrors.roles = '役割を選択してください';
+      newErrors.roles = t('validation.roleRequired');
       setErrorKey('roles');
     }
 
     prompts.forEach((p) => {
       if (!p.name.trim()) {
         const key = `prompt_name_${p.id}`;
-        newErrors[key] = 'プロンプト名を入力してください';
+        newErrors[key] = t('validation.promptNameRequired');
         setErrorKey(key);
       }
       if (!p.content.trim()) {
         const key = `prompt_content_${p.id}`;
-        newErrors[key] = 'プロンプト本文を入力してください';
+        newErrors[key] = t('validation.promptContentRequired');
         setErrorKey(key);
       }
     });
@@ -730,10 +729,10 @@ export default function EditToolForm() {
     const trimmedUrl = redirectUrl.trim();
     if (trimmedUrl) {
       if (trimmedUrl.length < 10 || !isValidUrl(trimmedUrl)) {
-        newErrors.redirectUrl = "遷移先URLは 'http://' または 'https://' から始まる有効なURL形式で入力してください (10文字以上)";
+        newErrors.redirectUrl = t('validation.invalidUrl');
         setErrorKey('redirectUrl');
       } else if (trimmedUrl.length > 500) {
-        newErrors.redirectUrl = '遷移先URLは500文字以内で入力してください';
+        newErrors.redirectUrl = t('validation.urlTooLong');
         setErrorKey('redirectUrl');
       }
     }
@@ -744,10 +743,10 @@ export default function EditToolForm() {
         const trimmedMcpUrl = httpUrl.trim();
         if (trimmedMcpUrl) {
           if (trimmedMcpUrl.length < 10 || !isValidUrl(trimmedMcpUrl)) {
-            newErrors.httpUrl = "MCP URLは 'http://' または 'https://' から始まる有効なURL形式で入力してください (10文字以上)";
+            newErrors.httpUrl = t('validation.invalidMcpUrl');
             setErrorKey('httpUrl');
           } else if (trimmedMcpUrl.length > 2048) {
-            newErrors.httpUrl = 'MCP URLは2048文字以内で入力してください';
+            newErrors.httpUrl = t('validation.mcpUrlTooLong');
             setErrorKey('httpUrl');
           }
         }
@@ -757,7 +756,7 @@ export default function EditToolForm() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      toast.error('入力内容を確認してください');
+      toast.error(t('validation.checkInputs'));
 
       // Focus on the first error item
       setTimeout(() => {
@@ -896,9 +895,7 @@ export default function EditToolForm() {
               <CircleCheckIcon />
             </div>
             <div className="flex flex-col gap-[2px]">
-              <span className="text-[14px] font-medium text-[#166534] dark:text-green-300">
-                ツールとプロンプトを更新しました
-              </span>
+              <span className="text-[14px] font-medium text-[#166534] dark:text-green-300">{t('toast.toolUpdated')}</span>
               <span className="text-[14px] font-normal text-[#15803d] dark:text-green-400">
                 設定が正常に更新されました。
               </span>
@@ -918,9 +915,7 @@ export default function EditToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <SettingsIcon />
-          <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-            基本情報
-          </h3>
+          <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">{t('form.basicInfo')}</h3>
         </div>
 
         {/* Form Fields */}
@@ -928,8 +923,7 @@ export default function EditToolForm() {
 
           {/* Tool Name */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              ツール名称 <span className="text-[#f25a5a]">*</span>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.toolName')}<span className="text-[#f25a5a]">*</span>
             </label>
             <input
               id="tool-name-input"
@@ -951,8 +945,7 @@ export default function EditToolForm() {
 
           {/* Description */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              説明（概要） <span className="text-[#f25a5a]">*</span>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.description')}<span className="text-[#f25a5a]">*</span>
             </label>
             <textarea
               id="description-input"
@@ -974,9 +967,7 @@ export default function EditToolForm() {
 
           {/* URL Row */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              遷移先URL
-            </label>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.redirectUrl')}</label>
             <input
               id="redirect-url-input"
               type="text"
@@ -997,12 +988,11 @@ export default function EditToolForm() {
 
           {/* Category Row (Takes 1 full row) */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              カテゴリ <span className="text-[#f25a5a]">*</span>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.category')}<span className="text-[#f25a5a]">*</span>
             </label>
             <div id="categories-container" className="flex flex-wrap gap-[20px] py-[6px]">
               {categoriesLoading ? (
-                <div className="text-[13px] text-gray-400 dark:text-gray-500">読み込み中...</div>
+                <div className="text-[13px] text-gray-400 dark:text-gray-500">{t('common.loading')}</div>
               ) : (
                 apiCategories.map((cat) => (
                   <label
@@ -1029,16 +1019,12 @@ export default function EditToolForm() {
 
           {/* Step Row (Takes 1 full row) */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              ステップ
-            </label>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.step')}</label>
             <div className="flex flex-wrap gap-[20px] py-[6px]">
               {!isComplianceSelected ? (
-                <span className="text-[13px] text-gray-400 dark:text-gray-500 italic">
-                  ステップを表示するには、カテゴリから「コンプライアンス」を選択してください。
-                </span>
+                <span className="text-[13px] text-gray-400 dark:text-gray-500 italic">{t('form.stepComplianceHelp')}</span>
               ) : stepsLoading ? (
-                <div className="text-[13px] text-gray-400 dark:text-gray-500">読み込み中...</div>
+                <div className="text-[13px] text-gray-400 dark:text-gray-500">{t('common.loading')}</div>
               ) : (
                 apiSteps.map((step) => (
                   <label
@@ -1062,8 +1048,7 @@ export default function EditToolForm() {
 
           {/* Role Row (Takes 1 full row) */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              すべての役割 <span className="text-[#f25a5a]">*</span>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.allRoles')}<span className="text-[#f25a5a]">*</span>
             </label>
             <div id="roles-container" className="flex flex-wrap gap-[20px] py-[6px]">
               {ROLE_OPTIONS.map((opt) => (
@@ -1078,7 +1063,7 @@ export default function EditToolForm() {
                     className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
                   />
                   <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
-                    {opt.label}
+                    {t('filter.roleOptions.' + opt.value, opt.label)}
                   </span>
                 </label>
               ))}
@@ -1100,7 +1085,7 @@ export default function EditToolForm() {
                 className="h-[28px] px-[12px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[12px] font-semibold flex items-center gap-[4px] transition-colors"
               >
                 <PlusIcon />
-                <span>追加</span>
+                <span>{t('common.add')}</span>
               </button>
             </div>
 
@@ -1111,7 +1096,7 @@ export default function EditToolForm() {
                     type="text"
                     value={id}
                     onChange={(e) => handleUpdateLoginId(index, e.target.value)}
-                    placeholder="Login IDを入力..."
+                    placeholder={t('form.loginIdPlaceholder') as string}
                     className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
                   />
                   {loginIds.length > 1 && (
@@ -1119,7 +1104,7 @@ export default function EditToolForm() {
                       type="button"
                       onClick={() => handleRemoveLoginId(index)}
                       className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
-                      title="削除"
+                      title={t('common.delete') as string}
                     >
                       <TrashIcon />
                     </button>
@@ -1127,7 +1112,7 @@ export default function EditToolForm() {
                 </div>
               ))}
               {loginIds.length === 0 && (
-                <p className="text-[13px] text-gray-400 dark:text-gray-500 italic">Login IDが設定されていません。「追加」ボタンをクリックして追加してください。</p>
+                <p className="text-[13px] text-gray-400 dark:text-gray-500 italic">{t('form.noLoginIds')}</p>
               )}
             </div>
           </div>
@@ -1136,9 +1121,7 @@ export default function EditToolForm() {
           <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px] mt-[4px]">
             {/* Thumbnail Image */}
             <div className="flex flex-col gap-[6px] flex-[2]">
-              <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                アイコン
-              </span>
+              <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.icon')}</span>
               <div className="flex flex-row items-center gap-[16px] w-full">
                 {/* Image Preview Box */}
                 <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden shrink-0">
@@ -1162,7 +1145,7 @@ export default function EditToolForm() {
                     disabled={fetchingFavicon}
                     className="h-[40px] px-[16px] bg-[#5570f6] text-white hover:bg-[#395ce0] disabled:bg-gray-400 disabled:cursor-not-allowed rounded-[6px] text-[14px] font-semibold transition-colors shrink-0"
                   >
-                    {fetchingFavicon ? '取得中...' : 'ファビコン取得'}
+                    {fetchingFavicon ? t('common.fetching') : t('form.getFavicon')}
                   </button>
                 </div>
               </div>
@@ -1170,9 +1153,7 @@ export default function EditToolForm() {
 
             {/* Visibility Settings */}
             <div className="flex flex-col gap-[6px] flex-1">
-              <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                公開設定
-              </span>
+              <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.visibility')}</span>
               <div className="flex items-center gap-[24px] h-[56px]">
                 <label className="flex items-center gap-[8px] cursor-pointer text-[14px]">
                   <input
@@ -1181,7 +1162,7 @@ export default function EditToolForm() {
                     onChange={() => setVisibility('public')}
                     className="w-[16px] h-[16px] accent-[#5570f6] cursor-pointer"
                   />
-                  <span className={visibility === 'public' ? 'text-[#171a1f] font-medium' : 'text-[#565d6d]'}>公開</span>
+                  <span className={visibility === 'public' ? 'text-[#171a1f] font-medium' : 'text-[#565d6d]'}>{t('manageTools.public')}</span>
                 </label>
                 <label className="flex items-center gap-[8px] cursor-pointer text-[14px]">
                   <input
@@ -1190,16 +1171,16 @@ export default function EditToolForm() {
                     onChange={() => setVisibility('draft')}
                     className="w-[16px] h-[16px] accent-[#5570f6] cursor-pointer"
                   />
-                  <span className={visibility === 'draft' ? 'text-[#171a1f] font-medium' : 'text-[#565d6d]'}>非公開（ドラフト）</span>
+                  <span className={visibility === 'draft' ? 'text-[#171a1f] font-medium' : 'text-[#565d6d]'}>{t('manageTools.draft')}</span>
                 </label>
               </div>
             </div>
           </div>
 
-          {/* Reference Materials (リファレンス) */}
+          {/* Reference Materials ({t('form.reference')}) */}
           <div className="flex flex-col gap-[6px] mt-[16px]">
             <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              リファレンス
+              {t('form.reference')}
             </span>
             <div
               className="flex flex-col items-center justify-center w-full py-[32px] px-[20px] mt-[4px] border-2 border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[8px] bg-[#fafafb] hover:bg-[#f3f4f6] dark:bg-midnight-900 dark:hover:bg-midnight-850 cursor-pointer transition-colors group"
@@ -1210,11 +1191,11 @@ export default function EditToolForm() {
               </div>
               <div className="flex flex-col items-center gap-[4px] text-center">
                 <p className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                  {uploadingReference ? 'アップロード中...' : 'クリックしてアップロード'}
-                  <span className="font-normal text-[#565d6d] dark:text-gray-400">、またはファイルをドラッグ＆ドロップ</span>
+                  {uploadingReference ? (t('form.uploading') as string) : (t('form.clickToUpload') as string)}
+                  <span className="font-normal text-[#565d6d] dark:text-gray-400">{t('form.orDragDrop')}</span>
                 </p>
                 <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
-                  全ファイル形式対応 (最大 50MB)
+                  {t('form.allFormats50MB')}
                 </p>
               </div>
               <input
@@ -1260,7 +1241,7 @@ export default function EditToolForm() {
           <div className="flex items-center gap-[8px]">
             <ServerIcon />
             <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-              カスタム MCP に接続する
+              {t('mcp.title')}
             </h3>
           </div>
           <a
@@ -1269,7 +1250,7 @@ export default function EditToolForm() {
             rel="noopener noreferrer"
             className="flex items-center gap-[4px] text-[13px] text-gray-500 hover:text-[#5570f6] transition-colors"
           >
-            <span>ドキュメント</span>
+            <span>{t('mcp.docs')}</span>
             <GlobeIcon />
           </a>
         </div>
@@ -1277,7 +1258,7 @@ export default function EditToolForm() {
         {/* Name Input */}
         <div className="flex flex-col gap-[6px]">
           <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-            名前
+            {t('common.name')}
           </label>
           <input
             type="text"
@@ -1308,7 +1289,7 @@ export default function EditToolForm() {
               : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
           >
-            ストリーミング可能な HTTP
+            {t('mcp.streamableHttp')}
           </button>
         </div>
 
@@ -1318,7 +1299,7 @@ export default function EditToolForm() {
             {/* Command */}
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                起動用コマンド
+                {t('mcp.stdioCommand')}
               </label>
               <input
                 id="stdio-command-input"
@@ -1342,7 +1323,7 @@ export default function EditToolForm() {
             {/* Arguments */}
             <div className="flex flex-col gap-[8px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                引数
+                {t('mcp.stdioArgs')}
               </label>
               <div className="flex flex-col gap-[8px]">
                 {stdioArgs.map((arg, idx) => (
@@ -1351,14 +1332,14 @@ export default function EditToolForm() {
                       type="text"
                       value={arg}
                       onChange={(e) => handleUpdateMcpArg(idx, e.target.value)}
-                      placeholder="引数を入力..."
+                      placeholder={t('mcp.argPlaceholder') as string}
                       className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpArg(idx)}
                       className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title="削除"
+                      title={t('common.delete') as string}
                     >
                       <TrashIcon />
                     </button>
@@ -1370,7 +1351,7 @@ export default function EditToolForm() {
                   className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
                 >
                   <PlusIcon />
-                  <span>引数を追加</span>
+                  <span>{t('mcp.addArg')}</span>
                 </button>
               </div>
             </div>
@@ -1378,7 +1359,7 @@ export default function EditToolForm() {
             {/* Env Vars */}
             <div className="flex flex-col gap-[8px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                環境変数
+                {t('mcp.stdioEnv')}
               </label>
               <div className="flex flex-col gap-[8px]">
                 {stdioEnv.map((env, idx) => (
@@ -1387,21 +1368,21 @@ export default function EditToolForm() {
                       type="text"
                       value={env.key}
                       onChange={(e) => handleUpdateMcpEnv(idx, 'key', e.target.value)}
-                      placeholder="キー"
+                      placeholder={t('mcp.key') as string}
                       className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={env.value}
                       onChange={(e) => handleUpdateMcpEnv(idx, 'value', e.target.value)}
-                      placeholder="値"
+                      placeholder={t('mcp.value') as string}
                       className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpEnv(idx)}
                       className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title="削除"
+                      title={t('common.delete') as string}
                     >
                       <TrashIcon />
                     </button>
@@ -1413,7 +1394,7 @@ export default function EditToolForm() {
                   className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
                 >
                   <PlusIcon />
-                  <span>環境変数を追加</span>
+                  <span>{t('mcp.addEnv')}</span>
                 </button>
               </div>
             </div>
@@ -1421,7 +1402,7 @@ export default function EditToolForm() {
             {/* Env Vars Passthrough */}
             <div className="flex flex-col gap-[8px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                環境変数パススルー
+                {t('mcp.envPassthrough')}
               </label>
               <div className="flex flex-col gap-[8px]">
                 {stdioEnvPassthrough.map((item, idx) => (
@@ -1430,14 +1411,14 @@ export default function EditToolForm() {
                       type="text"
                       value={item}
                       onChange={(e) => handleUpdateMcpEnvPassthrough(idx, e.target.value)}
-                      placeholder="変数を入力..."
+                      placeholder={t('mcp.varPlaceholder') as string}
                       className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpEnvPassthrough(idx)}
                       className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title="削除"
+                      title={t('common.delete') as string}
                     >
                       <TrashIcon />
                     </button>
@@ -1449,7 +1430,7 @@ export default function EditToolForm() {
                   className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
                 >
                   <PlusIcon />
-                  <span>変数を追加</span>
+                  <span>{t('mcp.addVariable')}</span>
                 </button>
               </div>
             </div>
@@ -1457,7 +1438,7 @@ export default function EditToolForm() {
             {/* Working Directory */}
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                作業ディレクトリ
+                {t('mcp.workDir')}
               </label>
               <input
                 type="text"
@@ -1497,7 +1478,7 @@ export default function EditToolForm() {
             {/* Bearer Token */}
             <div className="flex flex-col gap-[6px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                Bearer トークン環境変数
+                {t('mcp.bearerTokenEnv')}
               </label>
               <input
                 type="text"
@@ -1510,9 +1491,7 @@ export default function EditToolForm() {
 
             {/* Headers */}
             <div className="flex flex-col gap-[8px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                ヘッダー
-              </label>
+              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">{t('mcp.headers')}</label>
               <div className="flex flex-col gap-[8px]">
                 {httpHeaders.map((header, idx) => (
                   <div key={idx} className="flex items-center gap-[12px]">
@@ -1520,21 +1499,21 @@ export default function EditToolForm() {
                       type="text"
                       value={header.key}
                       onChange={(e) => handleUpdateMcpHeader(idx, 'key', e.target.value)}
-                      placeholder="キー"
+                      placeholder={t('mcp.key') as string}
                       className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={header.value}
                       onChange={(e) => handleUpdateMcpHeader(idx, 'value', e.target.value)}
-                      placeholder="値"
+                      placeholder={t('mcp.value') as string}
                       className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpHeader(idx)}
                       className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title="削除"
+                      title={t('common.delete') as string}
                     >
                       <TrashIcon />
                     </button>
@@ -1546,7 +1525,7 @@ export default function EditToolForm() {
                   className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
                 >
                   <PlusIcon />
-                  <span>ヘッダーを追加</span>
+                  <span>{t('mcp.addHeader')}</span>
                 </button>
               </div>
             </div>
@@ -1554,7 +1533,7 @@ export default function EditToolForm() {
             {/* Headers from Env */}
             <div className="flex flex-col gap-[8px]">
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                環境変数からのヘッダー
+                {t('mcp.headersFromEnv')}
               </label>
               <div className="flex flex-col gap-[8px]">
                 {httpHeadersFromEnv.map((hEnv, idx) => (
@@ -1563,21 +1542,21 @@ export default function EditToolForm() {
                       type="text"
                       value={hEnv.key}
                       onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'key', e.target.value)}
-                      placeholder="キー"
+                      placeholder={t('mcp.key') as string}
                       className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={hEnv.value}
                       onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'value', e.target.value)}
-                      placeholder="値"
+                      placeholder={t('mcp.value') as string}
                       className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpHeaderFromEnv(idx)}
                       className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title="削除"
+                      title={t('common.delete') as string}
                     >
                       <TrashIcon />
                     </button>
@@ -1589,7 +1568,7 @@ export default function EditToolForm() {
                   className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
                 >
                   <PlusIcon />
-                  <span>変数を追加</span>
+                  <span>{t('mcp.addVariable')}</span>
                 </button>
               </div>
             </div>
@@ -1604,7 +1583,7 @@ export default function EditToolForm() {
           <div className="flex items-center gap-[8px]">
             <MessageSquareIcon />
             <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-              推奨プロンプト設定
+              {t('prompt.title')}
             </h3>
           </div>
         </div>
@@ -1619,14 +1598,14 @@ export default function EditToolForm() {
               {/* Card Header Row */}
               <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800/80">
                 <span className="text-[14px] font-bold text-[#5570f6] dark:text-[#7c91eb]">
-                  プロンプト設定 #{index + 1}
+                  {t('prompt.template')} #{index + 1}
                 </span>
                 {prompts.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleDeletePrompt(prompt.id)}
                     className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] border border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-950 hover:bg-red-50 dark:hover:bg-red-950/20 text-[#f25a5a] transition-colors shadow-sm"
-                    title="プロンプトを削除"
+                    title={t('prompt.deleteTemplate') as string}
                   >
                     <TrashIcon />
                   </button>
@@ -1638,7 +1617,7 @@ export default function EditToolForm() {
                 {/* Prompt Name */}
                 <div className="flex flex-col gap-[6px]">
                   <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
-                    プロンプト名 <span className="text-[#f25a5a]">*</span>
+                    {t('prompt.name')}<span className="text-[#f25a5a]">*</span>
                   </label>
                   <input
                     id={`prompt-name-${prompt.id}`}
@@ -1650,7 +1629,7 @@ export default function EditToolForm() {
                         setErrors((prev) => ({ ...prev, [`prompt_name_${prompt.id}`]: '' }));
                       }
                     }}
-                    placeholder="プロンプト名を入力..."
+                    placeholder={t('prompt.namePlaceholder') as string}
                     className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[4px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${errors[`prompt_name_${prompt.id}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
                       }`}
                   />
@@ -1661,8 +1640,7 @@ export default function EditToolForm() {
 
                 {/* Prompt Content */}
                 <div className="flex flex-col gap-[6px]">
-                  <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
-                    プロンプト本文 <span className="text-[#f25a5a]">*</span>
+                  <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">{t('prompt.content')}<span className="text-[#f25a5a]">*</span>
                   </label>
                   <textarea
                     id={`prompt-content-${prompt.id}`}
@@ -1673,7 +1651,7 @@ export default function EditToolForm() {
                         setErrors((prev) => ({ ...prev, [`prompt_content_${prompt.id}`]: '' }));
                       }
                     }}
-                    placeholder="プロンプト本文を入力..."
+                    placeholder={t('prompt.contentPlaceholder') as string}
                     rows={3}
                     className={`w-full p-[12px] bg-white dark:bg-midnight-900 border rounded-[4px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6] text-[#171a1f] dark:text-light ${errors[`prompt_content_${prompt.id}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
                       }`}
@@ -1687,8 +1665,7 @@ export default function EditToolForm() {
                 <div className="flex flex-col md:flex-row gap-[16px] md:gap-[20px] mt-[4px]">
                   {/* Visibility Radios */}
                   <div className="flex flex-col gap-[6px] flex-1">
-                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
-                      公開設定 <span className="text-[#f25a5a]">*</span>
+                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">{t('form.visibility')}<span className="text-[#f25a5a]">*</span>
                     </label>
                     <div className="flex items-center gap-[16px] h-[40px]">
                       <label className="flex items-center gap-[8px] cursor-pointer text-[13px]">
@@ -1699,7 +1676,7 @@ export default function EditToolForm() {
                           onChange={() => handleUpdatePrompt(prompt.id, 'isPublic', true)}
                           className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer"
                         />
-                        <span className={prompt.isPublic !== false ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>公開</span>
+                        <span className={prompt.isPublic !== false ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>{t('manageTools.public')}</span>
                       </label>
                       <label className="flex items-center gap-[8px] cursor-pointer text-[13px]">
                         <input
@@ -1709,22 +1686,20 @@ export default function EditToolForm() {
                           onChange={() => handleUpdatePrompt(prompt.id, 'isPublic', false)}
                           className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer"
                         />
-                        <span className={prompt.isPublic === false ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>非公開</span>
+                        <span className={prompt.isPublic === false ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>{t('manageTools.draft')}</span>
                       </label>
                     </div>
                   </div>
 
                   {/* Categories Checkboxes */}
                   <div className="flex flex-col gap-[6px] flex-[2]">
-                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
-                      カテゴリ
-                    </label>
+                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">{t('form.category')}</label>
                     <div className="flex flex-wrap items-center gap-[16px] min-h-[40px]">
                       {categoriesLoading ? (
-                        <span className="text-[12px] text-gray-400 dark:text-gray-500">読み込み中...</span>
+                        <span className="text-[12px] text-gray-400 dark:text-gray-500">{t('common.loading')}</span>
                       ) : apiCategories.length === 0 ? (
                         <span className="text-[12px] text-gray-400 dark:text-gray-500">
-                          カテゴリがありません
+                          {t('form.noCategories')}
                         </span>
                       ) : (
                         apiCategories.map((cat) => {
@@ -1757,7 +1732,7 @@ export default function EditToolForm() {
                 {/* Character Count Row */}
                 <div className="flex justify-end mt-[4px]">
                   <span className="text-[11px] text-[#9095a1] dark:text-gray-500">
-                    文字数: {prompt.content.length} / 2000 (推奨)
+                    {t('form.charCount', { count: prompt.content.length })}
                   </span>
                 </div>
               </div>
@@ -1772,19 +1747,19 @@ export default function EditToolForm() {
             className="flex items-center gap-[6px] h-[36px] px-[16px] bg-[#f1f4fe] dark:bg-midnight-800 hover:bg-[#e4ebfc] dark:hover:bg-midnight-700 text-[#5570f6] dark:text-[#7c91eb] rounded-[6px] text-[14px] font-semibold transition-colors"
           >
             <PlusIcon />
-            <span>プロンプト追加</span>
+            <span>{t('prompt.add')}</span>
           </button>
         </div>
       </section>
 
-      {/* Box 3: 活用ガイド設定 (Usage Guide Settings) */}
+      {/* Box 3: {t('guide.title')} (Usage Guide Settings) */}
       <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
         {/* Section Title */}
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <BookIcon />
             <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-              活用ガイド設定
+              {t('guide.title')}
             </h3>
           </div>
         </div>
@@ -1795,14 +1770,14 @@ export default function EditToolForm() {
           <div className="flex flex-col gap-[6px]">
             <div className="flex items-center justify-between">
               <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                ガイド内容
+                {t('guide.usageGuide')}
               </label>
               <button
                 type="button"
                 onClick={() => setIsGuidePreview(!isGuidePreview)}
                 className="h-[26px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-700 hover:bg-[#fafafb] dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light rounded-full text-[12px] font-semibold flex items-center justify-center select-none transition-colors"
               >
-                {isGuidePreview ? '編集に戻る' : 'Markdown プレビュー'}
+                {isGuidePreview ? (t('guide.backToEdit') as string) : (t('guide.markdownPreview') as string)}
               </button>
             </div>
             {isGuidePreview ? (
@@ -1828,29 +1803,29 @@ export default function EditToolForm() {
                     {guideContent}
                   </ReactMarkdown>
                 ) : (
-                  <p className="text-gray-400 dark:text-gray-500 italic">コンテンツは空です</p>
+                  <p className="text-gray-400 dark:text-gray-500 italic">{t('guide.emptyContent')}</p>
                 )}
               </div>
             ) : (
               <textarea
                 value={guideContent}
                 onChange={(e) => setGuideContent(e.target.value)}
-                placeholder="ガイド内容を入力..."
+                placeholder={t('guide.guidePlaceholder') as string}
                 rows={4}
                 className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
               />
             )}
             <div className="flex justify-end">
               <span className="text-[11px] text-[#9095a1] dark:text-gray-500">
-                文字数: {guideContent.length} / 2000 (推奨)
+                {t('form.charCount', { count: guideContent.length })}
               </span>
             </div>
           </div>
 
-          {/* Guide Materials (ガイド資料) */}
+          {/* Guide Materials ({t('guide.guideMaterials')}) */}
           <div className="flex flex-col gap-[6px]">
             <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-              ガイド資料
+              {t('guide.guideMaterials')}
             </label>
             <div
               className="flex flex-col items-center justify-center w-full py-[32px] px-[20px] mt-[4px] border-2 border-dashed border-[#dee1e6] dark:border-midnight-800 rounded-[8px] bg-[#fafafb] hover:bg-[#f3f4f6] dark:bg-midnight-900 dark:hover:bg-midnight-850 cursor-pointer transition-colors group"
@@ -1861,11 +1836,11 @@ export default function EditToolForm() {
               </div>
               <div className="flex flex-col items-center gap-[4px] text-center">
                 <p className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                  {uploadingGuide ? 'アップロード中...' : 'クリックしてアップロード'}
-                  <span className="font-normal text-[#565d6d] dark:text-gray-400">、またはファイルをドラッグ＆ドロップ</span>
+                  {uploadingGuide ? (t('form.uploading') as string) : (t('form.clickToUpload') as string)}
+                  <span className="font-normal text-[#565d6d] dark:text-gray-400">{t('form.orDragDrop')}</span>
                 </p>
                 <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
-                  JPG, PNG, PDF形式 (最大 10MB)
+                  {t('form.jpgPngPdf10MB')}
                 </p>
               </div>
               <input
@@ -1904,27 +1879,27 @@ export default function EditToolForm() {
         </div>
       </section>
 
-      {/* Box 4: 補足情報 (Supplementary Information) */}
+      {/* Box 4: {t('form.supplementary')} (Supplementary Information) */}
       <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <FileTextIcon />
           <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
-            補足情報
+            {t('form.supplementary')}
           </h3>
         </div>
 
         {/* Admin Memo */}
         <div className="flex flex-col gap-[6px] font-base">
           <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-            管理者用メモ（非公開）
+            {t('form.adminMemo')}
           </label>
           <textarea
             value={adminMemo}
             onChange={(e) => setAdminMemo(e.target.value)}
             rows={4}
             className="w-full p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] outline-none resize-y focus:border-[#5570f6]"
-            placeholder="管理者間での共有メモや、プロンプトの更新履歴などを記録してください..."
+            placeholder={t('form.adminMemoPlaceholder') as string}
           />
         </div>
       </section>
@@ -1935,16 +1910,12 @@ export default function EditToolForm() {
           type="button"
           onClick={handleCancel}
           className="h-[40px] px-[32px] bg-white dark:bg-midnight-900 hover:bg-gray-50 border border-[#dee1e6] rounded-[6px] text-[14px] font-semibold text-[#171a1f] dark:text-light transition-colors"
-        >
-          キャンセル
-        </button>
+        >{t('common.cancel')}</button>
         <button
           type="button"
           onClick={handleSave}
           className="h-[40px] px-[48px] bg-[#5570f6] hover:bg-[#395ce0] text-white rounded-[6px] text-[14px] font-semibold shadow-[0px_1px_2px_rgba(23,26,31,0.08)] transition-all duration-200"
-        >
-          保存
-        </button>
+        >{t('common.save')}</button>
       </div>
     </div>
   );

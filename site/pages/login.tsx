@@ -3,10 +3,12 @@ import { useRouter } from 'next/router';
 import useAuthStore, { User } from '@base/stores/useAuthStore';
 import { apiFetch } from '@base/utils/api';
 import toast, { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useTranslation('common');
   const loginStore = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -112,7 +114,7 @@ export default function LoginPage() {
       // Redirect home
       router.push('/');
     } catch (err: any) {
-      toast.error(err.message || 'Incorrect email or password.');
+      toast.error(err.message || t('login.failed'));
       triggerErrorEffect();
       // Cleanup temporary storage on error
       localStorage.removeItem('auth-storage');
@@ -128,6 +130,33 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen bg-slate-950 flex items-center justify-center p-4 overflow-hidden font-sans select-none">
+      
+      {/* Language Picker */}
+      <div className="absolute top-4 right-4 z-50">
+        <div className="flex bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-lg p-1 shadow-lg">
+          <button
+            onClick={() => router.push(router.pathname, router.asPath, { locale: 'en' })}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+              router.locale === 'en'
+                ? 'bg-blue-600/80 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => router.push(router.pathname, router.asPath, { locale: 'ja' })}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+              router.locale === 'ja'
+                ? 'bg-blue-600/80 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            JA
+          </button>
+        </div>
+      </div>
+
       {/* Background Glowing Gradients */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-violet-600/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] rounded-full bg-blue-600/15 blur-[150px] pointer-events-none" />
@@ -159,7 +188,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300 font-sans tracking-wide">
             AI Navigator
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Sign in to your workplace account</p>
+          <p className="text-xs text-slate-400 mt-1">{t('login.subtitle')}</p>
         </div>
 
         {/* Login Form */}
@@ -167,7 +196,7 @@ export default function LoginPage() {
           {/* Email field */}
           <div className="space-y-1">
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Email Address
+              {t('login.email')}
             </label>
             <div className="relative group">
               <input
@@ -177,7 +206,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder={t('login.emailPlaceholder') as string}
                 className="w-full h-11 bg-slate-950/40 border border-slate-800/80 rounded-lg pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/30 transition-all duration-200"
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors duration-200">
@@ -198,10 +227,10 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Password field */}
+          {/* {t('login.password')} field */}
           <div className="space-y-1">
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Password
+              {t('login.password')}
             </label>
             <div className="relative group">
               <input
@@ -211,7 +240,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t('login.passwordPlaceholder') as string}
                 className="w-full h-11 bg-slate-950/40 border border-slate-800/80 rounded-lg pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/30 transition-all duration-200"
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors duration-200">
@@ -261,17 +290,17 @@ export default function LoginPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span>Signing in...</span>
+                <span>{t('common.loading')}</span>
               </>
             ) : (
-              <span>Sign In</span>
+              <span>{t('login.signin')}</span>
             )}
           </button>
 
           {/* Divider */}
           <div className="flex items-center justify-between my-4">
             <span className="w-1/5 border-b border-slate-800/80"></span>
-            <span className="text-xs text-slate-500 uppercase font-semibold">Or continue with</span>
+            <span className="text-xs text-slate-500 uppercase font-semibold">{t('login.orContinueWith')}</span>
             <span className="w-1/5 border-b border-slate-800/80"></span>
           </div>
 
@@ -305,7 +334,7 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            <span>Sign in with Google</span>
+            <span>{t('login.googleSignin')}</span>
           </button>
         </form>
       </div>

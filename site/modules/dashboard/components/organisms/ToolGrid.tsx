@@ -25,6 +25,18 @@ export default function ToolGrid() {
 
   const { tools, loading, toggleFavorite } = useTools({ visibility: 'public' });
 
+  // Extract unique categories from tools
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set<string>();
+    tools.forEach(tool => {
+      if (Array.isArray(tool.category)) {
+        tool.category.forEach(c => cats.add(c));
+      }
+    });
+    return Array.from(cats);
+  }, [tools]);
+
+
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -77,6 +89,7 @@ export default function ToolGrid() {
         onCategoryChange={setSelectedCategory}
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
+        categories={uniqueCategories}
         showBothFilters
       />
 

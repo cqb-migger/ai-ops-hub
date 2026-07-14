@@ -79,7 +79,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
 
       {/* Step Number Label */}
       <span className="mt-[16px] text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
-        Step {step.order}
+        {t('compliance.step', { order: step.order })}
       </span>
 
       {/* Step Title */}

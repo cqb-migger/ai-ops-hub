@@ -7,14 +7,22 @@
     "manageTools": "ツール管理",
     "userManagement": "ユーザー管理",
     "language": "言語",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "navigation": "ナビゲーション",
+    "administration": "管理用"
   },
   "login": {
     "welcome": "おかえりなさい",
+    "title": "AI Navigator",
+    "subtitle": "ワークプレイスアカウントでサインイン",
     "email": "メールアドレス",
+    "emailPlaceholder": "you@company.com",
     "password": "パスワード",
+    "passwordPlaceholder": "••••••••",
     "signin": "サインイン",
     "googleSignin": "Googleでログイン",
+    "secureLogin": "エンタープライズSSOで安全にログイン",
+    "orContinueWith": "または以下で続ける",
     "success": "ログインに成功しました",
     "failed": "ログインに失敗しました"
   },
@@ -36,7 +44,17 @@
     "action": "操作",
     "success": "成功",
     "error": "エラー",
-    "noResults": "一致する結果はありません"
+    "noResults": "一致する結果はありません",
+    "showingItems": "全 {{total}} 件中 {{start}} - {{end}} 件を表示",
+    "showingNoItems": "全 0 件中 0 件を表示",
+    "clear": "クリア",
+    "notSet": "未設定",
+    "fetching": "取得中...",
+    "add": "追加",
+    "select": "選択...",
+    "create": "作成",
+    "preview": "プレビュー",
+    "name": "名前"
   },
   "dashboard": {
     "searchPlaceholder": "ツールを検索...",
@@ -48,7 +66,13 @@
     "clearFilter": "フィルターをクリア",
     "favRemoveTitle": "お気に入りから削除",
     "favAddTitle": "お気に入りに追加",
-    "detailTitle": "{{name}}の詳細情報"
+    "detailTitle": "{{name}}の詳細情報",
+    "title": "AIツールダッシュボード",
+    "desc": "業務を効率化するための最適なAIツールを検索・発見できます。役割やカテゴリから絞り込みましょう。",
+    "availableTools": "利用可能なツール",
+    "favAddSuccess": "お気に入りに追加しました",
+    "favRemoveSuccess": "お気に入りから削除しました",
+    "simulatingLaunch": "{{name}}を起動しています... (シミュレーション)"
   },
   "filter": {
     "step": "ステップ",
@@ -57,6 +81,9 @@
     "sort": "並び替え",
     "favFirst": "お気に入り優先",
     "newest": "新着順",
+    "allCategories": "すべてのカテゴリ",
+    "allRoles": "すべての役割",
+    "allSteps": "すべてのステップ",
     "categoryOptions": {
       "creative": "クリエイティブ",
       "compliance": "コンプライアンス",
@@ -70,7 +97,10 @@
       "compliance": "コンプライアンス",
       "planning": "企画",
       "writing": "ライティング",
-      "design": "デザイン"
+      "design": "デザイン",
+      "sale": "営業 (sale)",
+      "backoffice": "バックオフィス (backoffice)",
+      "accounting": "経理 (accounting)"
     }
   },
   "compliance": {
@@ -98,7 +128,8 @@
     "titleRequired": "タイトルを入力してください。",
     "descRequired": "説明を入力してください。",
     "titlePlaceholder": "例: コンテンツの作成",
-    "descPlaceholder": "ステップの詳細な説明を入力してください..."
+    "descPlaceholder": "ステップの詳細な説明を入力してください...",
+    "step": "ステップ {{order}}"
   },
   "detail": {
     "loginSetting": "接続・ログイン設定",
@@ -179,12 +210,123 @@
     "deleteFailed": "ツールの削除に失敗しました。",
     "statusChangeSuccess": "「{{name}}」のステータスを{{status}}に変更しました。",
     "statusChangeFailed": "ステータスの更新に失敗しました。",
-    "publicDeleteError": "公開中のため削除できません"
+    "publicDeleteError": "公開中のため削除できません",
+    "makeDraft": "下書き（非公開）にする",
+    "makePublic": "公開にする"
   },
   "creative": {
     "desc": "クリエイティブ制作に関する業務ガイド・テンプレート・ナレッジを集約"
   },
   "data": {
     "desc": "各種外部アナリティクスツールへ一元的にアクセスできるポータルです。日々の重要指標（KPI）を効率的に確認し、データドリブンな意思決定をサポートします。"
+  },
+  "validation": {
+    "jpgPngPdfOnly": "JPG, PNG, PDF形式のみ対応しています。",
+    "fileSize10MB": "ファイルサイズは10MB以下にする必要があります。",
+    "fileSize50MB": "ファイルサイズは50MB以下にする必要があります。",
+    "toolNameRequired": "ツール名称を入力してください",
+    "descRequired": "説明を入力してください",
+    "categoryRequired": "カテゴリを選択してください",
+    "roleRequired": "役割を選択してください",
+    "promptNameRequired": "プロンプト名を入力してください",
+    "promptContentRequired": "プロンプト本文を入力してください",
+    "invalidUrl": "遷移先URLは 'http://' 或者 'https://' から始まる有効なURL形式で入力してください (10文字以上)",
+    "urlTooLong": "遷移先URLは500文字以内で入力してください",
+    "invalidMcpUrl": "MCP URLは 'http://' 或者 'https://' から始まる有効なURL形式で入力してください (10文字以上)",
+    "mcpUrlTooLong": "MCP URLは2048文字以内で入力してください",
+    "checkInputs": "入力内容を確認してください"
+  },
+  "toast": {
+    "fileUploaded": "ファイルをアップロードしました",
+    "uploadFailed": "アップロードに失敗しました",
+    "enterUrl": "URLを入力してください",
+    "faviconSuccess": "ファビコンを取得しました",
+    "faviconFailed": "ファビコンの取得に失敗しました",
+    "toolSavedDemo": "ツールとプロンプトを保存しました（デモ表示）",
+    "toolUpdated": "ツールとプロンプトを更新しました",
+    "settingsSaved": "設定が正常に保存されました。",
+    "settingsSavedDetail": "設定が正常に保存されました。引き続き編集するか、一覧に戻ることができます。"
+  },
+  "form": {
+    "basicInfo": "基本情報",
+    "toolName": "ツール名称",
+    "description": "説明（概要）",
+    "redirectUrl": "遷移先URL",
+    "category": "カテゴリ",
+    "step": "ステップ",
+    "stepComplianceHelp": "ステップを表示するには、カテゴリから「コンプライアンス」を選択してください。",
+    "allRoles": "すべての役割",
+    "loginIdPlaceholder": "Login IDを入力...",
+    "noLoginIds": "Login IDが設定されていません。「追加」ボタンをクリックして追加してください。",
+    "icon": "アイコン",
+    "getFavicon": "ファビコン取得",
+    "visibility": "公開設定",
+    "adminMemo": "管理用メモ",
+    "adminMemoPlaceholder": "管理用のメモや申し送り事項を入力...",
+    "reference": "リファレンス",
+    "uploading": "アップロード中...",
+    "clickToUpload": "クリックしてアップロード",
+    "orDragDrop": "、またはファイルをドラッグ＆ドロップ",
+    "allFormats50MB": "全ファイル形式対応 (最大 50MB)",
+    "jpgPngPdf10MB": "JPG, PNG, PDF形式 (最大 10MB)",
+    "noCategories": "カテゴリがありません",
+    "charCount": "文字数: {{count}} / 2000 (推奨)",
+    "supplementary": "補足情報"
+  },
+  "mcp": {
+    "title": "MCP 接続設定",
+    "connectionType": "接続タイプ",
+    "stdio": "標準入力・出力 (stdio)",
+    "http": "HTTP (SSE)",
+    "stdioCommand": "起動コマンド",
+    "stdioArgs": "引数 (JSON形式の配列)",
+    "addArg": "引数を追加",
+    "stdioEnv": "環境変数 (Env)",
+    "addEnv": "環境変数を追加",
+    "key": "キー",
+    "value": "値",
+    "envPassthrough": "親プロセスの環境変数 (Env Passthrough)",
+    "addPassthrough": "親プロセスの環境変数を追加",
+    "workDir": "作業ディレクトリ (Working Directory)",
+    "httpUrl": "接続URL (SSE/HTTP)",
+    "bearerTokenEnv": "Bearerトークン環境変数名",
+    "headers": "ヘッダー",
+    "addHeader": "ヘッダーを追加",
+    "headersFromEnv": "環境変数からヘッダーを取得 (Headers from Env)",
+    "streamableHttp": "ストリーミング可能な HTTP",
+    "docs": "ドキュメント",
+    "argPlaceholder": "引数を入力...",
+    "varPlaceholder": "変数を入力...",
+    "addVariable": "変数を追加"
+  },
+  "prompt": {
+    "title": "プロンプトテンプレート",
+    "subtitle": "ユーザーがこのツールを使用する際に、よく使うプロンプトのひな形を登録できます。",
+    "add": "プロンプトを追加",
+    "template": "テンプレート",
+    "name": "プロンプト名称",
+    "namePlaceholder": "例: 商談要約プロンプト",
+    "recommended": "推奨プロンプトにする",
+    "content": "プロンプト本文",
+    "contentPlaceholder": "プロンプトで実行する指示やテンプレートテキストを入力してください...",
+    "deleteTemplate": "このテンプレートを削除",
+    "noTemplates": "テンプレートが登録されていません。"
+  },
+  "guide": {
+    "title": "接続情報・ログイン設定",
+    "subtitle": "このツールに接続するためのIDやログイン方法 of ログイン方法のガイドを登録します。",
+    "loginId": "接続ID",
+    "loginIdHelp": "このツールにログインするための共有アカウントIDを追加します。",
+    "usageGuide": "利用ガイド",
+    "guidePlaceholder": "利用ガイドや注意事項をMarkdown形式で入力してください...",
+    "guideMaterials": "ガイド資料 (PDF/画像)",
+    "guideMaterialsHelp": "操作マニュアルや関連ファイルをアップロードします。(最大3ファイル)",
+    "dragDropOr": "ファイルのドラッグ＆ドロップ、または",
+    "backToEdit": "編集に戻る",
+    "markdownPreview": "Markdown プレビュー",
+    "emptyContent": "コンテンツは空です",
+    "browse": "ブラウズ",
+    "refMaterials": "参照資料 (PDF/画像)",
+    "refMaterialsHelp": "チェック業務に必要な関連規約や資料をアップロードします。(最大3ファイル)"
   }
 }

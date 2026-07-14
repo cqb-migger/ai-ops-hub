@@ -7,14 +7,22 @@
     "manageTools": "Manage Tools",
     "userManagement": "User Management",
     "language": "Language",
-    "logout": "Logout"
+    "logout": "Logout",
+    "navigation": "Navigation",
+    "administration": "Administration"
   },
   "login": {
     "welcome": "Welcome Back",
+    "title": "AI Navigator",
+    "subtitle": "Sign in to your workplace account",
     "email": "Email Address",
+    "emailPlaceholder": "you@company.com",
     "password": "Password",
+    "passwordPlaceholder": "••••••••",
     "signin": "Sign In",
     "googleSignin": "Sign in with Google",
+    "secureLogin": "Secure login with enterprise SSO",
+    "orContinueWith": "Or continue with",
     "success": "Logged in successfully",
     "failed": "Authentication failed"
   },
@@ -36,7 +44,17 @@
     "action": "Action",
     "success": "Success",
     "error": "Error",
-    "noResults": "No results match"
+    "noResults": "No results match",
+    "showingItems": "Showing {{start}} - {{end}} of {{total}} items",
+    "showingNoItems": "Showing 0 items",
+    "clear": "Clear",
+    "notSet": "Not Set",
+    "name": "Name",
+    "fetching": "Fetching...",
+    "add": "Add",
+    "select": "Select...",
+    "create": "Create",
+    "preview": "Preview"
   },
   "dashboard": {
     "searchPlaceholder": "Search tools...",
@@ -48,7 +66,13 @@
     "clearFilter": "Clear Filters",
     "favRemoveTitle": "Remove from favorites",
     "favAddTitle": "Add to favorites",
-    "detailTitle": "Details for {{name}}"
+    "detailTitle": "Details for {{name}}",
+    "title": "AI Navigator Dashboard",
+    "desc": "Search and discover the best AI tools to streamline your tasks. Filter by roles and categories.",
+    "availableTools": "Available Tools",
+    "favAddSuccess": "Added to favorites",
+    "favRemoveSuccess": "Removed from favorites",
+    "simulatingLaunch": "Launching {{name}}... (simulation)"
   },
   "filter": {
     "step": "Step",
@@ -57,6 +81,9 @@
     "sort": "Sort",
     "favFirst": "Favorites First",
     "newest": "Newest First",
+    "allCategories": "All Categories",
+    "allRoles": "All Roles",
+    "allSteps": "All Steps",
     "categoryOptions": {
       "creative": "Creative",
       "compliance": "Compliance",
@@ -70,7 +97,10 @@
       "compliance": "Compliance",
       "planning": "Planning",
       "writing": "Writing",
-      "design": "Design"
+      "design": "Design",
+      "sale": "Sales",
+      "backoffice": "Back Office",
+      "accounting": "Accounting"
     }
   },
   "compliance": {
@@ -98,7 +128,8 @@
     "titleRequired": "Please enter a title.",
     "descRequired": "Please enter a description.",
     "titlePlaceholder": "e.g., Content Creation",
-    "descPlaceholder": "Enter a detailed description of the step..."
+    "descPlaceholder": "Enter a detailed description of the step...",
+    "step": "Step {{order}}"
   },
   "detail": {
     "loginSetting": "Connection & Login settings",
@@ -179,12 +210,123 @@
     "deleteFailed": "Failed to delete the tool.",
     "statusChangeSuccess": "Changed status of \"{{name}}\" to {{status}}.",
     "statusChangeFailed": "Failed to update the status.",
-    "publicDeleteError": "Cannot delete because it is published."
+    "publicDeleteError": "Cannot delete because it is published.",
+    "makeDraft": "Change to Draft",
+    "makePublic": "Publish Tool"
   },
   "creative": {
     "desc": "Centralizes operational guides, templates, and knowledge related to creative production."
   },
   "data": {
     "desc": "A centralized portal for accessing various external analytics tools. Efficiently review daily key performance indicators (KPIs) to support data-driven decision making."
+  },
+  "validation": {
+    "jpgPngPdfOnly": "Only JPG, PNG, and PDF formats are supported.",
+    "fileSize10MB": "File size must be 10MB or less.",
+    "fileSize50MB": "File size must be 50MB or less.",
+    "toolNameRequired": "Please enter a tool name.",
+    "descRequired": "Please enter a description.",
+    "categoryRequired": "Please select a category.",
+    "roleRequired": "Please select a role.",
+    "promptNameRequired": "Please enter a prompt name.",
+    "promptContentRequired": "Please enter prompt content.",
+    "invalidUrl": "Redirect URL must start with 'http://' or 'https://' (min 10 characters)",
+    "urlTooLong": "Redirect URL must be 500 characters or less",
+    "invalidMcpUrl": "MCP URL must start with 'http://' or 'https://' (min 10 characters)",
+    "mcpUrlTooLong": "MCP URL must be 2048 characters or less",
+    "checkInputs": "Please verify your inputs"
+  },
+  "toast": {
+    "fileUploaded": "File uploaded successfully",
+    "uploadFailed": "Failed to upload file",
+    "enterUrl": "Please enter a URL",
+    "faviconSuccess": "Favicon retrieved successfully",
+    "faviconFailed": "Failed to retrieve favicon",
+    "toolSavedDemo": "Saved tool and prompts (demo display)",
+    "toolUpdated": "Updated tool and prompts",
+    "settingsSaved": "Settings saved successfully.",
+    "settingsSavedDetail": "Settings saved successfully. You can continue editing or return to the list."
+  },
+  "form": {
+    "basicInfo": "Basic Information",
+    "toolName": "Tool Name",
+    "description": "Description (Summary)",
+    "redirectUrl": "Redirect URL",
+    "category": "Category",
+    "step": "Step",
+    "stepComplianceHelp": "To select steps, please select 'Compliance' under categories.",
+    "allRoles": "All Roles",
+    "loginIdPlaceholder": "Enter Login ID...",
+    "noLoginIds": "No Login ID configured. Click 'Add' to add one.",
+    "icon": "Icon",
+    "getFavicon": "Get Favicon",
+    "visibility": "Visibility",
+    "adminMemo": "Admin Memo",
+    "adminMemoPlaceholder": "Enter admin notes or handovers here...",
+    "reference": "Reference",
+    "uploading": "Uploading...",
+    "clickToUpload": "Click to upload",
+    "orDragDrop": ", or drag and drop files",
+    "allFormats50MB": "All file formats supported (max 50MB)",
+    "jpgPngPdf10MB": "JPG, PNG, PDF formats (max 10MB)",
+    "noCategories": "No categories available",
+    "charCount": "Characters: {{count}} / 2000 (recommended)",
+    "supplementary": "Supplementary Information"
+  },
+  "mcp": {
+    "title": "MCP Connection Settings",
+    "connectionType": "Connection Type",
+    "stdio": "Standard Input/Output (stdio)",
+    "http": "HTTP (SSE)",
+    "stdioCommand": "Startup Command",
+    "stdioArgs": "Arguments (JSON Array)",
+    "addArg": "Add Argument",
+    "stdioEnv": "Environment Variables (Env)",
+    "addEnv": "Add Env Var",
+    "key": "Key",
+    "value": "Value",
+    "envPassthrough": "Parent Process Env Variables (Env Passthrough)",
+    "addPassthrough": "Add Env Passthrough",
+    "workDir": "Working Directory",
+    "httpUrl": "Connection URL (SSE/HTTP)",
+    "bearerTokenEnv": "Bearer Token Env Var Name",
+    "headers": "Headers",
+    "addHeader": "Add Header",
+    "headersFromEnv": "Headers from Env",
+    "streamableHttp": "Streamable HTTP",
+    "docs": "Documentation",
+    "argPlaceholder": "Enter argument...",
+    "varPlaceholder": "Enter variable...",
+    "addVariable": "Add Variable"
+  },
+  "prompt": {
+    "title": "Prompt Templates",
+    "subtitle": "You can configure prompt templates that users commonly use for this tool.",
+    "add": "Add Prompt",
+    "template": "Template",
+    "name": "Prompt Name",
+    "namePlaceholder": "e.g. Sales Analysis Prompt",
+    "recommended": "Make Recommended Prompt",
+    "content": "Prompt Content",
+    "contentPlaceholder": "Enter instructions or template text to be executed in the prompt...",
+    "deleteTemplate": "Delete this template",
+    "noTemplates": "No templates registered."
+  },
+  "guide": {
+    "title": "Connection & Login settings",
+    "subtitle": "Register ID and usage guide for connecting to this tool.",
+    "loginId": "Login ID",
+    "loginIdHelp": "Add shared account IDs for logging into this tool.",
+    "usageGuide": "Usage Guide",
+    "guidePlaceholder": "Enter usage guide and precautions in Markdown format...",
+    "guideMaterials": "Guide Materials (PDF/Images)",
+    "guideMaterialsHelp": "Upload user manuals or related files. (Max 3 files)",
+    "dragDropOr": "Drag and drop files, or",
+    "backToEdit": "Back to Edit",
+    "markdownPreview": "Markdown Preview",
+    "emptyContent": "Content is empty",
+    "browse": "Browse",
+    "refMaterials": "Reference Materials (PDF/Images)",
+    "refMaterialsHelp": "Upload related terms or guidelines needed for check operations. (Max 3 files)"
   }
 }

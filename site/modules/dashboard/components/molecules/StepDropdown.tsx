@@ -68,7 +68,7 @@ export default function StepDropdown({
   onStepChange,
   steps,
   width = 200,
-  placeholder = 'すべてのステップ',
+  placeholder,
 }: StepDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -117,7 +117,7 @@ export default function StepDropdown({
             hasStep ? 'text-[#5570f6] dark:text-[#7c91eb] font-semibold' : ''
           }`}
         >
-          {selectedLabel ?? placeholder}
+          {selectedLabel ?? (placeholder || t('filter.allSteps'))}
         </span>
 
         {/* Clear × khi đã chọn step, chevron ▾ khi mặc định */}

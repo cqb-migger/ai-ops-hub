@@ -73,7 +73,7 @@ export default function RoleDropdown({
   selectedRole = '',
   onRoleChange,
   width = 200,
-  placeholder = 'すべての役割',
+  placeholder,
 }: RoleDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -123,7 +123,7 @@ export default function RoleDropdown({
             hasRole ? 'text-[#5570f6] dark:text-[#7c91eb] font-semibold' : ''
           }`}
         >
-          {selectedLabel ?? placeholder}
+          {selectedLabel ?? (placeholder || t('filter.allRoles'))}
         </span>
 
         {/* Clear × khi đã chọn role, chevron ▾ khi mặc định */}

@@ -103,8 +103,7 @@ export interface Tool {
 }
 
 export const CATEGORIES = [
-  'すべてのカテゴリ',
-  'クリエイティブ',
-  'コンプライアンス',
-  'データ',
+  'creative',
+  'compliance',
+  'data',
 ];

@@ -12,8 +12,8 @@ export interface CategoryDropdownProps {
   placeholder?: string;
 }
 
-// Real categories without the "すべてのカテゴリ" string
-const REAL_CATEGORIES = CATEGORIES.filter((c) => c !== 'すべてのカテゴリ');
+// Real categories
+const REAL_CATEGORIES = CATEGORIES;
 
 function XIcon({ size = 14 }: { size?: number }) {
   return (
@@ -79,7 +79,7 @@ export default function CategoryDropdown({
   onCategoryChange,
   categories,
   width = 200,
-  placeholder = 'すべてのカテゴリ',
+  placeholder,
 }: CategoryDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -127,7 +127,7 @@ export default function CategoryDropdown({
             hasCategory ? 'text-[#5570f6] dark:text-[#7c91eb] font-semibold' : ''
           }`}
         >
-          {hasCategory ? t(`filter.categoryOptions.${selectedCategory}`, selectedCategory) : placeholder}
+          {hasCategory ? selectedCategory : (placeholder || t('filter.allCategories'))}
         </span>
 
         {/* Clear × khi đã chọn, chevron ▾ khi mặc định */}
@@ -161,7 +161,7 @@ export default function CategoryDropdown({
                   : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
               }`}
             >
-              {t(`filter.categoryOptions.${cat}`, cat)}
+              {cat}
               {selectedCategory === cat && (
                 <span className="text-[#5570f6] dark:text-[#7c91eb]">
                   <CheckIcon />

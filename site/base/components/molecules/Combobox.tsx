@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'next-i18next';
 
 interface ComboboxProps {
   value: string;
@@ -13,10 +14,12 @@ export default function Combobox({
   value,
   onChange,
   options,
-  placeholder = '選択してください',
+  placeholder,
   className = '',
   widthClass = 'w-[192px]',
 }: ComboboxProps) {
+  const { t } = useTranslation('common');
+  const actualPlaceholder = placeholder || t('common.select');
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,7 +58,7 @@ export default function Combobox({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full h-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] leading-[22px] text-[#171a1f] dark:text-light px-[12px] flex items-center justify-between outline-none font-base cursor-pointer hover:bg-gray-50 dark:hover:bg-midnight-850 transition-colors"
       >
-        <span className="truncate flex-1 text-left">{value || placeholder}</span>
+        <span className="truncate flex-1 text-left">{value || actualPlaceholder}</span>
         <div className="flex items-center gap-[4px] ml-[8px]">
           {value && (
             <button
@@ -98,7 +101,7 @@ export default function Combobox({
           <div className="p-[8px] border-b border-[#dee1e6] dark:border-midnight-800 bg-gray-50 dark:bg-midnight-950">
             <input
               type="text"
-              placeholder="検索..."
+              placeholder={t('common.search') as string}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -126,7 +129,7 @@ export default function Combobox({
               ))
             ) : (
               <li className="px-[12px] py-[12px] text-[13px] text-gray-400 dark:text-gray-500 text-center font-base">
-                一致する結果はありません
+                {t('common.noResults')}
               </li>
             )}
           </ul>
