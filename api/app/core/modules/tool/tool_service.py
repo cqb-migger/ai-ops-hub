@@ -103,6 +103,7 @@ async def get_tools_service(
     role: Optional[str] = None,
     search: Optional[str] = None,
     step_id: Optional[int] = None,
+    sort: Optional[str] = 'name_asc',
     visibility: Optional[str] = 'public',
     skip: int = 0,
     limit: int = 20,
@@ -148,14 +149,18 @@ async def get_tools_service(
     count_q = select(func.count()).select_from(base_q.subquery())
     total = (await db.execute(count_q)).scalar_one()
 
-    if user_id:
+    if sort == 'favorite' and user_id:
+        # Favorites first, then name A→Z
         is_fav_col = select(UserToolFavorite.tool_id).where(
             UserToolFavorite.tool_id == Tool.id,
             UserToolFavorite.user_id == user_id
         ).exists()
-        q = base_q.order_by(is_fav_col.desc(), Tool.id.desc())
-    else:
+        q = base_q.order_by(is_fav_col.desc(), func.lower(Tool.name).asc())
+    elif sort == 'newest':
         q = base_q.order_by(Tool.id.desc())
+    else:
+        # Default: name A→Z
+        q = base_q.order_by(func.lower(Tool.name).asc())
 
     result = await db.execute(q.offset(skip).limit(limit))
     tools = list(result.scalars().all())

@@ -238,7 +238,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           {/* Edit Action for Admin */}
           {user?.role === 'admin' && (
             <button
-              onClick={() => window.open(`/manage-tools/edit/${tool.id}`, '_blank', 'noopener,noreferrer')}
+              onClick={() => router.push(`/manage-tools/edit/${tool.id}`)}
               className="flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200"
             >
               <PenIcon />

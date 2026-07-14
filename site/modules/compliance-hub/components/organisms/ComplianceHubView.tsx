@@ -29,6 +29,7 @@ export default function ComplianceHubView() {
   const [isFlowExpanded, setIsFlowExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedStep, setSelectedStep] = useState('');
+  const [selectedSort, setSelectedSort] = useState('name_asc');
   const [deletingStepId, setDeletingStepId] = useState<string | null>(null);
 
   const { tools, total, loading: toolsLoading, toggleFavorite } = useTools({
@@ -37,6 +38,7 @@ export default function ComplianceHubView() {
     search: debouncedSearch || undefined,
     role: selectedRole || undefined,
     stepId: selectedStep || undefined,
+    sort: selectedSort,
     limit: ITEMS_PER_PAGE,
     skip: (currentPage - 1) * ITEMS_PER_PAGE,
   });
@@ -65,7 +67,7 @@ export default function ComplianceHubView() {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, selectedRole, selectedStep]);
+  }, [debouncedSearch, selectedRole, selectedStep, selectedSort]);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -320,6 +322,9 @@ export default function ComplianceHubView() {
             onRoleChange={setSelectedRole}
             selectedStep={selectedStep}
             onStepChange={setSelectedStep}
+            selectedSort={selectedSort}
+            onSortChange={setSelectedSort}
+            showSort
             steps={steps}
             showStepFilter={true}
           />

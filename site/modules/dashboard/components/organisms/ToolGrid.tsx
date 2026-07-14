@@ -23,6 +23,7 @@ export default function ToolGrid() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedSort, setSelectedSort] = useState('name_asc');
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
 
@@ -49,13 +50,14 @@ export default function ToolGrid() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, selectedCategory, selectedRole]);
+  }, [debouncedSearch, selectedCategory, selectedRole, selectedSort]);
 
   const { tools, total, loading, toggleFavorite } = useTools({
     visibility: 'public',
     search: debouncedSearch || undefined,
     categoryId: selectedCategoryId,
     role: selectedRole || undefined,
+    sort: selectedSort,
     limit: ITEMS_PER_PAGE,
     skip: (currentPage - 1) * ITEMS_PER_PAGE,
   });
@@ -84,6 +86,9 @@ export default function ToolGrid() {
         onCategoryChange={setSelectedCategory}
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
+        selectedSort={selectedSort}
+        onSortChange={setSelectedSort}
+        showSort
         categories={uniqueCategories}
         showBothFilters
       />

@@ -2,6 +2,7 @@ import React from 'react';
 import CategoryDropdown from './CategoryDropdown';
 import RoleDropdown from './RoleDropdown';
 import StepDropdown from './StepDropdown';
+import SortDropdown from './SortDropdown';
 import { Step } from '../../../compliance-hub/constants/steps';
 import { useTranslation } from 'next-i18next';
 
@@ -14,6 +15,10 @@ interface FilterBarProps {
   onRoleChange?: (val: string) => void;
   selectedStep?: string;
   onStepChange?: (val: string) => void;
+  selectedSort?: string;
+  onSortChange?: (val: string) => void;
+  /** Show the sort dropdown */
+  showSort?: boolean;
   categories?: string[];
   roles?: string[];
   steps?: Step[];
@@ -54,6 +59,9 @@ export default function FilterBar({
   onRoleChange = () => { },
   selectedStep = '',
   onStepChange = () => { },
+  selectedSort = 'name_asc',
+  onSortChange = () => { },
+  showSort = false,
   categories,
   steps = [],
   showFilters = true,
@@ -104,6 +112,9 @@ export default function FilterBar({
             width={200}
             placeholder={t('filter.allRoles') as string}
           />
+          {showSort && (
+            <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} width={180} />
+          )}
         </>
       )}
 
@@ -120,12 +131,17 @@ export default function FilterBar({
 
       {/* Role only */}
       {showFilters && showRoleFilterOnly && !showStepFilter && (
-        <RoleDropdown
-          selectedRole={selectedRole}
-          onRoleChange={onRoleChange}
-          width={250}
-          placeholder={t('filter.allRoles') as string}
-        />
+        <>
+          <RoleDropdown
+            selectedRole={selectedRole}
+            onRoleChange={onRoleChange}
+            width={250}
+            placeholder={t('filter.allRoles') as string}
+          />
+          {showSort && (
+            <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} width={180} />
+          )}
+        </>
       )}
 
       {/* Step + Role (for Compliance Hub) */}
@@ -144,6 +160,9 @@ export default function FilterBar({
             width={180}
             placeholder={t('filter.allRoles') as string}
           />
+          {showSort && (
+            <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} width={180} />
+          )}
         </>
       )}
     </div>

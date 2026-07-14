@@ -15,11 +15,13 @@ export default function CreativeHubView() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedSort, setSelectedSort] = useState('name_asc');
   const { tools, total, loading, toggleFavorite } = useTools({
     category: 'creative',
     visibility: 'public',
     search: debouncedSearch || undefined,
     role: selectedRole || undefined,
+    sort: selectedSort,
     limit: ITEMS_PER_PAGE,
     skip: (currentPage - 1) * ITEMS_PER_PAGE,
   });
@@ -46,7 +48,7 @@ export default function CreativeHubView() {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, selectedRole]);
+  }, [debouncedSearch, selectedRole, selectedSort]);
 
   const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
   const currentPageSafe = Math.min(currentPage, totalPages);
@@ -70,6 +72,9 @@ export default function CreativeHubView() {
           onSearchChange={setSearchQuery}
           selectedRole={selectedRole}
           onRoleChange={setSelectedRole}
+          selectedSort={selectedSort}
+          onSortChange={setSelectedSort}
+          showSort
           showRoleFilterOnly
         />
 

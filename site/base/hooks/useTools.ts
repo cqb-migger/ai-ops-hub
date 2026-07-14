@@ -10,6 +10,7 @@ interface UseToolsOptions {
   visibility?: 'public' | 'draft' | 'all';
   role?: string;
   stepId?: string | number;
+  sort?: string;
   limit?: number;
   skip?: number;
 }
@@ -74,7 +75,7 @@ export function useTools(options: UseToolsOptions = {}) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const { hub, category, categoryId, search, visibility, role, stepId, limit = 20, skip = 0 } = options;
+  const { hub, category, categoryId, search, visibility, role, stepId, sort, limit = 20, skip = 0 } = options;
 
   const fetchTools = useCallback(async () => {
     setLoading(true);
@@ -87,6 +88,7 @@ export function useTools(options: UseToolsOptions = {}) {
       if (visibility) params.append('visibility', visibility);
       if (role) params.append('role', role);
       if (stepId) params.append('step_id', String(stepId));
+      if (sort) params.append('sort', sort);
       params.append('limit', String(limit));
       params.append('skip', String(skip));
 
@@ -102,7 +104,7 @@ export function useTools(options: UseToolsOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [hub, category, categoryId, search, visibility, role, stepId, limit, skip]);
+  }, [hub, category, categoryId, search, visibility, role, stepId, sort, limit, skip]);
 
   useEffect(() => {
     fetchTools();

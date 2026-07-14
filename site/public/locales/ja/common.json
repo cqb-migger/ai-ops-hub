@@ -81,6 +81,10 @@
     "sort": "並び替え",
     "favFirst": "お気に入り優先",
     "newest": "新着順",
+    "sortOptions": {
+      "nameAsc": "名前（A→Z）",
+      "favorite": "お気に入り優先"
+    },
     "allCategories": "すべてのカテゴリ",
     "allRoles": "すべての役割",
     "allSteps": "すべてのステップ",
