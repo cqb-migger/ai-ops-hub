@@ -262,7 +262,7 @@ export default function Sidebar() {
           <div className="flex flex-col gap-[8px]">
             {!isSidebarCollapsed && (
               <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px] mt-[12px]">
-                Navigation
+                {t('nav.navigation')}
               </span>
             )}
             <div className="flex flex-col gap-[4px]">
@@ -284,7 +284,7 @@ export default function Sidebar() {
             <div className="flex flex-col gap-[8px]">
               {!isSidebarCollapsed && (
                 <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px]">
-                  Administration
+                  {t('nav.administration')}
                 </span>
               )}
               <div className="flex flex-col gap-[4px]">

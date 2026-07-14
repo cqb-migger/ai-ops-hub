@@ -96,13 +96,13 @@ export default function FilterBar({
             onCategoryChange={onCategoryChange}
             categories={categories}
             width={200}
-            placeholder={t('filter.category', 'すべてのカテゴリ') as string}
+            placeholder={t('filter.allCategories') as string}
           />
           <RoleDropdown
             selectedRole={selectedRole}
             onRoleChange={onRoleChange}
             width={200}
-            placeholder={t('filter.role', 'すべての役割') as string}
+            placeholder={t('filter.allRoles') as string}
           />
         </>
       )}
@@ -114,7 +114,7 @@ export default function FilterBar({
           onCategoryChange={onCategoryChange}
           categories={categories}
           width={250}
-          placeholder={t('filter.category', 'すべてのカテゴリ') as string}
+          placeholder={t('filter.allCategories') as string}
         />
       )}
 
@@ -124,7 +124,7 @@ export default function FilterBar({
           selectedRole={selectedRole}
           onRoleChange={onRoleChange}
           width={250}
-          placeholder={t('filter.role', 'すべての役割') as string}
+          placeholder={t('filter.allRoles') as string}
         />
       )}
 
@@ -136,13 +136,13 @@ export default function FilterBar({
             onStepChange={onStepChange}
             steps={steps}
             width={180}
-            placeholder={t('filter.step', 'すべてのステップ') as string}
+            placeholder={t('filter.allSteps') as string}
           />
           <RoleDropdown
             selectedRole={selectedRole}
             onRoleChange={onRoleChange}
             width={180}
-            placeholder={t('filter.role', 'すべての役割') as string}
+            placeholder={t('filter.allRoles') as string}
           />
         </>
       )}

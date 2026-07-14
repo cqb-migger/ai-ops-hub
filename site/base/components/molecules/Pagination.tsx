@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'next-i18next';
 
 interface PaginationProps {
   currentPage: number;
@@ -11,6 +12,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, itemsPerPage, className = 'mt-[20px]', hideItemCount = false }: PaginationProps) {
+  const { t } = useTranslation('common');
   const currentPageSafe = Math.max(1, Math.min(currentPage, Math.max(1, totalPages)));
   
   const showPaginationControls = totalPages >= 1;
@@ -31,10 +33,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
       {!hideItemCount && (
         <div className="text-[14px] text-[#565d6d] dark:text-gray-400 font-medium">
           {showItemCount && totalItems !== undefined && totalItems > 0 && (
-            <>全 {totalItems} 件中 {startItem} - {endItem} 件を表示</>
+            <>{t('common.showingItems', { total: totalItems, start: startItem, end: endItem })}</>
           )}
           {showItemCount && totalItems === 0 && (
-            <>全 0 件中 0 件を表示</>
+            <>{t('common.showingNoItems')}</>
           )}
         </div>
       )}

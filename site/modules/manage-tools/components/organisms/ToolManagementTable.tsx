@@ -269,11 +269,13 @@ export default function ToolManagementTable() {
                       {/* Category */}
                       <td className="py-[16px] px-[20px]">
                         <div className="flex flex-wrap gap-[6px] items-center">
-                          {tool.category.map((cat) => (
-                            <span key={cat} className="inline-flex items-center justify-center bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] font-base whitespace-nowrap">
-                              {cat}
-                            </span>
-                          ))}
+                          {tool.category.map((cat) => {
+                            return (
+                              <span key={cat} className="inline-flex items-center justify-center bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] font-base whitespace-nowrap">
+                                {cat}
+                              </span>
+                            );
+                          })}
                         </div>
                       </td>
 
@@ -283,13 +285,13 @@ export default function ToolManagementTable() {
                           <div className="flex flex-wrap gap-[6px] items-center">
                             {tool.roles.map((rVal) => (
                               <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                                {ROLE_OPTIONS.find(r => r.value === rVal)?.label || rVal}
+                                {ROLE_OPTIONS.find(r => r.value === rVal) ? t(`filter.roleOptions.${rVal}`) : rVal}
                               </span>
                             ))}
                           </div>
                         ) : (
                           <span className="text-[12px] text-gray-400 dark:text-gray-500 italic font-base">
-                            未設定
+                            {t('common.notSet')}
                           </span>
                         )}
                       </td>
@@ -303,7 +305,7 @@ export default function ToolManagementTable() {
                             onClick={() => handleToggleStatus(tool.id, tool.name, tool.status)}
                             className={`relative inline-flex h-[20px] w-[36px] flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${tool.status === 'public' ? 'bg-[#22c55e]' : 'bg-[#dee1e6] dark:bg-midnight-800'
                               }`}
-                            title={tool.status === 'public' ? '下書き（非公開）にする' : '公開にする'}
+                            title={(tool.status === 'public' ? t('manageTools.makeDraft') : t('manageTools.makePublic')) as string}
                           >
                             <span
                               aria-hidden="true"

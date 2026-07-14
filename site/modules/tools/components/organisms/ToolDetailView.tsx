@@ -349,7 +349,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
               {/* Name Field */}
               <div className="flex flex-col gap-[6px]">
                 <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                  名前
+                  {t('common.name')}
                 </label>
                 <div className="text-[14px] text-[#171a1f] dark:text-light font-medium py-[4px]">
                   {tool.mcp_name || ''}
@@ -376,7 +376,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                 >
-                  ストリーミング可能な HTTP
+                  {t('mcp.streamableHttp')}
                 </button>
               </div>
 

@@ -128,11 +128,13 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
 
         {/* Tags */}
         <div className="flex flex-wrap gap-[4px] items-center">
-          {visibleTags.map((tag) => (
-            <span key={tag} className="bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[10px] font-medium text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] flex items-center justify-center whitespace-nowrap">
-              {tag}
-            </span>
-          ))}
+          {visibleTags.map((tag) => {
+            return (
+              <span key={tag} className="bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[10px] font-medium text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] flex items-center justify-center whitespace-nowrap">
+                {tag}
+              </span>
+            );
+          })}
           {hiddenCount > 0 && (
             <span className="bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[10px] font-medium text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[8px] h-[20px] flex items-center justify-center whitespace-nowrap">
               +{hiddenCount}
