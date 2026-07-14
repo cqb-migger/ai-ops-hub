@@ -774,7 +774,7 @@ export default function CreateToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <SettingsIcon />
-          <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">{t('form.basicInfo')}</h3>
+          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">{t('form.basicInfo')}</h3>
         </div>
 
         {/* Form Fields */}
@@ -1102,7 +1102,7 @@ export default function CreateToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <ServerIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
               {t('mcp.title')}
             </h3>
           </div>
@@ -1448,7 +1448,7 @@ export default function CreateToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <MessageSquareIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
               {t('prompt.title')}
             </h3>
           </div>
@@ -1626,7 +1626,7 @@ export default function CreateToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <BookIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
               {t('guide.title')}
             </h3>
           </div>
@@ -1752,7 +1752,7 @@ export default function CreateToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <FileTextIcon />
-          <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
             {t('form.supplementary')}
           </h3>
         </div>
