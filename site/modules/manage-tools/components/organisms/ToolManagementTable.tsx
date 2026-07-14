@@ -373,7 +373,7 @@ export default function ToolManagementTable() {
               onPageChange={setCurrentPage}
               totalItems={total}
               itemsPerPage={ITEMS_PER_PAGE}
-              showItemCount={false}
+              hideItemCount={true}
               className="mt-0"
             />
           </div>

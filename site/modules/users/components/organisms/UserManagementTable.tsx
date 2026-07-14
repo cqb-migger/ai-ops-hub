@@ -330,6 +330,7 @@ export default function UserManagementTable() {
               onPageChange={setCurrentPage}
               totalItems={filteredUsers.length}
               itemsPerPage={ITEMS_PER_PAGE}
+              hideItemCount={true}
               className="mt-0"
             />
           </div>
