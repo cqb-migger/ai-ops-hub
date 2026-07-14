@@ -686,6 +686,36 @@ export default function EditToolForm() {
     setLoginIds(loginIds.filter((_, idx) => idx !== index));
   };
 
+  useEffect(() => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      let hasChanges = false;
+
+      // Clear existing loginId errors
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith('loginId_')) {
+          delete newErrors[key];
+          hasChanges = true;
+        }
+      });
+
+      const seen = new Set<string>();
+      loginIds.forEach((id, index) => {
+        const trimmedId = id.trim();
+        if (trimmedId) {
+          if (seen.has(trimmedId)) {
+            newErrors[`loginId_${index}`] = t('validation.duplicateLoginId');
+            hasChanges = true;
+          } else {
+            seen.add(trimmedId);
+          }
+        }
+      });
+
+      return hasChanges ? newErrors : prev;
+    });
+  }, [loginIds, t]);
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     let firstErrorKey = '';
@@ -712,6 +742,20 @@ export default function EditToolForm() {
       newErrors.roles = t('validation.roleRequired');
       setErrorKey('roles');
     }
+
+    const seenLoginIds = new Set<string>();
+    loginIds.forEach((id, index) => {
+      const trimmedId = id.trim();
+      if (trimmedId) {
+        if (seenLoginIds.has(trimmedId)) {
+          const key = `loginId_${index}`;
+          newErrors[key] = t('validation.duplicateLoginId');
+          setErrorKey(key);
+        } else {
+          seenLoginIds.add(trimmedId);
+        }
+      }
+    });
 
     prompts.forEach((p) => {
       if (!p.name.trim()) {
@@ -774,6 +818,11 @@ export default function EditToolForm() {
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (firstErrorKey === 'roles') {
           const el = document.getElementById('roles-container');
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey.startsWith('loginId_')) {
+          const idx = firstErrorKey.replace('loginId_', '');
+          const el = document.getElementById(`login-id-${idx}`);
+          el?.focus();
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (firstErrorKey.startsWith('prompt_name_')) {
           const promptId = firstErrorKey.replace('prompt_name_', '');
@@ -1092,23 +1141,36 @@ export default function EditToolForm() {
 
             <div className="flex flex-col gap-[8px]">
               {loginIds.map((id, index) => (
-                <div key={index} className="flex items-center gap-[12px]">
-                  <input
-                    type="text"
-                    value={id}
-                    onChange={(e) => handleUpdateLoginId(index, e.target.value)}
-                    placeholder={t('form.loginIdPlaceholder') as string}
-                    className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
-                  />
-                  {loginIds.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveLoginId(index)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
+                <div key={index} className="flex flex-col gap-[4px]">
+                  <div className="flex items-center gap-[12px]">
+                    <input
+                      id={`login-id-${index}`}
+                      type="text"
+                      value={id}
+                      onChange={(e) => {
+                        handleUpdateLoginId(index, e.target.value);
+                        if (errors[`loginId_${index}`]) {
+                          setErrors((prev) => ({ ...prev, [`loginId_${index}`]: '' }));
+                        }
+                      }}
+                      placeholder={t('form.loginIdPlaceholder') as string}
+                      className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
+                        errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                      } rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light`}
+                    />
+                    {loginIds.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLoginId(index)}
+                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200 shrink-0"
+                        title={t('common.delete') as string}
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
+                  </div>
+                  {errors[`loginId_${index}`] && (
+                    <p className="text-[12px] text-red-500 font-semibold">{errors[`loginId_${index}`]}</p>
                   )}
                 </div>
               ))}

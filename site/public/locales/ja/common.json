@@ -234,7 +234,8 @@
     "urlTooLong": "遷移先URLは500文字以内で入力してください",
     "invalidMcpUrl": "MCP URLは 'http://' 或者 'https://' から始まる有効なURL形式で入力してください (10文字以上)",
     "mcpUrlTooLong": "MCP URLは2048文字以内で入力してください",
-    "checkInputs": "入力内容を確認してください"
+    "checkInputs": "入力内容を確認してください",
+    "duplicateLoginId": "ログインIDが重複しています"
   },
   "toast": {
     "fileUploaded": "ファイルをアップロードしました",
