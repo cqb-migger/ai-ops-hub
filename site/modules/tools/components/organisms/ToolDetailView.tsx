@@ -123,7 +123,6 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const { t } = useTranslation('common');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
-  const [isMarkdownPreview, setIsMarkdownPreview] = useState<boolean>(true);
   const [isMcpOpen, setIsMcpOpen] = useState<boolean>(false);
   const [mcpTab, setMcpTab] = useState<'stdio' | 'http'>('stdio');
 
@@ -558,34 +557,9 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 {t('toolDetail.guide', '活用ガイド')}
               </h3>
             </div>
-
-            {/* View Mode Switcher */}
-            <div className="flex items-center bg-[#f3f4f6] dark:bg-midnight-900 rounded-[8px] p-[2px] select-none">
-              <button
-                type="button"
-                onClick={() => setIsMarkdownPreview(true)}
-                className={`px-[12px] py-[4px] text-[12px] font-semibold rounded-[6px] transition-all duration-200 ${isMarkdownPreview
-                  ? 'bg-white dark:bg-midnight-805 text-[#5570f6] dark:text-[#7c91eb] shadow-sm'
-                  : 'text-[#565d6d] dark:text-gray-400 hover:text-[#171a1f] dark:hover:text-light'
-                  }`}
-              >
-                Markdown
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsMarkdownPreview(false)}
-                className={`px-[12px] py-[4px] text-[12px] font-semibold rounded-[6px] transition-all duration-200 ${!isMarkdownPreview
-                  ? 'bg-white dark:bg-midnight-805 text-[#5570f6] dark:text-[#7c91eb] shadow-sm'
-                  : 'text-[#565d6d] dark:text-gray-400 hover:text-[#171a1f] dark:hover:text-light'
-                  }`}
-              >
-                {t('toolDetail.raw', '原文 (Raw)')}
-              </button>
-            </div>
           </div>
 
-          {isMarkdownPreview ? (
-            <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base">
+          <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base">
               <ReactMarkdown
                 components={{
                   h1: ({ node, ...props }) => <h1 className="text-[22px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
@@ -606,11 +580,6 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 {tool.guideContent}
               </ReactMarkdown>
             </div>
-          ) : (
-            <div className="text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-mono whitespace-pre-wrap bg-[#f8fafc] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] p-[16px]">
-              {tool.guideContent}
-            </div>
-          )}
           {tool.guideMaterials && tool.guideMaterials.length > 0 && (
             <div className="flex flex-col gap-[8px] mt-[12px] pt-[16px] border-t border-[#dee1e6] dark:border-midnight-800">
               <span className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400 uppercase tracking-[0.5px]">
