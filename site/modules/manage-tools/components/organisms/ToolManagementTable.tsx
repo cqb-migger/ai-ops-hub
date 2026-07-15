@@ -404,7 +404,7 @@ export default function ToolManagementTable() {
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-[#fafafb] dark:bg-midnight-900 border-t border-[#dee1e6] dark:border-midnight-800 flex justify-end gap-[12px]">
+            <div className="px-[24px] py-[16px] bg-[#fafafb] dark:bg-midnight-900 border-t border-[#dee1e6] dark:border-midnight-800 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setDeletingTool(null)}
