@@ -24,7 +24,11 @@
     "secureLogin": "Secure login with enterprise SSO",
     "orContinueWith": "Or continue with",
     "success": "Logged in successfully",
-    "failed": "Authentication failed"
+    "failed": "Authentication failed",
+    "domainHint": "Only @{{domain}} accounts can sign in",
+    "googleFailed": "Google authentication failed",
+    "googleCancelled": "Google sign-in was cancelled",
+    "googleNotConfigured": "Google login is not configured. Please contact your administrator."
   },
   "footer": {
     "copyright": "© 2026 AI Ops Hub. All rights reserved.",

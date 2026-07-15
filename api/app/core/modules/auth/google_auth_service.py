@@ -1,114 +1,180 @@
-
 import httpx
-from sqlalchemy import select
+import jwt
+from jwt import PyJWKClient
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.modules.user.models.user import User
 
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
-GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
+GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs'
+GOOGLE_ISSUERS = ('https://accounts.google.com', 'accounts.google.com')
+
+# Cached across requests: re-fetching Google's signing keys on every login would rate-limit us.
+_jwks_client = PyJWKClient(GOOGLE_JWKS_URL, cache_keys=True)
 
 
-import jwt
+class GoogleAuthError(Exception):
+    """Google credential could not be verified."""
 
 
-def decode_google_id_token(credential: str) -> dict:
-    """Decodes Google ID token (credential) without verifying signature for simplicity in local test/dev."""
+class DomainNotAllowedError(Exception):
+    """Authenticated Google account is outside the allowed workspace domain."""
+
+    def __init__(self, email: str):
+        self.email = email
+        super().__init__(f'{email} is not a {settings.GOOGLE_ALLOWED_DOMAIN} account.')
+
+
+def _require_client_id() -> str:
+    if not settings.GOOGLE_CLIENT_ID:
+        raise GoogleAuthError('GOOGLE_CLIENT_ID is not configured on the server.')
+    return settings.GOOGLE_CLIENT_ID
+
+
+def verify_google_id_token(credential: str) -> dict:
+    """Verify a Google ID token's signature, issuer and audience, then return its claims."""
+    client_id = _require_client_id()
     try:
-        payload = jwt.decode(credential, options={"verify_signature": False})
-        return payload
-    except Exception as e:
-        raise ValueError(f"Invalid Google credential token: {str(e)}")
+        signing_key = _jwks_client.get_signing_key_from_jwt(credential)
+        return jwt.decode(
+            credential,
+            signing_key.key,
+            algorithms=['RS256'],
+            audience=client_id,
+            issuer=GOOGLE_ISSUERS,
+            options={'require': ['exp', 'iat', 'aud', 'iss', 'sub']},
+        )
+    except jwt.PyJWTError as e:
+        raise GoogleAuthError(f'Invalid Google credential token: {e}') from e
+
+
+def assert_allowed_domain(google_user_info: dict) -> None:
+    """Reject any account outside the allowed workspace domain."""
+    allowed_domain = (settings.GOOGLE_ALLOWED_DOMAIN or '').lower()
+    if not allowed_domain:
+        return
+
+    email = (google_user_info.get('email') or '').lower()
+
+    # Google only sets email_verified for addresses it has confirmed; without it the
+    # address proves nothing about domain membership.
+    if not google_user_info.get('email_verified'):
+        raise DomainNotAllowedError(email or 'unknown')
+
+    # `hd` is the Workspace-managed domain claim, and a consumer account can never carry
+    # hd=earlybirdjapan.co.jp. That claim is what actually enforces membership; the email
+    # suffix is a backstop against a domain alias resolving somewhere unexpected.
+    hosted_domain = (google_user_info.get('hd') or '').lower()
+    if hosted_domain != allowed_domain or not email.endswith(f'@{allowed_domain}'):
+        raise DomainNotAllowedError(email or 'unknown')
+
+
+def _describe_token_error(response: httpx.Response, redirect_uri: str) -> str:
+    """Turn Google's terse token-endpoint error into something actionable."""
+    try:
+        body = response.json()
+    except ValueError:
+        body = {}
+
+    code = body.get('error') or f'HTTP {response.status_code}'
+    description = body.get('error_description') or ''
+
+    hints = {
+        # Google returns invalid_grant for several distinct situations; list them all
+        # because the response body does not distinguish between them.
+        'invalid_grant': (
+            'The authorization code was already used, has expired (they last ~10 minutes), '
+            'or was issued to a different client_id. Start a fresh sign-in; do not replay a code.'
+        ),
+        'redirect_uri_mismatch': (
+            f'redirect_uri {redirect_uri!r} is not registered for this OAuth client. '
+            'Add it verbatim under Authorized redirect URIs in Google Cloud Console.'
+        ),
+        'invalid_client': 'GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET do not match a real OAuth client.',
+        'unauthorized_client': 'This OAuth client is not allowed to use the authorization_code grant.',
+    }
+    hint = hints.get(code, '')
+    return ' '.join(part for part in (f'Google rejected the authorization code ({code}).', description, hint) if part)
 
 
 async def exchange_google_code(code: str, redirect_uri: str) -> dict:
-    """Exchange Google authorization code for tokens and return user info."""
-    if not settings.GOOGLE_CLIENT_SECRET or settings.GOOGLE_CLIENT_SECRET == 'mock' or code == 'mock' or code.startswith('mock_') or 'mock' in code:
-        return {
-            'sub': 'mock_google_id_12345',
-            'email': 'google-user@example.com',
-            'name': 'Google Mock User',
-            'given_name': 'Google',
-            'family_name': 'Mock User',
-            'picture': 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Google_logo_thumbnail.png'
-        }
+    """Exchange a Google authorization code for tokens and return the verified ID token claims."""
+    client_id = _require_client_id()
+    if not settings.GOOGLE_CLIENT_SECRET:
+        raise GoogleAuthError('GOOGLE_CLIENT_SECRET is not configured on the server.')
 
-    async with httpx.AsyncClient() as client:
-        # Exchange code for tokens
-        token_response = await client.post(
-            GOOGLE_TOKEN_URL,
-            data={
-                'code': code,
-                'client_id': settings.GOOGLE_CLIENT_ID,
-                'client_secret': settings.GOOGLE_CLIENT_SECRET,
-                'redirect_uri': redirect_uri,
-                'grant_type': 'authorization_code',
-            },
-        )
-        token_response.raise_for_status()
-        token_data = token_response.json()
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            token_response = await client.post(
+                GOOGLE_TOKEN_URL,
+                data={
+                    'code': code,
+                    'client_id': client_id,
+                    'client_secret': settings.GOOGLE_CLIENT_SECRET,
+                    'redirect_uri': redirect_uri,
+                    'grant_type': 'authorization_code',
+                },
+            )
+        except httpx.HTTPError as e:
+            raise GoogleAuthError(f'Could not reach Google to exchange the authorization code: {e}') from e
 
-        # Get user info using access token
-        userinfo_response = await client.get(
-            GOOGLE_USERINFO_URL,
-            headers={'Authorization': f'Bearer {token_data["access_token"]}'},
-        )
-        userinfo_response.raise_for_status()
-        return userinfo_response.json()
+    if token_response.status_code != 200:
+        # Google puts the actual reason in the body (invalid_grant, redirect_uri_mismatch,
+        # invalid_client...). Surfacing only the HTTP status makes this undebuggable.
+        raise GoogleAuthError(_describe_token_error(token_response, redirect_uri))
+
+    token_data = token_response.json()
+
+    # Prefer the id_token over the userinfo endpoint: it is signed, and it carries the
+    # `hd` and `email_verified` claims that userinfo does not reliably return.
+    id_token = token_data.get('id_token')
+    if not id_token:
+        raise GoogleAuthError('Google token response did not include an id_token.')
+
+    return verify_google_id_token(id_token)
 
 
 async def upsert_google_user(db: AsyncSession, google_user_info: dict) -> User:
     """
-    Upsert user from Google OAuth info.
-    - If user with google_id exists → update last_login
-    - If user with email exists but no google_id → link google_id
-    - If user doesn't exist → create with role='sale' (default)
+    Upsert a user from verified Google claims.
+
+    - google_id match -> refresh last_login / avatar
+    - email match     -> link google_id onto the existing account
+    - no match        -> create with role='sale'
+
+    Callers must run assert_allowed_domain() first; this function trusts its input.
     """
     google_id = google_user_info.get('sub')
     email = google_user_info.get('email')
     name = google_user_info.get('name')
-    given_name = google_user_info.get('given_name')
-    family_name = google_user_info.get('family_name')
     avatar_url = google_user_info.get('picture')
 
-    # 1. Try to find user by google_id
     result = await db.execute(select(User).where(User.google_id == google_id))
     user = result.scalars().first()
 
-    if user:
-        # Update last_login and avatar
-        from sqlalchemy import func
-        user.last_login = func.now()
-        user.avatar_url = avatar_url
-        await db.commit()
-        await db.refresh(user)
-        return user
+    if user is None:
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalars().first()
+        if user is not None:
+            user.google_id = google_id
+            user.name = user.name or name
 
-    # 2. Try to find user by email (link google account)
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalars().first()
-
-    if user:
-        # Link google_id to existing account
-        user.google_id = google_id
+    if user is not None:
         user.avatar_url = avatar_url or user.avatar_url
-        user.name = user.name or name
-        from sqlalchemy import func
         user.last_login = func.now()
         await db.commit()
         await db.refresh(user)
         return user
 
-    # 3. Create new user with default role='sale'
-    from sqlalchemy import func
     new_user = User(
         email=email,
-        password=None,  # Google OAuth users don't need password
+        password=None,  # Google-authenticated users never get a local password.
         name=name,
-        first_name=given_name,
-        last_name=family_name,
-        role='sale',  # Default role for all new users
+        first_name=google_user_info.get('given_name'),
+        last_name=google_user_info.get('family_name'),
+        role='sale',
         avatar_url=avatar_url,
         google_id=google_id,
         is_active=1,

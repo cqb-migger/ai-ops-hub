@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     # Google OAuth Settings
     GOOGLE_CLIENT_ID: Optional[str] = Field(None, env='GOOGLE_CLIENT_ID')
     GOOGLE_CLIENT_SECRET: Optional[str] = Field(None, env='GOOGLE_CLIENT_SECRET')
+    # Only Google Workspace accounts on this domain may sign in. Empty disables the check.
+    GOOGLE_ALLOWED_DOMAIN: str = Field('earlybirdjapan.co.jp', env='GOOGLE_ALLOWED_DOMAIN')
 
     # AWS S3 Settings
     AWS_ACCESS_KEY_ID: Optional[str] = Field(None, env='AWS_ACCESS_KEY_ID')

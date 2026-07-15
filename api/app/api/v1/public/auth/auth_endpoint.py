@@ -9,11 +9,19 @@ from app.api.v1.public.auth.schemas.auth_response import (
     Token,
 )
 from app.api.v1.public.users.schemas.user_response import UserResponse
+from app.core.config import settings
 from app.core.db.dependencies import get_db
 from app.core.modules.auth.auth_dependencies import get_current_user, refresh_token_auth
 from app.core.modules.auth.auth_securities import create_access_token, create_refresh_token
 from app.core.modules.auth.auth_service import authenticate_user
-from app.core.modules.auth.google_auth_service import decode_google_id_token, exchange_google_code, upsert_google_user
+from app.core.modules.auth.google_auth_service import (
+    DomainNotAllowedError,
+    GoogleAuthError,
+    assert_allowed_domain,
+    exchange_google_code,
+    upsert_google_user,
+    verify_google_id_token,
+)
 from app.core.modules.user.models.user import User
 
 router = APIRouter(prefix='/auth', tags=['[Private] Auth'])
@@ -38,32 +46,36 @@ async def login_for_access_token(form_data: LoginRequest, db: AsyncSession = Dep
 @router.post('/google', response_model=GoogleAuthResponse)
 async def google_oauth_login(body: GoogleAuthRequest, db: AsyncSession = Depends(get_db)):
     """
-    Exchange Google OAuth code or verify credential (ID Token) for internal JWT tokens.
-    New users are automatically created with role='sale'.
+    Exchange a Google OAuth code or ID token credential for internal JWT tokens.
+
+    Only verified Google Workspace accounts on GOOGLE_ALLOWED_DOMAIN may sign in.
+    First-time sign-ins create a user with role='sale'.
     """
-    if body.credential:
-        try:
-            google_user_info = decode_google_id_token(body.credential)
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Failed to parse Google credential: {str(e)}',
-            )
-    elif body.code and body.redirect_uri:
-        try:
+    try:
+        if body.credential:
+            google_user_info = verify_google_id_token(body.credential)
+        elif body.code and body.redirect_uri:
             google_user_info = await exchange_google_code(code=body.code, redirect_uri=body.redirect_uri)
-        except Exception as e:
+        else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f'Failed to exchange Google code: {str(e)}',
+                detail='Either credential or (code and redirect_uri) must be provided.',
             )
-    else:
+    except GoogleAuthError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+    try:
+        assert_allowed_domain(google_user_info)
+    except DomainNotAllowedError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Either credential or (code and redirect_uri) must be provided.',
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f'Sign-in is restricted to {settings.GOOGLE_ALLOWED_DOMAIN} accounts. {e.email} is not eligible.',
         )
 
     user = await upsert_google_user(db=db, google_user_info=google_user_info)
+
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='This account has been deactivated.')
 
     access_token = create_access_token(data={'sub': str(user.id)})
     refresh_token = create_refresh_token(data={'sub': str(user.id)})

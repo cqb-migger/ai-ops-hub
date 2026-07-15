@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import useAuthStore, { User } from '@base/stores/useAuthStore';
 import { apiFetch } from '@base/utils/api';
 import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
+const ALLOWED_DOMAIN = process.env.NEXT_PUBLIC_GOOGLE_ALLOWED_DOMAIN || 'earlybirdjapan.co.jp';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,16 +16,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorShake, setErrorShake] = useState(false);
+  const exchangedCodeRef = useRef<string | null>(null);
 
-  // Check for Google OAuth callback code in URL query parameters
+  // Check for Google OAuth callback code (or an error) in URL query parameters
   useEffect(() => {
-    if (router.isReady && router.query.code) {
+    if (!router.isReady) return;
+
+    if (router.query.error) {
+      // User cancelled the Google consent screen, or Google refused the request.
+      router.replace('/login', undefined, { shallow: true });
+      toast.error(t('login.googleCancelled'));
+      return;
+    }
+
+    if (router.query.code) {
       const code = router.query.code as string;
+      // A Google authorization code is single-use: exchanging it twice makes the second
+      // attempt fail with invalid_grant, and that failure would clear the session the
+      // first (successful) exchange just stored. Guard against a double effect run.
+      if (exchangedCodeRef.current === code) return;
+      exchangedCodeRef.current = code;
+
       router.replace('/login', undefined, { shallow: true });
       handleGoogleCallback(code);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, router.query.code]);
+  }, [router.isReady, router.query.code, router.query.error]);
 
   const handleGoogleCallback = async (code: string) => {
     setIsLoading(true);
@@ -37,25 +55,17 @@ export default function LoginPage() {
       }>('/auth/google', {
         method: 'POST',
         body: JSON.stringify({ code, redirect_uri: redirectUri }),
+        // A 401/403 here is a rejected sign-in, not an expired session: keep the message.
+        skipAuthRedirect: true,
       });
 
-      // Temporary save tokens for /auth/me or direct state update
-      const tempStorage = {
-        state: {
-          token: authData.access_token,
-          refreshToken: authData.refresh_token,
-          user: authData.user,
-        },
-      };
-      localStorage.setItem('auth-storage', JSON.stringify(tempStorage));
-
-      // Save full auth state
       loginStore(authData.access_token, authData.refresh_token, authData.user);
 
       toast.success(`Welcome back, ${authData.user.name || authData.user.email}!`);
       router.push('/');
     } catch (err: any) {
-      toast.error(err.message || 'Google authentication failed.');
+      localStorage.removeItem('auth-storage');
+      toast.error(err.message || t('login.googleFailed'));
       triggerErrorEffect();
     } finally {
       setIsLoading(false);
@@ -63,14 +73,25 @@ export default function LoginPage() {
   };
 
   const handleGoogleLoginClick = () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '552554370197-dkds9950o1bloeblvqiuar949rpodqr4.apps.googleusercontent.com';
-    const redirectUri = window.location.origin + '/login';
-    const scope = 'openid email profile';
-    const responseType = 'code';
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      toast.error(t('login.googleNotConfigured'));
+      triggerErrorEffect();
+      return;
+    }
 
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: window.location.origin + '/login',
+      response_type: 'code',
+      scope: 'openid email profile',
+      // Ask Google to show only workspace accounts. This is a UX hint the user can bypass,
+      // so the server still enforces the domain on every request.
+      hd: ALLOWED_DOMAIN,
+      prompt: 'select_account',
+    });
 
-    window.location.href = googleAuthUrl;
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,27 +151,25 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen bg-slate-950 flex items-center justify-center p-4 overflow-hidden font-sans select-none">
-      
+
       {/* Language Picker */}
       <div className="absolute top-4 right-4 z-50">
         <div className="flex bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-lg p-1 shadow-lg">
           <button
             onClick={() => router.push(router.pathname, router.asPath, { locale: 'en' })}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-              router.locale === 'en'
-                ? 'bg-blue-600/80 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${router.locale === 'en'
+              ? 'bg-blue-600/80 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
           >
             EN
           </button>
           <button
             onClick={() => router.push(router.pathname, router.asPath, { locale: 'ja' })}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-              router.locale === 'ja'
-                ? 'bg-blue-600/80 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${router.locale === 'ja'
+              ? 'bg-blue-600/80 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
           >
             JA
           </button>
@@ -336,6 +355,10 @@ export default function LoginPage() {
             </svg>
             <span>{t('login.googleSignin')}</span>
           </button>
+
+          {/* <p className="text-center text-xs text-slate-500 pt-1">
+            {t('login.domainHint', { domain: ALLOWED_DOMAIN })}
+          </p> */}
         </form>
       </div>
 

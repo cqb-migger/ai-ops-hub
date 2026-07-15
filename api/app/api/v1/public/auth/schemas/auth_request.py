@@ -1,12 +1,11 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class LoginRequest(BaseModel):
     email: str
     password: str
-
-
-from typing import Optional
 
 
 class GoogleAuthRequest(BaseModel):

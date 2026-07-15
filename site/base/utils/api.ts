@@ -1,13 +1,22 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/v1';
 
-export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+export interface ApiFetchOptions extends RequestInit {
+  /**
+   * Skip the global "401 -> wipe session and bounce to /login" behaviour. Needed on the
+   * login page itself, where a 401 is a failed sign-in whose message must stay on screen.
+   */
+  skipAuthRedirect?: boolean;
+}
+
+export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
+  const { skipAuthRedirect, ...fetchOptions } = options;
   
   let headers = {
     ...options.headers,
   } as any;
 
-  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+  if (!(fetchOptions.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
 
@@ -25,11 +34,11 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   }
 
   const response = await fetch(url, {
-    ...options,
+    ...fetchOptions,
     headers,
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 && !skipAuthRedirect) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth-storage');
       window.location.href = '/login';

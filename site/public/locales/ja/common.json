@@ -24,7 +24,11 @@
     "secureLogin": "エンタープライズSSOで安全にログイン",
     "orContinueWith": "または以下で続ける",
     "success": "ログインに成功しました",
-    "failed": "ログインに失敗しました"
+    "failed": "ログインに失敗しました",
+    "domainHint": "@{{domain}} のアカウントのみサインインできます",
+    "googleFailed": "Google認証に失敗しました",
+    "googleCancelled": "Googleでのサインインがキャンセルされました",
+    "googleNotConfigured": "Googleログインが設定されていません。管理者にお問い合わせください。"
   },
   "footer": {
     "copyright": "© 2026 AI Ops Hub. 全著作権所有。",
