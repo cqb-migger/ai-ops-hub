@@ -236,7 +236,8 @@ export default function ComplianceHubView() {
 
         {/* Collapsible Content */}
         {isFlowExpanded && (
-          <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 overflow-x-auto md:overflow-x-visible min-h-[220px]">
+          <div className="w-full mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 overflow-x-auto min-h-[220px]">
+            <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full md:w-max md:min-w-full px-[16px] py-[24px]">
             {stepsLoading ? (
               <div className="py-[32px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
                 {t('common.loading')}
@@ -272,7 +273,7 @@ export default function ComplianceHubView() {
                       />
                     </div>
                     {index < steps.length - 1 && (
-                      <div className="flex-1 w-full md:w-auto md:mt-[4px] flex items-center justify-center">
+                      <div className="flex-1 w-full md:w-auto md:min-w-[48px] md:mt-[4px] flex items-center justify-center">
                         <StepConnector
                           onClick={() => handleAddStepAt(index + 1)}
                           disabled={steps.length >= 6}
@@ -283,6 +284,7 @@ export default function ComplianceHubView() {
                 ))}
               </>
             )}
+            </div>
           </div>
         )}
       </section>
