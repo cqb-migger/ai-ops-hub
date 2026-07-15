@@ -36,13 +36,12 @@ async def seed_users_async():
     typer.echo("Seeding users...")
     users_data = get_json_data('users.json')
     async with AsyncSessionLocal() as session:
-        for idx, u in enumerate(users_data, start=1):
+        for u in users_data:
             res = await session.execute(select(User).where(User.email == u['email']))
             if res.scalars().first():
                 continue
-                
+
             db_user = User(
-                id=idx,
                 email=u['email'],
                 password=get_password_hash("password123"),  # Default password
                 name=u['name'],
@@ -55,41 +54,49 @@ async def seed_users_async():
         await session.commit()
     typer.echo("Users seeded successfully!")
 
+CATEGORY_SEED = [
+    {"slug": "creative", "name": "クリエイティブハブ", "order": 1},
+    {"slug": "compliance", "name": "コンプライアンスフロー", "order": 2},
+    {"slug": "data", "name": "データハブ", "order": 3},
+]
+
 async def seed_categories_async(session):
+    """Seed categories, returning {slug: id} for whatever ids Postgres assigned."""
     typer.echo("Seeding categories...")
-    categories = [
-        {"id": 1, "name": "クリエイティブハブ", "order": 1},
-        {"id": 2, "name": "コンプライアンスフロー", "order": 2},
-        {"id": 3, "name": "データハブ", "order": 3}
-    ]
-    for cat in categories:
-        res = await session.execute(select(Category).where(Category.id == cat["id"]))
-        if not res.scalars().first():
-            db_cat = Category(id=cat["id"], name=cat["name"], order=cat["order"])
+    slug_to_id = {}
+    for cat in CATEGORY_SEED:
+        res = await session.execute(select(Category).where(Category.name == cat["name"]))
+        db_cat = res.scalars().first()
+        if db_cat is None:
+            db_cat = Category(name=cat["name"], order=cat["order"])
             session.add(db_cat)
-    await session.flush()
+            await session.flush()
+        slug_to_id[cat["slug"]] = db_cat.id
+    return slug_to_id
 
 async def seed_steps_async():
     typer.echo("Seeding steps...")
     steps_data = get_json_data('steps.json')
     step_mapping = {}
     async with AsyncSessionLocal() as session:
-        for idx, s in enumerate(steps_data, start=1):
+        for s in steps_data:
             res = await session.execute(select(Step).where(Step.order == s['order']))
             existing = res.scalars().first()
             if existing:
                 step_mapping[s['id']] = existing.id
                 continue
-                
+
             db_step = Step(
-                id=idx,
                 order=s['order'],
                 icon=s.get('icon'),
                 title=s['title'],
                 description=s.get('description')
             )
             session.add(db_step)
-            step_mapping[s['id']] = idx
+            # flush() makes Postgres assign the id, so the mapping uses the real value
+            # rather than assuming it matches the loop counter.
+            await session.flush()
+            step_mapping[s['id']] = db_step.id
         await session.commit()
     typer.echo("Steps seeded successfully!")
     return step_mapping
@@ -100,28 +107,25 @@ async def seed_tools_async(step_mapping=None):
         step_mapping = {}
     
     tools_data = get_json_data('tools.json')
-    category_slug_map = {
-        "creative": 1,
-        "compliance": 2,
-        "data": 3
-    }
 
     async with AsyncSessionLocal() as session:
-        await seed_categories_async(session)
-        
+        category_slug_map = await seed_categories_async(session)
+
+        # Resolve the compliance step by its order instead of assuming it landed on id 1.
+        compliance_step_id = step_mapping.get(1)
+        if compliance_step_id is None:
+            res = await session.execute(select(Step).order_by(Step.order).limit(1))
+            first_step = res.scalars().first()
+            compliance_step_id = first_step.id if first_step else None
+
         for idx, t in enumerate(tools_data, start=1):
             res = await session.execute(select(Tool).where(Tool.name == t['name']))
             if res.scalars().first():
                 continue
 
-            # Determine compliance step ID if any
-            assigned_step_id = None
-            if "compliance" in t.get("category", []):
-                # Map to first step or randomly
-                assigned_step_id = 1
+            assigned_step_id = compliance_step_id if "compliance" in t.get("category", []) else None
 
             db_tool = Tool(
-                id=idx,
                 name=t['name'],
                 description=t.get('description'),
                 icon=t.get('icon'),
