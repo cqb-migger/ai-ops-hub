@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { Tool } from '../../constants/tools';
@@ -28,6 +28,18 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(!!tool.is_favorite);
   const { t } = useTranslation('common');
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    const check = () => setIsTruncated(el.scrollWidth > el.clientWidth);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [tool.name]);
 
   useEffect(() => {
     setIsFavorite(!!tool.is_favorite);
@@ -86,9 +98,20 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
                 tool.icon || '🔧'
               )}
             </div>
-            <h3 className="text-[15px] font-bold leading-[22px] text-[#0f295a] dark:text-light tracking-[-0.3px] font-base truncate">
-              {tool.name}
-            </h3>
+            <div className="relative min-w-0 group/title">
+              <h3
+                ref={titleRef}
+                className="text-[15px] font-bold leading-[22px] text-[#0f295a] dark:text-light tracking-[-0.3px] font-base truncate"
+              >
+                {tool.name}
+              </h3>
+              {isTruncated && (
+                <div className="absolute bottom-full left-0 mb-[6px] hidden group-hover/title:block w-max max-w-[240px] p-[8px_10px] bg-[#171a1f] dark:bg-midnight-900 text-white dark:text-light text-[12px] leading-[17px] rounded-[8px] shadow-xl z-30 font-normal border border-gray-700 dark:border-midnight-800 break-words pointer-events-none whitespace-normal">
+                  <div className="line-clamp-2">{tool.name}</div>
+                  <div className="absolute top-full left-[12px] border-[6px] border-transparent border-t-[#171a1f] dark:border-t-midnight-900" />
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-[6px]">
             <button
