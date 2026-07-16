@@ -568,6 +568,36 @@ export default function CreateToolForm() {
     setLoginIds(loginIds.filter((_, idx) => idx !== index));
   };
 
+  useEffect(() => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      let hasChanges = false;
+
+      // Clear existing loginId errors
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith('loginId_')) {
+          delete newErrors[key];
+          hasChanges = true;
+        }
+      });
+
+      const seen = new Set<string>();
+      loginIds.forEach((id, index) => {
+        const trimmedId = id.trim();
+        if (trimmedId) {
+          if (seen.has(trimmedId)) {
+            newErrors[`loginId_${index}`] = t('validation.duplicateLoginId');
+            hasChanges = true;
+          } else {
+            seen.add(trimmedId);
+          }
+        }
+      });
+
+      return hasChanges ? newErrors : prev;
+    });
+  }, [loginIds, t]);
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     let firstErrorKey = '';
@@ -594,6 +624,20 @@ export default function CreateToolForm() {
       newErrors.roles = t('validation.roleRequired');
       setErrorKey('roles');
     }
+
+    const seenLoginIds = new Set<string>();
+    loginIds.forEach((id, index) => {
+      const trimmedId = id.trim();
+      if (trimmedId) {
+        if (seenLoginIds.has(trimmedId)) {
+          const key = `loginId_${index}`;
+          newErrors[key] = t('validation.duplicateLoginId');
+          setErrorKey(key);
+        } else {
+          seenLoginIds.add(trimmedId);
+        }
+      }
+    });
 
     prompts.forEach((p) => {
       if (!p.name.trim()) {
@@ -656,6 +700,11 @@ export default function CreateToolForm() {
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (firstErrorKey === 'roles') {
           const el = document.getElementById('roles-container');
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey.startsWith('loginId_')) {
+          const idx = firstErrorKey.replace('loginId_', '');
+          const el = document.getElementById(`login-id-${idx}`);
+          el?.focus();
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (firstErrorKey.startsWith('prompt_name_')) {
           const promptId = firstErrorKey.replace('prompt_name_', '');
@@ -761,7 +810,7 @@ export default function CreateToolForm() {
 
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
-        <h2 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('manageTools.add')}
         </h2>
         <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400">
@@ -774,7 +823,7 @@ export default function CreateToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <SettingsIcon />
-          <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">{t('form.basicInfo')}</h3>
+          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">{t('form.basicInfo')}</h3>
         </div>
 
         {/* Form Fields */}
@@ -953,23 +1002,36 @@ export default function CreateToolForm() {
 
             <div className="flex flex-col gap-[8px]">
               {loginIds.map((id, index) => (
-                <div key={index} className="flex items-center gap-[12px]">
-                  <input
-                    type="text"
-                    value={id}
-                    onChange={(e) => handleUpdateLoginId(index, e.target.value)}
-                    placeholder={t('form.loginIdPlaceholder') as string}
-                    className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6]"
-                  />
-                  {loginIds.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveLoginId(index)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
+                <div key={index} className="flex flex-col gap-[4px]">
+                  <div className="flex items-center gap-[12px]">
+                    <input
+                      id={`login-id-${index}`}
+                      type="text"
+                      value={id}
+                      onChange={(e) => {
+                        handleUpdateLoginId(index, e.target.value);
+                        if (errors[`loginId_${index}`]) {
+                          setErrors((prev) => ({ ...prev, [`loginId_${index}`]: '' }));
+                        }
+                      }}
+                      placeholder={t('form.loginIdPlaceholder') as string}
+                      className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
+                        errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                      } rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light`}
+                    />
+                    {loginIds.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLoginId(index)}
+                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200 shrink-0"
+                        title={t('common.delete') as string}
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
+                  </div>
+                  {errors[`loginId_${index}`] && (
+                    <p className="text-[12px] text-red-500 font-semibold">{errors[`loginId_${index}`]}</p>
                   )}
                 </div>
               ))}
@@ -1102,7 +1164,7 @@ export default function CreateToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <ServerIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('mcp.title')}
             </h3>
           </div>
@@ -1448,7 +1510,7 @@ export default function CreateToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <MessageSquareIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('prompt.title')}
             </h3>
           </div>
@@ -1626,7 +1688,7 @@ export default function CreateToolForm() {
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <BookIcon />
-            <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('guide.title')}
             </h3>
           </div>
@@ -1752,7 +1814,7 @@ export default function CreateToolForm() {
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <FileTextIcon />
-          <h3 className="font-['Plus_Jakarta_Sans'] font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light">
+          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
             {t('form.supplementary')}
           </h3>
         </div>

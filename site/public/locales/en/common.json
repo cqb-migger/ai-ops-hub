@@ -242,7 +242,8 @@
     "urlTooLong": "Redirect URL must be 500 characters or less",
     "invalidMcpUrl": "MCP URL must start with 'http://' or 'https://' (min 10 characters)",
     "mcpUrlTooLong": "MCP URL must be 2048 characters or less",
-    "checkInputs": "Please verify your inputs"
+    "checkInputs": "Please verify your inputs",
+    "duplicateLoginId": "Duplicate Login ID"
   },
   "toast": {
     "fileUploaded": "File uploaded successfully",

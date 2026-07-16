@@ -184,7 +184,7 @@ export default function ComplianceHubView() {
       {/* Category Pill Badge & Header title */}
       <div className="flex flex-col items-start gap-[12px]">
         {/* Title & description */}
-        <h2 className="text-[36px] font-extrabold leading-[40px] text-[#171a1f] dark:text-light tracking-[-0.9px] font-base">
+        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('nav.complianceHub')}
         </h2>
         <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
@@ -200,7 +200,7 @@ export default function ComplianceHubView() {
           className="flex justify-between items-center cursor-pointer select-none"
         >
           <div className="flex flex-col gap-[4px]">
-            <h3 className="text-[20px] sm:text-[22px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px]">
+            <h3 className="text-[20px] sm:text-[22px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[-0.5px] font-base">
               {t('compliance.flowTitle')}
             </h3>
             <p className="text-[13px] sm:text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
@@ -238,7 +238,8 @@ export default function ComplianceHubView() {
 
         {/* Collapsible Content */}
         {isFlowExpanded && (
-          <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full px-[16px] py-[24px] mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 overflow-x-auto md:overflow-x-visible min-h-[220px]">
+          <div className="w-full mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 overflow-x-auto min-h-[220px]">
+            <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full md:w-max md:min-w-full px-[16px] py-[24px]">
             {stepsLoading ? (
               <div className="py-[32px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
                 {t('common.loading')}
@@ -274,7 +275,7 @@ export default function ComplianceHubView() {
                       />
                     </div>
                     {index < steps.length - 1 && (
-                      <div className="flex-1 w-full md:w-auto md:mt-[4px] flex items-center justify-center">
+                      <div className="flex-1 w-full md:w-auto md:min-w-[48px] md:mt-[4px] flex items-center justify-center">
                         <StepConnector
                           onClick={() => handleAddStepAt(index + 1)}
                           disabled={steps.length >= 6}
@@ -285,6 +286,7 @@ export default function ComplianceHubView() {
                 ))}
               </>
             )}
+            </div>
           </div>
         )}
       </section>
@@ -293,7 +295,7 @@ export default function ComplianceHubView() {
       <section className="flex flex-col gap-[28px]">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px]">
           <div>
-            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px]">
+            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px] font-base">
               {t('compliance.toolsTitle')}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">

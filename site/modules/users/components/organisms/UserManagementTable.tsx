@@ -135,7 +135,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-[10px] px-[24px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900/50">
+        <div className="flex items-center justify-between px-[24px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900/50">
           <button
             type="button"
             onClick={onClose}
@@ -328,6 +328,7 @@ export default function UserManagementTable() {
               onPageChange={setCurrentPage}
               totalItems={filteredUsers.length}
               itemsPerPage={ITEMS_PER_PAGE}
+              hideItemCount={true}
               className="mt-0"
             />
           </div>
