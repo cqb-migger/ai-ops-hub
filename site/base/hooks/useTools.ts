@@ -13,6 +13,11 @@ interface UseToolsOptions {
   sort?: string;
   limit?: number;
   skip?: number;
+  /**
+   * Set false to skip the list fetch. For screens that only need the mutation helpers
+   * (createTool / updateTool) and never render `tools`, fetching the list is pure waste.
+   */
+  enabled?: boolean;
 }
 
 interface ToolsResponse {
@@ -70,12 +75,12 @@ function mapApiTool(t: any): Tool {
 }
 
 export function useTools(options: UseToolsOptions = {}) {
+  const { hub, category, categoryId, search, visibility, role, stepId, sort, limit = 20, skip = 0, enabled = true } = options;
+
   const [tools, setTools] = useState<Tool[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(enabled);
   const [error, setError] = useState<Error | null>(null);
-
-  const { hub, category, categoryId, search, visibility, role, stepId, sort, limit = 20, skip = 0 } = options;
 
   const fetchTools = useCallback(async () => {
     setLoading(true);
@@ -107,8 +112,10 @@ export function useTools(options: UseToolsOptions = {}) {
   }, [hub, category, categoryId, search, visibility, role, stepId, sort, limit, skip]);
 
   useEffect(() => {
-    fetchTools();
-  }, [fetchTools]);
+    if (enabled) {
+      fetchTools();
+    }
+  }, [fetchTools, enabled]);
 
   const createTool = async (newTool: Partial<Tool>) => {
     const body = buildToolRequestBody(newTool);

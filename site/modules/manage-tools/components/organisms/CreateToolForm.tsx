@@ -9,6 +9,7 @@ import { useTools } from '../../../../base/hooks/useTools';
 import { useCategories } from '../../../../base/hooks/useCategories';
 import { useSteps } from '../../../../base/hooks/useSteps';
 import { ROLE_OPTIONS } from '../../constants/roles';
+import { withDuplicateLoginIdErrors } from '../../constants/loginIds';
 
 // SVG Icons
 function SettingsIcon() {
@@ -262,7 +263,8 @@ const isValidUrl = (url: string): boolean => {
 
 export default function CreateToolForm() {
   const router = useRouter();
-  const { createTool } = useTools();
+  // enabled: false — this screen only needs createTool; it never renders the tool list.
+  const { createTool } = useTools({ enabled: false });
   const { categories: apiCategories, loading: categoriesLoading } = useCategories();
   const { t } = useTranslation('common');
 
@@ -554,50 +556,27 @@ export default function CreateToolForm() {
     }
   };
 
+  /** Applies the new list and re-validates duplicates against it in one go. */
+  const applyLoginIds = (updated: string[]) => {
+    setLoginIds(updated);
+    setErrors((prev) => withDuplicateLoginIdErrors(prev, updated, t('validation.duplicateLoginId')));
+  };
+
   const handleAddLoginId = () => {
-    setLoginIds([...loginIds, '']);
+    applyLoginIds([...loginIds, '']);
   };
 
   const handleUpdateLoginId = (index: number, val: string) => {
     const updated = [...loginIds];
     updated[index] = val;
-    setLoginIds(updated);
+    applyLoginIds(updated);
   };
 
   const handleRemoveLoginId = (index: number) => {
-    setLoginIds(loginIds.filter((_, idx) => idx !== index));
+    applyLoginIds(loginIds.filter((_, idx) => idx !== index));
   };
 
-  useEffect(() => {
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      let hasChanges = false;
-
-      // Clear existing loginId errors
-      Object.keys(newErrors).forEach(key => {
-        if (key.startsWith('loginId_')) {
-          delete newErrors[key];
-          hasChanges = true;
-        }
-      });
-
-      const seen = new Set<string>();
-      loginIds.forEach((id, index) => {
-        const trimmedId = id.trim();
-        if (trimmedId) {
-          if (seen.has(trimmedId)) {
-            newErrors[`loginId_${index}`] = t('validation.duplicateLoginId');
-            hasChanges = true;
-          } else {
-            seen.add(trimmedId);
-          }
-        }
-      });
-
-      return hasChanges ? newErrors : prev;
-    });
-  }, [loginIds, t]);
-
+  
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     let firstErrorKey = '';
@@ -1008,12 +987,7 @@ export default function CreateToolForm() {
                       id={`login-id-${index}`}
                       type="text"
                       value={id}
-                      onChange={(e) => {
-                        handleUpdateLoginId(index, e.target.value);
-                        if (errors[`loginId_${index}`]) {
-                          setErrors((prev) => ({ ...prev, [`loginId_${index}`]: '' }));
-                        }
-                      }}
+                      onChange={(e) => handleUpdateLoginId(index, e.target.value)}
                       placeholder={t('form.loginIdPlaceholder') as string}
                       className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
                         errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
