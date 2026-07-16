@@ -83,3 +83,17 @@ async def get_current_user(token_data: TokenData = Depends(jwt_auth), db: AsyncS
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
 
     return user
+
+
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency for endpoints only administrators may call.
+
+    get_current_user proves who you are, not what you may do. Anything that grants roles or
+    removes accounts needs this on top, otherwise any signed-in user can promote themselves.
+    """
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='This action requires administrator privileges.',
+        )
+    return current_user
