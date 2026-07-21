@@ -64,7 +64,7 @@ export default function SortDropdown({ selectedSort, onSortChange, width = 200 }
   }
 
   return (
-    <div ref={ref} className="relative" style={{ flex: `0 0 ${width}px`, width }}>
+    <div ref={ref} className="relative w-full sm:w-[var(--dd-w)] sm:flex-none" style={{ '--dd-w': `${width}px` } as React.CSSProperties}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

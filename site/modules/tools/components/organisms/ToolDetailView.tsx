@@ -207,7 +207,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
       {/* Title box */}
       {!hideHeader && (
         <div className="flex items-start justify-between gap-[16px] dark:border-midnight-800">
-          <div className="flex items-start gap-[16px]">
+          <div className="flex items-start gap-[16px] min-w-0">
             {/* Avatar */}
             <div className="relative flex-shrink-0 w-[64px] h-[64px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[32px] select-none">
               {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
@@ -224,7 +224,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
             {/* Text */}
             <div className="flex flex-col gap-[8px] min-w-0">
               <div className="flex items-center gap-[12px] flex-wrap">
-                <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
+                <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
                   {tool.name}
                 </h2>
               </div>
@@ -238,7 +238,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           {user?.role === 'admin' && (
             <button
               onClick={() => router.push(`/manage-tools/edit/${tool.id}`)}
-              className="flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200"
+              className="flex-shrink-0 flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200"
             >
               <PenIcon />
               <span>{t('common.edit')}</span>

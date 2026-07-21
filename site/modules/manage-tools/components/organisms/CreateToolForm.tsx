@@ -989,7 +989,7 @@ export default function CreateToolForm() {
                       value={id}
                       onChange={(e) => handleUpdateLoginId(index, e.target.value)}
                       placeholder={t('form.loginIdPlaceholder') as string}
-                      className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
+                      className={`flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
                         errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
                       } rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light`}
                     />
@@ -1030,12 +1030,12 @@ export default function CreateToolForm() {
                   )}
                 </div>
                 {/* URL Input & Button */}
-                <div className="flex gap-[8px] items-center flex-1">
+                <div className="flex gap-[8px] items-center flex-1 min-w-0">
                   <input
                     type="text"
                     onChange={(e) => setIconUrlInput(e.target.value)}
                     placeholder="https://example.com"
-                    className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                   />
                   <button
                     type="button"
@@ -1270,14 +1270,14 @@ export default function CreateToolForm() {
                       value={env.key}
                       onChange={(e) => handleUpdateMcpEnv(idx, 'key', e.target.value)}
                       placeholder={t('mcp.key') as string}
-                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={env.value}
                       onChange={(e) => handleUpdateMcpEnv(idx, 'value', e.target.value)}
                       placeholder={t('mcp.value') as string}
-                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
@@ -1402,14 +1402,14 @@ export default function CreateToolForm() {
                       value={header.key}
                       onChange={(e) => handleUpdateMcpHeader(idx, 'key', e.target.value)}
                       placeholder={t('mcp.key') as string}
-                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={header.value}
                       onChange={(e) => handleUpdateMcpHeader(idx, 'value', e.target.value)}
                       placeholder={t('mcp.value') as string}
-                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
@@ -1445,14 +1445,14 @@ export default function CreateToolForm() {
                       value={hEnv.key}
                       onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'key', e.target.value)}
                       placeholder={t('mcp.key') as string}
-                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={hEnv.value}
                       onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'value', e.target.value)}
                       placeholder={t('mcp.value') as string}
-                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"

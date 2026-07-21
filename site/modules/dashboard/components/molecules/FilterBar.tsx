@@ -74,9 +74,9 @@ export default function FilterBar({
   const actualPlaceholder = (placeholder === 'ツール名、キーワードで検索...' ? t('dashboard.searchPlaceholder', 'ツール名、キーワードで検索...') : placeholder) as string;
 
   return (
-    <div className="w-full h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] px-[16px] flex items-center gap-[12px]">
+    <div className="w-full sm:h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] p-[16px] sm:py-0 flex flex-col sm:flex-row sm:items-center gap-[12px]">
       {/* Search Input */}
-      <div className="relative flex-1 h-[40px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] flex items-center gap-[8px]">
+      <div className="relative w-full sm:flex-1 h-[40px] bg-[#fafafb] dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] px-[12px] flex items-center gap-[8px]">
         <SearchIcon />
         <input
           type="text"

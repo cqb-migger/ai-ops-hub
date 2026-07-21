@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import routes from '@base/configs/routers';
 import useMenuStore from '@base/stores/useMenuStore';
 import useAuthStore from '@base/stores/useAuthStore';
+import { useIsDesktop } from '@base/hooks/useIsDesktop';
 import { useTranslation } from 'next-i18next';
 
 // Icons
@@ -142,10 +143,27 @@ export default function Sidebar() {
     state.isSidebarCollapsed,
     state.setIsSidebarCollapsed,
   ]);
+  const [isMobileMenuActive, setIsMobileMenuActive] = useMenuStore((state) => [
+    state.isMobileMenuActive,
+    state.setIsMobileMenuActive,
+  ]);
+
+  // On mobile the sidebar is an off-canvas drawer; close it after navigating so the
+  // page underneath is visible again.
+  React.useEffect(() => {
+    const close = () => setIsMobileMenuActive(false);
+    router.events.on('routeChangeComplete', close);
+    return () => router.events.off('routeChangeComplete', close);
+  }, [router.events, setIsMobileMenuActive]);
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const isDesktop = useIsDesktop();
   const { t } = useTranslation('common');
+
+  // The collapse toggle is desktop-only. On mobile the drawer is always full width, so its
+  // content must render expanded regardless of the stored collapse preference.
+  const collapsed = isDesktop && isSidebarCollapsed;
 
   const fromPath = router.query.from as string;
   const isToolDetail = router.pathname.startsWith('/tools/');
@@ -220,13 +238,23 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside
-      className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col justify-between bg-[#f1f4fe] dark:bg-midnight-950 border-r border-[#dee1e6] dark:border-midnight-800 transition-all duration-300 ${isSidebarCollapsed ? 'w-[60px]' : 'w-[230px]'
-        }`}
-    >
+    <>
+      {/* Mobile backdrop — tap to close the drawer */}
+      {isMobileMenuActive && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] lg:hidden"
+          onClick={() => setIsMobileMenuActive(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`fixed left-0 top-0 bottom-0 z-50 flex flex-col justify-between bg-[#f1f4fe] dark:bg-midnight-950 border-r border-[#dee1e6] dark:border-midnight-800 transition-transform lg:transition-all duration-300 w-[230px] ${isMobileMenuActive ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 ${isSidebarCollapsed ? 'lg:w-[60px]' : 'lg:w-[230px]'
+          }`}
+      >
       {/* Top Brand Logo & Toggle Button */}
       <div>
-        {isSidebarCollapsed ? (
+        {collapsed ? (
           <div className="flex items-center justify-center h-[64px] border-b border-[#dee1e6] dark:border-midnight-800">
             <button
               onClick={() => setIsSidebarCollapsed(false)}
@@ -248,7 +276,7 @@ export default function Sidebar() {
             </Link>
             <button
               onClick={() => setIsSidebarCollapsed(true)}
-              className="flex-shrink-0 flex items-center justify-center w-[24px] h-[24px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200 cursor-pointer"
+              className="flex-shrink-0 hidden lg:flex items-center justify-center w-[24px] h-[24px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200 cursor-pointer"
               title="Collapse Sidebar"
             >
               <PanelLeftClose />
@@ -260,7 +288,7 @@ export default function Sidebar() {
         <div className="flex flex-col gap-[24px] p-[12px]">
           {/* Navigation Section */}
           <div className="flex flex-col gap-[8px]">
-            {!isSidebarCollapsed && (
+            {!collapsed && (
               <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px] mt-[12px]">
                 {t('nav.navigation')}
               </span>
@@ -273,7 +301,7 @@ export default function Sidebar() {
                   label={item.label}
                   icon={item.icon}
                   active={item.active}
-                  collapsed={isSidebarCollapsed}
+                  collapsed={collapsed}
                 />
               ))}
             </div>
@@ -282,7 +310,7 @@ export default function Sidebar() {
           {/* Administration Section */}
           {user?.role === 'admin' && (
             <div className="flex flex-col gap-[8px]">
-              {!isSidebarCollapsed && (
+              {!collapsed && (
                 <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px]">
                   {t('nav.administration')}
                 </span>
@@ -295,7 +323,7 @@ export default function Sidebar() {
                     label={item.label}
                     icon={item.icon}
                     active={item.active}
-                    collapsed={isSidebarCollapsed}
+                    collapsed={collapsed}
                   />
                 ))}
               </div>
@@ -308,7 +336,7 @@ export default function Sidebar() {
       <div ref={dropdownRef} className="relative border-t border-[#dee1e6] dark:border-midnight-800 flex flex-col p-[12px]">
         {/* Dropdown Menu */}
         {showDropdown && (
-          <div className={`absolute bottom-full mb-[8px] z-50 bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-lg py-[4px] font-base ${isSidebarCollapsed ? 'left-[12px] w-[160px]' : 'left-[12px] right-[12px]'
+          <div className={`absolute bottom-full mb-[8px] z-50 bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-lg py-[4px] font-base ${collapsed ? 'left-[12px] w-[160px]' : 'left-[12px] right-[12px]'
             }`}>
             <div className="px-[12px] py-[6px] border-b border-[#dee1e6] dark:border-midnight-800 min-w-0">
               <span className="block text-[12px] font-bold text-[#171a1f] dark:text-light truncate">
@@ -366,7 +394,7 @@ export default function Sidebar() {
         {/* User Profile */}
         <div
           onClick={() => setShowDropdown(!showDropdown)}
-          className={`flex items-center gap-[12px] h-[48px] px-[4px] rounded-[8px] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none transition-colors ${isSidebarCollapsed ? 'justify-center' : 'justify-start'
+          className={`flex items-center gap-[12px] h-[48px] px-[4px] rounded-[8px] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none transition-colors ${collapsed ? 'justify-center' : 'justify-start'
             }`}
         >
           <div className="relative flex-shrink-0 flex items-center justify-center w-[32px] h-[32px] rounded-full overflow-hidden bg-[#fce4e7] dark:bg-[#4a2e35]">
@@ -374,7 +402,7 @@ export default function Sidebar() {
               {(user?.name || user?.email || 'AN').substring(0, 2).toUpperCase()}
             </div>
           </div>
-          {!isSidebarCollapsed && (
+          {!collapsed && (
             <div className="flex flex-col min-w-0">
               <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light truncate font-base leading-tight">
                 {user?.name || user?.email || 'Guest'}
@@ -386,6 +414,7 @@ export default function Sidebar() {
           )}
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
