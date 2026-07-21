@@ -593,6 +593,36 @@ export default function EditToolForm() {
     };
   }, [isCategoryOpen, isRoleOpen]);
 
+  useEffect(() => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      let hasChanges = false;
+
+      // Clear existing loginId errors
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith('loginId_')) {
+          delete newErrors[key];
+          hasChanges = true;
+        }
+      });
+
+      const seen = new Set<string>();
+      loginIds.forEach((id, index) => {
+        const trimmedId = id.trim();
+        if (trimmedId) {
+          if (seen.has(trimmedId)) {
+            newErrors[`loginId_${index}`] = t('validation.duplicateLoginId');
+            hasChanges = true;
+          } else {
+            seen.add(trimmedId);
+          }
+        }
+      });
+
+      return hasChanges ? newErrors : prev;
+    });
+  }, [loginIds, t]);
+
   if (toolLoading || (id && !tool)) {
     return (
       <div className="flex flex-col items-center justify-center p-[48px] text-center w-full">
@@ -694,6 +724,7 @@ export default function EditToolForm() {
     applyLoginIds(loginIds.filter((_, idx) => idx !== index));
   };
 
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     let firstErrorKey = '';
@@ -750,7 +781,10 @@ export default function EditToolForm() {
 
     // Validate redirectUrl (URL)
     const trimmedUrl = redirectUrl.trim();
-    if (trimmedUrl) {
+    if (!trimmedUrl) {
+      newErrors.redirectUrl = t('validation.urlRequired', 'URLは必須です');
+      setErrorKey('redirectUrl');
+    } else {
       if (trimmedUrl.length < 10 || !isValidUrl(trimmedUrl)) {
         newErrors.redirectUrl = t('validation.invalidUrl');
         setErrorKey('redirectUrl');
@@ -995,7 +1029,7 @@ export default function EditToolForm() {
 
           {/* URL Row */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.redirectUrl')}</label>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.redirectUrl')}<span className="text-[#f25a5a]">*</span></label>
             <input
               id="redirect-url-input"
               type="text"
@@ -1129,7 +1163,7 @@ export default function EditToolForm() {
                         handleUpdateLoginId(index, e.target.value);
                       }}
                       placeholder={t('form.loginIdPlaceholder') as string}
-                      className={`flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
+                      className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
                         errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
                       } rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light`}
                     />
@@ -1170,12 +1204,12 @@ export default function EditToolForm() {
                   )}
                 </div>
                 {/* URL Input & Button */}
-                <div className="flex gap-[8px] items-center flex-1 min-w-0">
+                <div className="flex gap-[8px] items-center flex-1">
                   <input
                     type="text"
                     onChange={(e) => setIconUrlInput(e.target.value)}
                     placeholder="https://example.com"
-                    className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                    className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                   />
                   <button
                     type="button"
@@ -1407,14 +1441,14 @@ export default function EditToolForm() {
                       value={env.key}
                       onChange={(e) => handleUpdateMcpEnv(idx, 'key', e.target.value)}
                       placeholder={t('mcp.key') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={env.value}
                       onChange={(e) => handleUpdateMcpEnv(idx, 'value', e.target.value)}
                       placeholder={t('mcp.value') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
@@ -1538,14 +1572,14 @@ export default function EditToolForm() {
                       value={header.key}
                       onChange={(e) => handleUpdateMcpHeader(idx, 'key', e.target.value)}
                       placeholder={t('mcp.key') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={header.value}
                       onChange={(e) => handleUpdateMcpHeader(idx, 'value', e.target.value)}
                       placeholder={t('mcp.value') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
@@ -1581,14 +1615,14 @@ export default function EditToolForm() {
                       value={hEnv.key}
                       onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'key', e.target.value)}
                       placeholder={t('mcp.key') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <input
                       type="text"
                       value={hEnv.value}
                       onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'value', e.target.value)}
                       placeholder={t('mcp.value') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                      className="flex-1 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
                     />
                     <button
                       type="button"
@@ -1731,7 +1765,10 @@ export default function EditToolForm() {
 
                   {/* Categories Checkboxes */}
                   <div className="flex flex-col gap-[6px] flex-[2]">
-                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">{t('form.category')}</label>
+                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
+                      {t('form.category')}
+                      {prompt.isPublic !== false && <span className="text-[#f25a5a]">*</span>}
+                    </label>
                     <div className="flex flex-wrap items-center gap-[16px] min-h-[40px]">
                       {categoriesLoading ? (
                         <span className="text-[12px] text-gray-400 dark:text-gray-500">{t('common.loading')}</span>

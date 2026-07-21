@@ -67,6 +67,7 @@
     "launch": "Open Tool",
     "favorite": "Favorite",
     "noTools": "No tools found matching the criteria.",
+    "noToolsAccount": "No tools are available for your account.",
     "clearFilter": "Clear Filters",
     "favRemoveTitle": "Remove from favorites",
     "favAddTitle": "Add to favorites",

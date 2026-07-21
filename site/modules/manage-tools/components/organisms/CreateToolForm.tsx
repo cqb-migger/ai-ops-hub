@@ -459,9 +459,7 @@ export default function CreateToolForm() {
   };
 
   // Supplementary states
-  const [adminMemo, setAdminMemo] = useState(
-    '2023/11: プロンプトV2に更新。営業部からのフィードバックを反映し、確度判定を追加。'
-  );
+  const [adminMemo, setAdminMemo] = useState('');
 
   // Refs
   const guideFileInputRef = useRef<HTMLInputElement>(null);
@@ -633,7 +631,10 @@ export default function CreateToolForm() {
 
     // Validate redirectUrl (URL)
     const trimmedUrl = redirectUrl.trim();
-    if (trimmedUrl) {
+    if (!trimmedUrl) {
+      newErrors.redirectUrl = t('validation.urlRequired', 'URLは必須です');
+      setErrorKey('redirectUrl');
+    } else {
       if (trimmedUrl.length < 10 || !isValidUrl(trimmedUrl)) {
         newErrors.redirectUrl = t('validation.invalidUrl');
         setErrorKey('redirectUrl');
@@ -856,7 +857,7 @@ export default function CreateToolForm() {
 
           {/* URL Row */}
           <div className="flex flex-col gap-[6px]">
-            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.redirectUrl')}</label>
+            <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.redirectUrl')}<span className="text-[#f25a5a]">*</span></label>
             <input
               id="redirect-url-input"
               type="text"
@@ -1597,7 +1598,10 @@ export default function CreateToolForm() {
 
                   {/* Categories Checkboxes */}
                   <div className="flex flex-col gap-[6px] flex-[2]">
-                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">{t('form.category')}</label>
+                    <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
+                      {t('form.category')}
+                      {prompt.isPublic !== false && <span className="text-[#f25a5a]">*</span>}
+                    </label>
                     <div className="flex flex-wrap items-center gap-[16px] min-h-[40px]">
                       {categoriesLoading ? (
                         <span className="text-[12px] text-gray-400 dark:text-gray-500">{t('common.loading')}</span>

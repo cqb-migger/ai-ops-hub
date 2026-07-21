@@ -171,7 +171,7 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-[12px] pt-[8px] border-t border-[#dee1e6] dark:border-midnight-800">
+          <div className="flex justify-between pt-[8px] border-t border-[#dee1e6] dark:border-midnight-800">
             <button
               type="button"
               onClick={onClose}

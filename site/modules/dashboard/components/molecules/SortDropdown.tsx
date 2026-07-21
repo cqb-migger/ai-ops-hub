@@ -83,23 +83,30 @@ export default function SortDropdown({ selectedSort, onSortChange, width = 200 }
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-[0_4px_16px_rgba(23,26,31,0.12)] py-[4px] overflow-hidden">
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-[0_4px_16px_rgba(23,26,31,0.12)] py-[4px]">
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => handleSelect(opt.value)}
-              className={`w-full flex items-center justify-between gap-[8px] px-[12px] py-[8px] text-[14px] text-left transition-colors whitespace-nowrap ${
+              className={`group/item relative w-full flex items-center justify-between gap-[8px] px-[12px] py-[8px] text-[14px] text-left transition-colors ${
                 selectedSort === opt.value
                   ? 'bg-[#eef0fd] dark:bg-[#2a3060] text-[#5570f6] dark:text-[#7c91eb] font-semibold'
                   : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
               }`}
             >
-              {t(opt.key)}
+              <span className="truncate flex-1 min-w-0">{t(opt.key)}</span>
               {selectedSort === opt.value && (
-                <span className="text-[#5570f6] dark:text-[#7c91eb]">
+                <span className="flex-shrink-0 text-[#5570f6] dark:text-[#7c91eb]">
                   <CheckIcon />
                 </span>
+              )}
+              {/* Custom Tooltip */}
+              {t(opt.key).length > 15 && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-[8px] hidden group-hover/item:block w-max max-w-[240px] p-[10px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-[60] text-left font-normal border border-[#dee1e6] dark:border-midnight-800 break-all pointer-events-none whitespace-normal">
+                  {t(opt.key)}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
+                </div>
               )}
             </button>
           ))}

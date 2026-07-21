@@ -380,7 +380,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
                   {t('common.name')}
                 </label>
-                <div className="text-[14px] text-[#171a1f] dark:text-light font-medium py-[4px]">
+                <div className="text-[14px] text-[#171a1f] dark:text-light py-[4px]">
                   {tool.mcp_name || ''}
                 </div>
               </div>
@@ -452,7 +452,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                       {tool.mcp_stdio_env && tool.mcp_stdio_env.length > 0 ? (
                         tool.mcp_stdio_env.map((env, idx) => (
                           <div key={idx} className="flex items-center gap-[12px]">
-                            <div className="flex-1 font-mono text-[14px] font-semibold text-[#171a1f] dark:text-light truncate pr-[4px]">
+                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
                               {env.key || '-'}
                             </div>
                             <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
@@ -530,7 +530,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                       {tool.mcp_http_headers && tool.mcp_http_headers.length > 0 ? (
                         tool.mcp_http_headers.map((h, idx) => (
                           <div key={idx} className="flex items-center gap-[12px]">
-                            <div className="flex-1 font-mono text-[14px] font-semibold text-[#171a1f] dark:text-light truncate pr-[4px]">
+                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
                               {h.key || '-'}
                             </div>
                             <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
@@ -555,7 +555,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                       {tool.mcp_http_headers_from_env && tool.mcp_http_headers_from_env.length > 0 ? (
                         tool.mcp_http_headers_from_env.map((h, idx) => (
                           <div key={idx} className="flex items-center gap-[12px]">
-                            <div className="flex-1 font-mono text-[14px] font-semibold text-[#171a1f] dark:text-light truncate pr-[4px]">
+                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
                               {h.key || '-'}
                             </div>
                             <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
@@ -710,15 +710,15 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 >
                   {/* Header row */}
                   <div className="flex items-center justify-between gap-[16px] flex-wrap">
-                    <div className="flex items-center gap-[12px]">
-                      <h4 className="text-[18px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+                    <div className="flex items-center gap-[12px] min-w-0 flex-1">
+                      <h4 className="text-[18px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base break-all">
                         {prompt.title}
                       </h4>
                     </div>
                     {/* Copy Button */}
                     <button
                       onClick={() => handleCopy(prompt.content, idx)}
-                      className="flex items-center gap-[8px] h-[36px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[14px] shadow-sm transition-colors duration-200"
+                      className="flex items-center justify-center gap-[8px] h-[36px] min-w-[180px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[14px] shadow-sm transition-colors duration-200"
                     >
                       {copiedIndex === idx ? <CheckIcon /> : <CopyIcon />}
                       <span>{copiedIndex === idx ? t('toolDetail.copied', 'コピーしました') : t('toolDetail.copyPrompt', 'プロンプトをコピー')}</span>
@@ -727,7 +727,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
                   {/* Content Box */}
                   <div className="bg-[#fafafb]/50 dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] p-[16px] max-h-[330px] overflow-y-auto">
-                    <pre className="text-[14px] leading-[23px] text-[#171a1f] dark:text-light font-mono whitespace-pre-wrap">
+                    <pre className="text-[14px] leading-[23px] text-[#171a1f] dark:text-light font-mono whitespace-pre-wrap break-all">
                       {prompt.content}
                     </pre>
                   </div>

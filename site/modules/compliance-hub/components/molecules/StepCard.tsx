@@ -86,9 +86,19 @@ export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = 
       </span>
 
       {/* Step Title */}
-      <span className="mt-[4px] text-[14px] font-bold text-[#171a1f] dark:text-light min-h-[20px]">
-        {step.title}
-      </span>
+      <div className="relative w-full group/title mt-[4px]">
+        <div className="text-[14px] font-bold text-[#171a1f] dark:text-light min-h-[20px] w-full truncate px-1">
+          {step.title}
+        </div>
+        
+        {/* Custom Tooltip */}
+        {step.title.length > 15 && (
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-[8px] hidden group-hover/title:block w-max max-w-[240px] p-[12px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-30 text-left font-normal border border-[#dee1e6] dark:border-midnight-800 break-all pointer-events-none">
+            {step.title}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
+          </div>
+        )}
+      </div>
 
       {/* Step Description */}
       <div className="relative w-full mt-[8px]">
