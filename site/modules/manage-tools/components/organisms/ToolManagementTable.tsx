@@ -93,7 +93,7 @@ export default function ToolManagementTable() {
 
   // Debounce the search input so we don't hit the API on every keystroke
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { useUsers, SSOUser } from '../../../../base/hooks/useUsers';
@@ -159,9 +159,11 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
 
 // ─── Main Table ───────────────────────────────────────────────────────────────
 
+const ITEMS_PER_PAGE = 10;
+
 export default function UserManagementTable() {
-  const { users, loading, updateUserRole } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
@@ -169,26 +171,25 @@ export default function UserManagementTable() {
   // Modal state
   const [editingUser, setEditingUser] = useState<SSOUser | null>(null);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedRole]);
+  // Debounce + trim search before sending to the API
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  const filteredUsers = useMemo(() =>
-    users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRole = selectedRole === '' || user.role === selectedRole;
-      return matchesSearch && matchesRole;
-    }),
-    [users, searchQuery, selectedRole]
-  );
+  // Reset to first page whenever the filters change
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, selectedRole]);
 
-  const ITEMS_PER_PAGE = 10;
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const currentPageSafe = Math.min(currentPage, Math.max(1, totalPages));
-  const paginatedUsers = useMemo(() => {
-    const startIdx = (currentPageSafe - 1) * ITEMS_PER_PAGE;
-    return filteredUsers.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-  }, [filteredUsers, currentPageSafe]);
+  const { users, total, loading, updateUserRole } = useUsers({
+    search: debouncedSearch || undefined,
+    role: selectedRole || undefined,
+    limit: ITEMS_PER_PAGE,
+    skip: (currentPage - 1) * ITEMS_PER_PAGE,
+  });
+
+  const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const currentPageSafe = Math.min(currentPage, totalPages);
+  const paginatedUsers = users;
 
   async function handleSaveRole(newRole: string) {
     if (!editingUser) return;
@@ -230,7 +231,7 @@ export default function UserManagementTable() {
       <div className="flex flex-col gap-[12px] w-full">
         <ItemCount
           currentPage={currentPageSafe}
-          totalItems={filteredUsers.length}
+          totalItems={total}
           itemsPerPage={ITEMS_PER_PAGE}
         />
 
@@ -255,7 +256,7 @@ export default function UserManagementTable() {
                       {t('common.loading')}
                     </td>
                   </tr>
-                ) : filteredUsers.length > 0 ? (
+                ) : paginatedUsers.length > 0 ? (
                   paginatedUsers.map((user, index) => (
                     <tr
                       key={user.id}
@@ -326,7 +327,7 @@ export default function UserManagementTable() {
               currentPage={currentPageSafe}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
-              totalItems={filteredUsers.length}
+              totalItems={total}
               itemsPerPage={ITEMS_PER_PAGE}
               hideItemCount={true}
               className="mt-0"

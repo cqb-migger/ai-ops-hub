@@ -85,7 +85,7 @@ export default function ComplianceHubView() {
 
   // Debounce the search input so we don't hit the API on every keystroke
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -291,7 +291,7 @@ export default function ComplianceHubView() {
                       onDragOver={(e) => handleDragOver(e, index)}
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[200px] md:w-[150px] md:max-w-none md:flex-shrink-0 ${draggedIndex === index ? 'opacity-40 scale-95' : ''
+                      className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[280px] md:flex-1 md:min-w-[180px] md:max-w-none md:flex-shrink-0 ${draggedIndex === index ? 'opacity-40 scale-95' : ''
                         } ${dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
                         }`}
                     >

@@ -12,7 +12,8 @@ from app.core.utils.s3 import upload_file_to_s3_or_local
 router = APIRouter(prefix='/upload', tags=['[Public] Upload'])
 
 UPLOAD_DIR = os.path.join("static", "uploads", "icons")
-MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB (icons)
+MAX_UPLOAD_FILE_SIZE = 20 * 1024 * 1024  # 20MB (guide/reference files)
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 
 
@@ -177,8 +178,13 @@ async def upload_file(file: UploadFile = File(...)):
     _, ext = os.path.splitext(file.filename or "")
     ext = ext.lower()
 
-    contents = await file.read()
+    contents = await file.read(MAX_UPLOAD_FILE_SIZE + 1)
     file_size = len(contents)
+    if file_size > MAX_UPLOAD_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail='File size exceeds the limit of 20MB'
+        )
 
     stored_name = f"{uuid.uuid4()}{ext}"
     s3_key = f"general/{stored_name}"

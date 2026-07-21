@@ -15,7 +15,7 @@ from app.core.utils.s3 import upload_file_to_s3_or_local
 router = APIRouter(tags=['[Private] Tool Guide Files'])
 
 GUIDE_UPLOAD_DIR = os.path.join('static', 'uploads', 'guides')
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
 ALLOWED_EXTENSIONS = {'.pdf', '.docx', '.xlsx', '.pptx', '.ppt', '.txt', '.md'}
 
 async def _get_tool_or_404(tool_id: int, db: AsyncSession) -> Tool:
@@ -47,7 +47,7 @@ async def upload_guide_file(
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail='File size exceeds the limit of 10MB'
+            detail='File size exceeds the limit of 20MB'
         )
 
     stored_name = f"{uuid.uuid4()}{ext}"

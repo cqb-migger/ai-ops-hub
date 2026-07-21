@@ -387,8 +387,8 @@ export default function CreateToolForm() {
       toast.error(t('validation.jpgPngPdfOnly'));
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('validation.fileSize10MB'));
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error(t('validation.fileSize20MB'));
       return;
     }
 
@@ -425,8 +425,8 @@ export default function CreateToolForm() {
     if (!files || files.length === 0) return;
     const file = files[0];
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error(t('validation.fileSize50MB'));
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error(t('validation.fileSize20MB'));
       return;
     }
 
@@ -627,12 +627,21 @@ export default function CreateToolForm() {
         newErrors[key] = t('validation.promptContentRequired');
         setErrorKey(key);
       }
+      // Public prompts must have at least one category (from Basic Information selection)
+      if (p.isPublic !== false) {
+        const selected = (p.categories || []).filter((c) => categories.includes(c));
+        if (selected.length === 0) {
+          const key = `prompt_category_${p.id}`;
+          newErrors[key] = t('validation.promptCategoryRequired');
+          setErrorKey(key);
+        }
+      }
     });
 
     // Validate redirectUrl (URL)
     const trimmedUrl = redirectUrl.trim();
     if (!trimmedUrl) {
-      newErrors.redirectUrl = t('validation.urlRequired', 'URLは必須です');
+      newErrors.redirectUrl = t('validation.urlRequired', '遷移先URLは必須です');
       setErrorKey('redirectUrl');
     } else {
       if (trimmedUrl.length < 10 || !isValidUrl(trimmedUrl)) {
@@ -695,6 +704,10 @@ export default function CreateToolForm() {
           const promptId = firstErrorKey.replace('prompt_content_', '');
           const el = document.getElementById(`prompt-content-${promptId}`);
           el?.focus();
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (firstErrorKey.startsWith('prompt_category_')) {
+          const promptId = firstErrorKey.replace('prompt_category_', '');
+          const el = document.getElementById(`prompt-category-${promptId}`);
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (firstErrorKey === 'stdioCommand') {
           const el = document.getElementById('stdio-command-input');
@@ -1094,7 +1107,7 @@ export default function CreateToolForm() {
                   <span className="font-normal text-[#565d6d] dark:text-gray-400">{t('form.orDragDrop')}</span>
                 </p>
                 <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
-                  {t('form.allFormats50MB')}
+                  {t('form.allFormats20MB')}
                 </p>
               </div>
               <input
@@ -1596,8 +1609,8 @@ export default function CreateToolForm() {
                     </div>
                   </div>
 
-                  {/* Categories Checkboxes */}
-                  <div className="flex flex-col gap-[6px] flex-[2]">
+                  {/* Categories Checkboxes — only categories chosen in Basic Information */}
+                  <div id={`prompt-category-${prompt.id}`} className="flex flex-col gap-[6px] flex-[2]">
                     <label className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400">
                       {t('form.category')}
                       {prompt.isPublic !== false && <span className="text-[#f25a5a]">*</span>}
@@ -1605,35 +1618,43 @@ export default function CreateToolForm() {
                     <div className="flex flex-wrap items-center gap-[16px] min-h-[40px]">
                       {categoriesLoading ? (
                         <span className="text-[12px] text-gray-400 dark:text-gray-500">{t('common.loading')}</span>
-                      ) : apiCategories.length === 0 ? (
-                        <span className="text-[12px] text-gray-400 dark:text-gray-500">
-                          {t('form.noCategories')}
+                      ) : categories.length === 0 ? (
+                        <span className="text-[12px] text-gray-400 dark:text-gray-500 italic">
+                          {t('prompt.selectBasicCategoryFirst', 'まず基本情報でカテゴリを選択してください')}
                         </span>
                       ) : (
-                        apiCategories.map((cat) => {
-                          const isChecked = (prompt.categories || []).includes(cat.name);
-                          return (
-                            <label key={cat.id} className="flex items-center gap-[8px] cursor-pointer text-[13px]">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {
-                                  const currentSelected = prompt.categories || [];
-                                  const nextSelected = isChecked
-                                    ? currentSelected.filter((c) => c !== cat.name)
-                                    : [...currentSelected, cat.name];
-                                  handleUpdatePrompt(prompt.id, 'categories', nextSelected);
-                                }}
-                                className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
-                              />
-                              <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
-                                {translateCategory(cat.name, t)}
-                              </span>
-                            </label>
-                          );
-                        })
+                        apiCategories
+                          .filter((cat) => categories.includes(cat.name))
+                          .map((cat) => {
+                            const isChecked = (prompt.categories || []).includes(cat.name);
+                            return (
+                              <label key={cat.id} className="flex items-center gap-[8px] cursor-pointer text-[13px]">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const currentSelected = prompt.categories || [];
+                                    const nextSelected = isChecked
+                                      ? currentSelected.filter((c) => c !== cat.name)
+                                      : [...currentSelected, cat.name];
+                                    handleUpdatePrompt(prompt.id, 'categories', nextSelected);
+                                    if (errors[`prompt_category_${prompt.id}`] && nextSelected.length > 0) {
+                                      setErrors((prev) => ({ ...prev, [`prompt_category_${prompt.id}`]: '' }));
+                                    }
+                                  }}
+                                  className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
+                                />
+                                <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
+                                  {translateCategory(cat.name, t)}
+                                </span>
+                              </label>
+                            );
+                          })
                       )}
                     </div>
+                    {errors[`prompt_category_${prompt.id}`] && (
+                      <p className="text-[11px] text-red-500 font-semibold">{errors[`prompt_category_${prompt.id}`]}</p>
+                    )}
                   </div>
                 </div>
 
@@ -1748,7 +1769,7 @@ export default function CreateToolForm() {
                   <span className="font-normal text-[#565d6d] dark:text-gray-400">{t('form.orDragDrop')}</span>
                 </p>
                 <p className="text-[12px] text-[#9095a1] dark:text-gray-500 mt-[2px]">
-                  {t('form.jpgPngPdf10MB')}
+                  {t('form.jpgPngPdf20MB')}
                 </p>
               </div>
               <input

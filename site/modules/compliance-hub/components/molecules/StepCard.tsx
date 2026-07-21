@@ -14,7 +14,7 @@ interface StepCardProps {
 export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = false }: StepCardProps) {
   const { t } = useTranslation('common');
   return (
-    <div className="group relative flex flex-col items-center text-center max-w-[200px] w-full select-none">
+    <div className="group relative flex flex-col items-center text-center w-full select-none">
       
       {/* Circle Icon and Buttons container */}
       <div className="relative">
@@ -102,35 +102,16 @@ export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = 
 
       {/* Step Description */}
       <div className="relative w-full mt-[8px]">
-        <p 
+        <p
           style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            wordBreak: 'break-all',
+            height: 'auto',
+            wordBreak: 'break-word',
+            whiteSpace: 'normal',
           }}
-          className="text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal pr-[12px]"
+          className="text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal"
         >
           {step.description}
         </p>
-
-        {/* Custom Ellipsis Trigger for Tooltip */}
-        {step.description.length > 25 && (
-          <div className="absolute bottom-0 right-0 bg-[#fafafb] dark:bg-[#151c2c] pl-[4px] flex items-center group/dots cursor-pointer select-none z-20">
-            {/* The Ellipsis span */}
-            <span className="text-[12px] font-bold text-[#565d6d] dark:text-gray-400 group-hover/dots:text-[#5570f6] dark:group-hover/dots:text-[#7c91eb] transition-colors leading-[17px]">
-              ...
-            </span>
-
-            {/* Tooltip popping up relative to the ellipsis */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-[8px] hidden group-hover/dots:block w-[240px] p-[12px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-30 text-left font-normal border border-[#dee1e6] dark:border-midnight-800 break-all pointer-events-none">
-              {step.description}
-              {/* Tooltip arrow pointing to the ellipsis */}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
