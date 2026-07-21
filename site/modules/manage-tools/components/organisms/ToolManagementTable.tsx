@@ -103,6 +103,8 @@ export default function ToolManagementTable() {
   }, [debouncedSearch, selectedCategory, selectedRole]);
 
   const { tools, total, loading, updateTool, deleteTool } = useTools({
+    admin: true,
+    visibility: 'all',
     search: debouncedSearch || undefined,
     categoryId: selectedCategoryId,
     role: selectedRole || undefined,

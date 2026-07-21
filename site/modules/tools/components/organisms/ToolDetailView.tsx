@@ -120,6 +120,7 @@ function ShieldAlertIcon() {
 export default function ToolDetailView({ tool, hideHeader = false, hideLaunchButton = false }: ToolDetailViewProps) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const { t } = useTranslation('common');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
@@ -161,6 +162,35 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
   const handleLaunchTool = () => {
     toast.success(t('toolDetail.launchSimulation', '外部ツールを起動します... (シミュレーション)'));
+  };
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const handleDownloadFile = async (fileId: number, originalName: string) => {
+    try {
+      const url = `${API_BASE}/tools/${tool.id}/guide-files/${fileId}/download${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        toast.error(t('toolDetail.downloadFailed', 'ファイルのダウンロードに失敗しました。'));
+        return;
+      }
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = originalName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      toast.error(t('toolDetail.downloadFailed', 'ファイルのダウンロードに失敗しました。'));
+    }
   };
 
   const details = tool.details || {
@@ -560,26 +590,26 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           </div>
 
           <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base">
-              <ReactMarkdown
-                components={{
-                  h1: ({ node, ...props }) => <h1 className="text-[22px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
-                  h2: ({ node, ...props }) => <h2 className="text-[18px] font-bold mt-3 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
-                  h3: ({ node, ...props }) => <h3 className="text-[16px] font-bold mt-3 mb-1" {...props} />,
-                  p: ({ node, ...props }) => <p className="my-[8px] leading-[24px]" {...props} />,
-                  ul: ({ node, ...props }) => <ul className="list-disc pl-[20px] my-[8px] space-y-[4px]" {...props} />,
-                  ol: ({ node, ...props }) => <ol className="list-decimal pl-[20px] my-[8px] space-y-[4px]" {...props} />,
-                  li: ({ node, ...props }) => <li className="leading-[24px]" {...props} />,
-                  strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
-                  em: ({ node, ...props }) => <em className="italic" {...props} />,
-                  blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#5570f6] pl-[12px] italic text-[#565d6d] dark:text-gray-400 my-[8px]" {...props} />,
-                  code: ({ node, ...props }) => <code className="bg-[#f0f0f0] dark:bg-midnight-800 rounded px-[4px] py-[1px] text-[13px] font-mono" {...props} />,
-                  pre: ({ node, ...props }) => <pre className="bg-[#f0f0f0] dark:bg-midnight-800 rounded-[4px] p-[12px] overflow-x-auto text-[13px] font-mono my-[8px]" {...props} />,
-                  hr: ({ node, ...props }) => <hr className="border-[#dee1e6] dark:border-midnight-800 my-[12px]" {...props} />,
-                }}
-              >
-                {tool.guideContent}
-              </ReactMarkdown>
-            </div>
+            <ReactMarkdown
+              components={{
+                h1: ({ node, ...props }) => <h1 className="text-[22px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                h2: ({ node, ...props }) => <h2 className="text-[18px] font-bold mt-3 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
+                h3: ({ node, ...props }) => <h3 className="text-[16px] font-bold mt-3 mb-1" {...props} />,
+                p: ({ node, ...props }) => <p className="my-[8px] leading-[24px]" {...props} />,
+                ul: ({ node, ...props }) => <ul className="list-disc pl-[20px] my-[8px] space-y-[4px]" {...props} />,
+                ol: ({ node, ...props }) => <ol className="list-decimal pl-[20px] my-[8px] space-y-[4px]" {...props} />,
+                li: ({ node, ...props }) => <li className="leading-[24px]" {...props} />,
+                strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+                em: ({ node, ...props }) => <em className="italic" {...props} />,
+                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#5570f6] pl-[12px] italic text-[#565d6d] dark:text-gray-400 my-[8px]" {...props} />,
+                code: ({ node, ...props }) => <code className="bg-[#f0f0f0] dark:bg-midnight-800 rounded px-[4px] py-[1px] text-[13px] font-mono" {...props} />,
+                pre: ({ node, ...props }) => <pre className="bg-[#f0f0f0] dark:bg-midnight-800 rounded-[4px] p-[12px] overflow-x-auto text-[13px] font-mono my-[8px]" {...props} />,
+                hr: ({ node, ...props }) => <hr className="border-[#dee1e6] dark:border-midnight-800 my-[12px]" {...props} />,
+              }}
+            >
+              {tool.guideContent}
+            </ReactMarkdown>
+          </div>
           {tool.guideMaterials && tool.guideMaterials.length > 0 && (
             <div className="flex flex-col gap-[8px] mt-[12px] pt-[16px] border-t border-[#dee1e6] dark:border-midnight-800">
               <span className="text-[12px] font-semibold text-[#565d6d] dark:text-gray-400 uppercase tracking-[0.5px]">
@@ -603,6 +633,52 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
         </div>
       )}
 
+
+      {/* Reference / Downloadable documents */}
+      {tool.guide_files && tool.guide_files.length > 0 && (
+        <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm">
+          <div className="flex items-center gap-[8px] pb-[12px] border-b dark:border-midnight-800">
+            <FileTextIcon />
+            <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+              {t('toolDetail.reference', 'リファレンス資料')}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+            {[...tool.guide_files]
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map((file) => (
+                <button
+                  key={file.id}
+                  type="button"
+                  onClick={() => handleDownloadFile(file.id, file.original_name)}
+                  className="group flex items-center gap-[12px] p-[12px] bg-[#f8fafc] dark:bg-midnight-900 border border-[#e2e8f0] dark:border-midnight-800 rounded-[8px] hover:border-[#5570f6] dark:hover:border-[#5570f6] hover:bg-[#f1f5f9] dark:hover:bg-midnight-850 transition-colors text-left"
+                >
+                  <div className="flex-shrink-0 w-[36px] h-[36px] rounded-[8px] bg-[#eef2ff] dark:bg-midnight-800 flex items-center justify-center">
+                    <PaperclipIcon />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-[14px] font-medium text-[#171a1f] dark:text-light truncate">
+                      {file.original_name}
+                    </span>
+                    {file.file_size ? (
+                      <span className="text-[12px] text-[#565d6d] dark:text-gray-400">
+                        {formatFileSize(file.file_size)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="flex-shrink-0 text-[#64748b] dark:text-gray-400 group-hover:text-[#5570f6] dark:group-hover:text-[#7c91eb] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" x2="12" y1="15" y2="3" />
+                    </svg>
+                  </span>
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Recommended Prompts */}
       <div className="flex flex-col gap-[16px] mt-[12px]">

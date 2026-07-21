@@ -45,6 +45,7 @@ export default function ComplianceHubView() {
   });
   const { steps, saveSteps, loading: stepsLoading } = useSteps();
   const token = useAuthStore((state) => state.token);
+  const isAdmin = useAuthStore((state) => state.user?.role?.toLowerCase() === 'admin');
   const { t } = useTranslation('common');
 
   const handleDownloadAll = async () => {
@@ -153,8 +154,13 @@ export default function ComplianceHubView() {
       ...s,
       order: idx + 1
     }));
-    await saveSteps(updated);
-    setDeletingStepId(null);
+    try {
+      await saveSteps(updated);
+      setDeletingStepId(null);
+    } catch (err: any) {
+      toast.error(err?.message || t('compliance.deleteStepFailed', 'ステップの削除に失敗しました。'));
+      setDeletingStepId(null);
+    }
   };
 
   const handleAddStepAt = (index: number) => {
@@ -296,6 +302,7 @@ export default function ComplianceHubView() {
                         }}
                         onDelete={() => handleDeleteStep(step.id)}
                         canDelete={steps.length > 1}
+                        isAdmin={isAdmin}
                       />
                     </div>
                     {index < steps.length - 1 && (

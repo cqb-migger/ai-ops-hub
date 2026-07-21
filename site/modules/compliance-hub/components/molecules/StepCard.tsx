@@ -8,9 +8,10 @@ interface StepCardProps {
   onEdit: () => void;
   onDelete: () => void;
   canDelete: boolean;
+  isAdmin?: boolean;
 }
 
-export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCardProps) {
+export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = false }: StepCardProps) {
   const { t } = useTranslation('common');
   return (
     <div className="group relative flex flex-col items-center text-center max-w-[200px] w-full select-none">
@@ -28,7 +29,8 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
           )}
         </div>
 
-        {/* Floating Action Buttons (Visible on Hover) */}
+        {/* Floating Action Buttons (Visible on Hover) — admin only */}
+        {isAdmin && (
         <div className="absolute -top-[8px] -right-[36px] flex flex-col gap-[4px] opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-[4px] group-hover:translate-x-0 z-20">
           {/* Edit Button */}
           <button
@@ -75,6 +77,7 @@ export default function StepCard({ step, onEdit, onDelete, canDelete }: StepCard
             </button>
           )}
         </div>
+        )}
       </div>
 
       {/* Step Number Label */}

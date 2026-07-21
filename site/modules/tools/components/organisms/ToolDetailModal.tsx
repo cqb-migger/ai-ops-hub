@@ -43,7 +43,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-[16px] md:p-[40px] bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-      <div 
+      <div
         className="bg-white dark:bg-midnight-950 w-full max-w-[1100px] h-[95vh] md:h-auto md:max-h-[95vh] rounded-[16px] shadow-2xl relative flex flex-col overflow-hidden p-[4px] md:p-[6px]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -107,22 +107,22 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
         {/* Scrollable Content */}
         <div className="w-full h-full overflow-y-auto rounded-[12px]">
           <div className="p-[16px] md:p-[24px] pt-[16px] md:pt-[20px]">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center p-[48px] text-center w-full min-h-[400px]">
-              <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                {t('common.loading', '読み込み中...')}
-              </p>
-            </div>
-          ) : tool ? (
-            <ToolDetailView tool={tool} hideHeader={true} hideLaunchButton={true} />
-          ) : (
-            <div className="flex flex-col items-center justify-center p-[48px] text-center w-full min-h-[400px]">
-              <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                {t('toolDetail.notFound', 'ツールが見つかりませんでした。')}
-              </p>
-            </div>
-          )}
-        </div>
+            {loading ? (
+              <div className="flex flex-col items-center justify-center p-[48px] text-center w-full min-h-[400px]">
+                <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
+                  {t('common.loading', '読み込み中...')}
+                </p>
+              </div>
+            ) : tool ? (
+              <ToolDetailView tool={tool} hideHeader={true} hideLaunchButton={true} />
+            ) : (
+              <div className="flex flex-col items-center justify-center p-[48px] text-center w-full min-h-[400px]">
+                <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
+                  {t('toolDetail.notFound', 'ツールが見つかりませんでした。')}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Fixed Footer */}
@@ -134,7 +134,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
             >
               {t('common.close', '閉じる')}
             </button>
-            
+
             {tool.url && (
               <a
                 href={tool.url}

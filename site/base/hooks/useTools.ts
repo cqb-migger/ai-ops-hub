@@ -18,6 +18,11 @@ interface UseToolsOptions {
    * (createTool / updateTool) and never render `tools`, fetching the list is pure waste.
    */
   enabled?: boolean;
+  /**
+   * Use the admin management endpoint (`/tools/admin`) which returns tools sorted by
+   * newest id first. Requires the current user to be an admin.
+   */
+  admin?: boolean;
 }
 
 interface ToolsResponse {
@@ -75,7 +80,7 @@ function mapApiTool(t: any): Tool {
 }
 
 export function useTools(options: UseToolsOptions = {}) {
-  const { hub, category, categoryId, search, visibility, role, stepId, sort, limit = 20, skip = 0, enabled = true } = options;
+  const { hub, category, categoryId, search, visibility, role, stepId, sort, limit = 20, skip = 0, enabled = true, admin = false } = options;
 
   const [tools, setTools] = useState<Tool[]>([]);
   const [total, setTotal] = useState(0);
@@ -100,7 +105,8 @@ export function useTools(options: UseToolsOptions = {}) {
       // Call the trailing-slash route directly to avoid a 307 redirect that can
       // drop the query string (which would silently disable all filters).
       const queryString = params.toString() ? `?${params.toString()}` : '';
-      const data = await apiFetch<ToolsResponse>(`/tools/${queryString}`);
+      const endpoint = admin ? `/tools/admin${queryString}` : `/tools/${queryString}`;
+      const data = await apiFetch<ToolsResponse>(endpoint);
       setTools((data.items || []).map(mapApiTool));
       setTotal(data.total || 0);
       setError(null);
@@ -109,7 +115,7 @@ export function useTools(options: UseToolsOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [hub, category, categoryId, search, visibility, role, stepId, sort, limit, skip]);
+  }, [hub, category, categoryId, search, visibility, role, stepId, sort, limit, skip, admin]);
 
   useEffect(() => {
     if (enabled) {

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.dependencies import get_db
-from app.core.modules.auth.auth_dependencies import get_current_user
+from app.core.modules.auth.auth_dependencies import get_current_user, require_admin
 from app.core.modules.tool import tool_service
 from app.core.modules.tool.tool_schemas import ToolCreate, ToolDetailResponse, ToolListResponse, ToolUpdate
 from app.core.modules.user.models.user import User
@@ -34,6 +34,31 @@ async def get_tools(
         search=search,
         step_id=step_id,
         sort=sort,
+        visibility=visibility,
+        skip=skip,
+        limit=limit,
+        user_id=current_user.id,
+    )
+    return ToolListResponse(items=items, total=total, skip=skip, limit=limit)
+
+@router.get('/admin', response_model=ToolListResponse, summary='[Admin] Get tools sorted by newest')
+async def get_admin_tools(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
+    category_id: Optional[int] = None,
+    role: Optional[str] = None,
+    search: Optional[str] = None,
+    visibility: Optional[str] = 'all',
+    skip: int = 0,
+    limit: int = 20,
+):
+    """Danh sách tools cho màn hình quản trị: sắp xếp theo id mới nhất lên đầu. Chỉ admin."""
+    items, total = await tool_service.get_tools_service(
+        db=db,
+        category_id=category_id,
+        role=role,
+        search=search,
+        sort='newest',
         visibility=visibility,
         skip=skip,
         limit=limit,

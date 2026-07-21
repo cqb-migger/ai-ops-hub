@@ -1,10 +1,29 @@
 from typing import List, Optional
 
-from sqlalchemy import select
+from fastapi import HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.modules.step.models.step import Step
 from app.core.modules.step.step_schemas import StepCreate, StepUpdate
+from app.core.modules.tool.models.tool_step import ToolStep
+
+_STEP_IN_USE_MESSAGE = (
+    'This tool is assigned to one or more compliance steps. '
+    'Please remove it from all steps before deleting'
+)
+
+
+async def _assert_step_not_in_use(db: AsyncSession, step_id: int) -> None:
+    """Raise 409 if the step is still linked to any tool."""
+    count = await db.execute(
+        select(func.count()).select_from(ToolStep).where(ToolStep.step_id == step_id)
+    )
+    if count.scalar_one() > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=_STEP_IN_USE_MESSAGE,
+        )
 
 
 async def get_steps_service(db: AsyncSession) -> List[Step]:
@@ -52,6 +71,8 @@ async def delete_step_service(db: AsyncSession, step_id: int) -> Optional[Step]:
     if not db_step:
         return None
 
+    await _assert_step_not_in_use(db, step_id)
+
     await db.delete(db_step)
     await db.flush()
     return db_step
@@ -70,6 +91,7 @@ async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate]) 
     # Delete steps that are not in the incoming list
     for s_id, s_obj in current_map.items():
         if s_id not in incoming_ids:
+            await _assert_step_not_in_use(db, s_id)
             await db.delete(s_obj)
 
     # Process incoming list: update or create

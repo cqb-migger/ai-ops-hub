@@ -1,5 +1,6 @@
 import io
 import os
+import urllib.parse
 import zipfile
 from typing import Optional
 
@@ -19,6 +20,7 @@ from app.core.modules.tool.models.tool import Tool
 from app.core.modules.tool.models.tool_category import ToolCategory
 from app.core.modules.tool.models.tool_role import ToolRole
 from app.core.modules.tool.models.tool_step import ToolStep
+from app.core.modules.tool.models.tool_guide_file import ToolGuideFile
 from app.core.modules.category.models.category import Category
 from app.core.utils.s3 import get_s3_client
 
@@ -83,6 +85,45 @@ def read_file_bytes(file_path: str) -> bytes:
             with open(full_path, 'rb') as f:
                 return f.read()
     raise FileNotFoundError(f"File not found in S3 or locally: {file_path}")
+
+@router.get('/{tool_id}/guide-files/{file_id}/download', summary='Download a single reference file')
+async def download_guide_file(
+    tool_id: int,
+    file_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_with_query_token),
+):
+    """Tải một file tài liệu tham khảo của tool (đúng tên gốc)."""
+    result = await db.execute(
+        select(ToolGuideFile).where(
+            ToolGuideFile.id == file_id,
+            ToolGuideFile.tool_id == tool_id,
+        )
+    )
+    gf = result.scalars().first()
+    if gf is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Guide file not found')
+
+    # Non-admin users may only access files of public tools
+    if current_user.role != 'admin':
+        tool_res = await db.execute(
+            select(Tool).where(Tool.id == tool_id, Tool.deleted_at.is_(None), Tool.visibility == 'public')
+        )
+        if tool_res.scalars().first() is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Guide file not found')
+
+    try:
+        file_data = read_file_bytes(gf.file_path)
+    except FileNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='File no longer exists')
+
+    filename = gf.original_name or gf.stored_name
+    quoted = urllib.parse.quote(filename)
+    return StreamingResponse(
+        io.BytesIO(file_data),
+        media_type=gf.mime_type or 'application/octet-stream',
+        headers={'Content-Disposition': f"attachment; filename*=UTF-8''{quoted}"},
+    )
 
 @router.get('/download-guides', summary='Download guidance and reference files as ZIP')
 async def download_guides(
