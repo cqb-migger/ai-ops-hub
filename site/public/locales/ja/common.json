@@ -67,6 +67,7 @@
     "launch": "ツールを開く",
     "favorite": "お気に入り",
     "noTools": "該当するツールが見つかりませんでした。",
+    "noToolsAccount": "アカウントで利用可能なツールはありません。",
     "clearFilter": "フィルターをクリア",
     "favRemoveTitle": "お気に入りから削除",
     "favAddTitle": "お気に入りに追加",

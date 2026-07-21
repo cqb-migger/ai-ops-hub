@@ -127,7 +127,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
 
         {/* Fixed Footer */}
         {!loading && tool && (
-          <div className="flex-shrink-0 flex items-center justify-end gap-[12px] px-[16px] py-[12px] md:px-[24px] border-t border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-950 rounded-b-[12px] z-10 relative">
+          <div className="flex-shrink-0 flex items-center justify-between gap-[12px] px-[16px] py-[12px] md:px-[24px] border-t border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-950 rounded-b-[12px] z-10 relative">
             <button
               onClick={onClose}
               className="px-[20px] py-[10px] text-[#565d6d] dark:text-gray-300 font-semibold text-[14px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-700 rounded-[8px] hover:bg-gray-50 dark:hover:bg-midnight-800 transition-colors shadow-sm"

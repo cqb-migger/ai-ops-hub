@@ -78,6 +78,8 @@ export default function CreativeHubView() {
   const currentPageSafe = Math.min(currentPage, totalPages);
   const paginatedCards = tools;
 
+  const hasFilters = Boolean(debouncedSearch || selectedRole);
+
   return (
     <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
       {/* Page Header */}
@@ -146,17 +148,19 @@ export default function CreativeHubView() {
           ) : (
             <div className="flex flex-col items-center justify-center p-[48px] bg-[#fafafb] dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] text-center w-full">
               <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
-                {t('dashboard.noTools')}
+                {hasFilters ? t('dashboard.noTools') : t('dashboard.noToolsAccount')}
               </p>
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedRole('');
-                }}
-                className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
-              >
-                {t('dashboard.clearFilter')}
-              </button>
+              {hasFilters && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedRole('');
+                  }}
+                  className="mt-[16px] text-[14px] text-[#5570f6] font-semibold hover:underline"
+                >
+                  {t('dashboard.clearFilter')}
+                </button>
+              )}
             </div>
           )}
         </div>
