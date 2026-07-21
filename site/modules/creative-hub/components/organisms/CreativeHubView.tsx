@@ -7,6 +7,7 @@ import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { useTranslation } from 'next-i18next';
 import { API_BASE } from '../../../../base/utils/api';
 import useAuthStore from '../../../../base/stores/useAuthStore';
+import toast from 'react-hot-toast';
 
 const ITEMS_PER_PAGE = 16;
 
@@ -28,7 +29,7 @@ export default function CreativeHubView() {
   const token = useAuthStore((state) => state.token);
   const { t } = useTranslation('common');
 
-  const handleDownloadAll = () => {
+  const handleDownloadAll = async () => {
     const params = new URLSearchParams();
     params.append('hub', 'creative');
     if (searchQuery) params.append('search', searchQuery);
@@ -36,7 +37,30 @@ export default function CreativeHubView() {
     if (token) params.append('token', token);
 
     const downloadUrl = `${API_BASE}/tools/download-guides?${params.toString()}`;
-    window.open(downloadUrl, '_blank');
+    
+    try {
+      const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast.error("No documents available to download");
+        } else {
+          toast.error(t('manageTools.saveFailed', 'ツールの保存に失敗しました'));
+        }
+        return;
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'creative_guides.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("No documents available to download");
+    }
   };
 
   // Debounce the search input so we don't hit the API on every keystroke

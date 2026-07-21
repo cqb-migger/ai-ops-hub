@@ -357,27 +357,13 @@ async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> dict:
         mcp_http_headers=tool_in.mcp_http_headers,
         mcp_http_headers_from_env=tool_in.mcp_http_headers_from_env,
     )
-    try:
-        db.add(db_tool)
-        await db.flush()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Tool name already exists"
-        )
+    db.add(db_tool)
+    await db.flush()
 
     tool_id = db_tool.id
 
-    try:
-        await _upsert_relations(db, tool_id, tool_in)
-        await db.flush()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Tool name already exists"
-        )
+    await _upsert_relations(db, tool_id, tool_in)
+    await db.flush()
     db.expire_all()
 
     return await get_tool_service(db, tool_id)
@@ -401,25 +387,11 @@ async def update_tool_service(db: AsyncSession, tool_id: int, tool_in: ToolUpdat
         if field in update_data:
             setattr(db_tool, field, update_data[field])
 
-    try:
-        db.add(db_tool)
-        await db.flush()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Tool name already exists"
-        )
+    db.add(db_tool)
+    await db.flush()
 
-    try:
-        await _upsert_relations(db, tool_id, tool_in)
-        await db.flush()
-    except IntegrityError:
-        await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Tool name already exists"
-        )
+    await _upsert_relations(db, tool_id, tool_in)
+    await db.flush()
     db.expire_all()
 
     return await get_tool_service(db, tool_id)

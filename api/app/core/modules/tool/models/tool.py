@@ -14,7 +14,7 @@ class Tool(Base):
     __tablename__ = 'tools'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), unique=True, index=True, nullable=False)
+    name = Column(String(255), index=True, nullable=False)
     description = Column(Text, nullable=True)
     icon = Column(String(500), nullable=True)
     url = Column(String(500), nullable=True)
