@@ -9,12 +9,13 @@ from sqlalchemy.orm import selectinload
 from app.core.modules.category.models.category import Category
 from app.core.modules.tool.models.tool import Tool
 from app.core.modules.tool.models.tool_category import ToolCategory
+from app.core.modules.tool.models.tool_guide_file import ToolGuideFile
 from app.core.modules.tool.models.tool_prompt import ToolPrompt, ToolPromptCategory, ToolPromptRole
 from app.core.modules.tool.models.tool_role import ToolRole
 from app.core.modules.tool.models.tool_step import ToolStep
-from app.core.modules.tool.models.tool_guide_file import ToolGuideFile
 from app.core.modules.tool.models.user_tool_favorite import UserToolFavorite
 from app.core.modules.tool.tool_schemas import PromptCreate, ToolCreate, ToolUpdate
+from app.core.modules.user.models.user import User
 
 
 async def _format_categories(category_ids: List[int], cats_map: dict) -> List[dict]:
@@ -123,6 +124,25 @@ async def get_tools_service(
     if visibility and visibility != 'all':
         base_q = base_q.where(Tool.visibility == visibility)
 
+    if user_id:
+        user_res = await db.execute(select(User).where(User.id == user_id))
+        user = user_res.scalars().first()
+        if user:
+            user_role = user.role.lower()
+            if user_role == 'admin':
+                if role:
+                    role_sub = select(ToolRole.tool_id).where(func.lower(ToolRole.role) == role.lower())
+                    no_restriction_sub = select(Tool.id).where(~Tool.id.in_(select(ToolRole.tool_id)))
+                    base_q = base_q.where(or_(Tool.id.in_(role_sub), Tool.id.in_(no_restriction_sub)))
+            else:
+                role_sub = select(ToolRole.tool_id).where(func.lower(ToolRole.role) == user_role)
+                base_q = base_q.where(Tool.id.in_(role_sub))
+    else:
+        if role:
+            role_sub = select(ToolRole.tool_id).where(func.lower(ToolRole.role) == role.lower())
+            no_restriction_sub = select(Tool.id).where(~Tool.id.in_(select(ToolRole.tool_id)))
+            base_q = base_q.where(or_(Tool.id.in_(role_sub), Tool.id.in_(no_restriction_sub)))
+
     if category_id:
         sub = select(ToolCategory.tool_id).where(ToolCategory.category_id == category_id)
         base_q = base_q.where(Tool.id.in_(sub))
@@ -133,10 +153,7 @@ async def get_tools_service(
         tc_sub = select(ToolCategory.tool_id).where(ToolCategory.category_id.in_(cat_sub))
         base_q = base_q.where(Tool.id.in_(tc_sub))
 
-    if role:
-        role_sub = select(ToolRole.tool_id).where(ToolRole.role == role)
-        no_restriction_sub = select(Tool.id).where(~Tool.id.in_(select(ToolRole.tool_id)))
-        base_q = base_q.where(or_(Tool.id.in_(role_sub), Tool.id.in_(no_restriction_sub)))
+    # Role query parameter is handled conditionally under user role check above
 
     if search:
         like = f'%{search}%'
@@ -236,6 +253,19 @@ async def get_tool_service(db: AsyncSession, tool_id: int, user_id: Optional[int
     tool = result.scalars().first()
     if not tool:
         return None
+
+    if user_id:
+        user_res = await db.execute(select(User).where(User.id == user_id))
+        user = user_res.scalars().first()
+        if user:
+            user_role = user.role.lower()
+            if user_role == 'admin':
+                pass
+            else:
+                tool_roles = [r.role.lower() for r in tool.tool_roles]
+                if user_role not in tool_roles:
+                    return None
+
     return await _enrich_tool(db, tool, user_id=user_id)
 
 

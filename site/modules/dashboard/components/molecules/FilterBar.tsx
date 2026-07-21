@@ -5,6 +5,7 @@ import StepDropdown from './StepDropdown';
 import SortDropdown from './SortDropdown';
 import { Step } from '../../../compliance-hub/constants/steps';
 import { useTranslation } from 'next-i18next';
+import useAuthStore from '@base/stores/useAuthStore';
 
 interface FilterBarProps {
   searchQuery: string;
@@ -72,6 +73,8 @@ export default function FilterBar({
 }: FilterBarProps) {
   const { t } = useTranslation('common');
   const actualPlaceholder = (placeholder === 'ツール名、キーワードで検索...' ? t('dashboard.searchPlaceholder', 'ツール名、キーワードで検索...') : placeholder) as string;
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   return (
     <div className="w-full sm:h-[74px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] p-[16px] sm:py-0 flex flex-col sm:flex-row sm:items-center gap-[12px]">
@@ -106,12 +109,14 @@ export default function FilterBar({
             width={200}
             placeholder={t('filter.allCategories') as string}
           />
-          <RoleDropdown
-            selectedRole={selectedRole}
-            onRoleChange={onRoleChange}
-            width={200}
-            placeholder={t('filter.allRoles') as string}
-          />
+          {isAdmin && (
+            <RoleDropdown
+              selectedRole={selectedRole}
+              onRoleChange={onRoleChange}
+              width={200}
+              placeholder={t('filter.allRoles') as string}
+            />
+          )}
           {showSort && (
             <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} width={180} />
           )}
@@ -132,12 +137,14 @@ export default function FilterBar({
       {/* Role only */}
       {showFilters && showRoleFilterOnly && !showStepFilter && (
         <>
-          <RoleDropdown
-            selectedRole={selectedRole}
-            onRoleChange={onRoleChange}
-            width={250}
-            placeholder={t('filter.allRoles') as string}
-          />
+          {isAdmin && (
+            <RoleDropdown
+              selectedRole={selectedRole}
+              onRoleChange={onRoleChange}
+              width={250}
+              placeholder={t('filter.allRoles') as string}
+            />
+          )}
           {showSort && (
             <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} width={180} />
           )}
@@ -154,12 +161,14 @@ export default function FilterBar({
             width={180}
             placeholder={t('filter.allSteps') as string}
           />
-          <RoleDropdown
-            selectedRole={selectedRole}
-            onRoleChange={onRoleChange}
-            width={180}
-            placeholder={t('filter.allRoles') as string}
-          />
+          {isAdmin && (
+            <RoleDropdown
+              selectedRole={selectedRole}
+              onRoleChange={onRoleChange}
+              width={180}
+              placeholder={t('filter.allRoles') as string}
+            />
+          )}
           {showSort && (
             <SortDropdown selectedSort={selectedSort} onSortChange={onSortChange} width={180} />
           )}
