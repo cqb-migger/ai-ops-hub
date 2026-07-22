@@ -223,6 +223,7 @@ export default function Sidebar() {
   ];
 
   const [showDropdown, setShowDropdown] = React.useState(false);
+  const [showLangMenu, setShowLangMenu] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -357,18 +358,46 @@ export default function Sidebar() {
                 </svg>
                 <span>{t('nav.language')}</span>
               </div>
-              <select
-                value={router.locale || 'ja'}
-                onChange={(e) => {
-                  const newLocale = e.target.value;
-                  router.push(router.pathname, router.asPath, { locale: newLocale });
-                }}
-                className="bg-transparent text-[12px] font-medium text-[#171a1f] dark:text-light outline-none cursor-pointer focus:ring-2 focus:ring-[#5570f6] rounded-[4px]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="ja">日本語</option>
-                <option value="en">English</option>
-              </select>
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() => setShowLangMenu((o) => !o)}
+                  className="flex items-center gap-[6px] h-[28px] pl-[10px] pr-[6px] rounded-[6px] border border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900 text-[12px] font-medium text-[#171a1f] dark:text-light hover:border-[#9095a0] dark:hover:border-midnight-600 transition-colors"
+                >
+                  <span>{(router.locale || 'ja') === 'en' ? 'English' : '日本語'}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-[13px] h-[13px] text-[#9095a0] dark:text-gray-500 transition-transform ${showLangMenu ? 'rotate-180' : ''}`}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {showLangMenu && (
+                  <div className="absolute right-0 bottom-[calc(100%+6px)] z-50 min-w-[120px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-[0_4px_16px_rgba(23,26,31,0.14)] py-[4px]">
+                    {[{ value: 'ja', label: '日本語' }, { value: 'en', label: 'English' }].map((opt) => {
+                      const active = (router.locale || 'ja') === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setShowLangMenu(false);
+                            router.push(router.pathname, router.asPath, { locale: opt.value });
+                          }}
+                          className={`w-full flex items-center justify-between gap-[8px] px-[12px] py-[7px] text-[12px] text-left transition-colors ${active
+                            ? 'bg-[#eef0fd] dark:bg-[#2a3060] text-[#5570f6] dark:text-[#7c91eb] font-semibold'
+                            : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
+                            }`}
+                        >
+                          <span>{opt.label}</span>
+                          {active && (
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[13px] h-[13px]">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
             <button
               onClick={() => {
@@ -393,7 +422,7 @@ export default function Sidebar() {
 
         {/* User Profile */}
         <div
-          onClick={() => setShowDropdown(!showDropdown)}
+          onClick={() => { setShowDropdown(!showDropdown); setShowLangMenu(false); }}
           className={`flex items-center gap-[12px] h-[48px] px-[4px] rounded-[8px] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer select-none transition-colors ${collapsed ? 'justify-center' : 'justify-start'
             }`}
         >

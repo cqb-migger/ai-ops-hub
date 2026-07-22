@@ -69,13 +69,13 @@ export default function ToolGrid() {
   const hasFilters = Boolean(debouncedSearch || selectedCategory || selectedRole);
 
   return (
-    <div className="flex flex-col gap-[28px] w-full">
+    <div className="flex flex-col gap-[16px] sm:gap-[28px] w-full">
       {/* Title block */}
       <div className="flex flex-col gap-[12px]">
-        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
+        <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('dashboard.title', 'AIツールダッシュボード')}
         </h2>
-        <p className="text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
+        <p className="hidden md:block text-[18px] font-normal leading-[28px] text-[#565d6d] dark:text-gray-400 font-base">
           {t('dashboard.desc', '業務を効率化するための最適なAIツールを検索・発見できます。役割やカテゴリから絞り込みましょう。')}
         </p>
       </div>
@@ -117,7 +117,7 @@ export default function ToolGrid() {
             {t('common.loading')}
           </div>
         ) : paginatedTools.length > 0 ? (
-          <div className="flex flex-col gap-[28px]">
+          <div className="flex flex-col gap-[16px] sm:gap-[28px]">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
               {paginatedTools.map((tool) => (
                 <ToolCard key={tool.id} tool={tool} onToggleFavorite={toggleFavorite} />

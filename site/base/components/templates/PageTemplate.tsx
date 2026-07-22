@@ -31,7 +31,7 @@ export default function PageTemplate({ header, footer, children, hideSidebar = f
 
       {/* Main Content Area — the sidebar only offsets content from the `lg` breakpoint up. */}
       <div
-        className={`flex flex-col min-h-screen transition-all duration-300 pl-0 ${hideSidebar
+        className={`flex flex-col min-w-0 min-h-screen transition-all duration-300 pl-0 ${hideSidebar
           ? 'lg:pl-0'
           : isSidebarCollapsed
             ? 'lg:pl-[60px]'
@@ -67,7 +67,7 @@ export default function PageTemplate({ header, footer, children, hideSidebar = f
         {header && header}
 
         {/* Page Content */}
-        <main className="flex-1 bg-gray-100 dark:bg-midnight-900 p-[16px] sm:p-[24px] w-full">
+        <main className="flex-1 min-w-0 bg-gray-100 dark:bg-midnight-900 p-[16px] sm:p-[24px] w-full max-w-full overflow-x-hidden">
           {children}
         </main>
 

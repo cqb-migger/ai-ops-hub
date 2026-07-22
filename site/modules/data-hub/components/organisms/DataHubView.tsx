@@ -81,16 +81,16 @@ export default function DataHubView() {
   const hasFilters = Boolean(debouncedSearch || selectedRole);
 
   return (
-    <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
+    <div className="flex flex-col gap-[16px] sm:gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
       {/* Page Header */}
       <div className="flex flex-col gap-[12px]">
         {/* Title */}
-        <h1 className="font-base font-bold text-[30px] leading-[36px] tracking-[-0.75px] text-[#171a1f] dark:text-light">
+        <h1 className="font-base font-bold text-[22px] sm:text-[30px] leading-[30px] sm:leading-[36px] tracking-[-0.75px] text-[#171a1f] dark:text-light">
           {t('nav.dataHub')}
         </h1>
 
         {/* Description */}
-        <p className="font-normal text-[16px] leading-[24px] text-[#565d6d] dark:text-gray-400 max-w-[767px]">
+        <p className="hidden md:block font-normal text-[16px] leading-[24px] text-[#565d6d] dark:text-gray-400 max-w-[767px]">
           {t('data.desc', '各種外部アナリティクスツールへ一元的にアクセスできるポータルです。日々の重要指標（KPI）を効率的に確認し、データドリブンな意思決定をサポートします。')}
         </p>
       </div>
@@ -108,7 +108,7 @@ export default function DataHubView() {
         />
 
         <div className="flex flex-col gap-[12px] w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-[16px] w-full">
+          <div className="flex flex-row items-center justify-between gap-[12px] w-full">
             <ItemCount
               currentPage={currentPageSafe}
               totalItems={total}
@@ -117,7 +117,7 @@ export default function DataHubView() {
             <div className="flex items-center gap-[12px]">
               <button
                 onClick={handleDownloadAll}
-                className="flex-shrink-0 inline-flex items-center justify-center gap-[8px] h-[40px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
+                className="flex-shrink-0 inline-flex items-center justify-center gap-[6px] sm:gap-[8px] h-[36px] sm:h-[40px] px-[12px] sm:px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[13px] sm:text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -133,7 +133,7 @@ export default function DataHubView() {
               {t('common.loading')}
             </div>
           ) : paginatedTools.length > 0 ? (
-            <div className="flex flex-col gap-[28px]">
+            <div className="flex flex-col gap-[16px] sm:gap-[28px]">
               {/* Tool Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[16px]">
                 {paginatedTools.map((tool) => (

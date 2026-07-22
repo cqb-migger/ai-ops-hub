@@ -211,15 +211,15 @@ export default function ComplianceHubView() {
   };
 
   return (
-    <div className="flex flex-col gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
+    <div className="flex flex-col gap-[16px] sm:gap-[28px] w-full text-[#171a1f] dark:text-light font-base">
 
       {/* Category Pill Badge & Header title */}
       <div className="flex flex-col items-start gap-[12px]">
         {/* Title & description */}
-        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
+        <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('nav.complianceHub')}
         </h2>
-        <p className="text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
+        <p className="hidden md:block text-[18px] leading-[29px] text-[#565d6d] dark:text-gray-400 font-normal w-full">
           {t('compliance.flowDescHelp', '薬機法（医薬品医療機器等法）および景表法（景品表示法）に準拠した safeコンテンツ発信のためのガイドラインとツールを提供します。すべての外部公開コンテンツ は 以下のステップに従って確認を行ってください。')}
         </p>
       </div>
@@ -240,7 +240,7 @@ export default function ComplianceHubView() {
             </p>
           </div>
 
-          <div className="flex items-center gap-[12px]">
+          <div className="flex items-center gap-[12px] flex-shrink-0">
             {isFlowExpanded && steps.length < 6 && (
               <button
                 onClick={(e) => {
@@ -249,7 +249,7 @@ export default function ComplianceHubView() {
                   setInsertAtIndex(null);
                   setIsModalOpen(true);
                 }}
-                className="flex items-center gap-[6px] px-[14px] py-[8px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-all shadow-sm"
+                className="hidden sm:flex items-center gap-[6px] px-[14px] py-[8px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-all shadow-sm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <line x1="12" y1="5" x2="12" y2="19" />
@@ -268,10 +268,29 @@ export default function ComplianceHubView() {
           </div>
         </div>
 
+        {/* Add Step — mobile only, own row */}
+        {isFlowExpanded && steps.length < 6 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingStep(null);
+              setInsertAtIndex(null);
+              setIsModalOpen(true);
+            }}
+            className="sm:hidden mt-[16px] w-full flex items-center justify-center gap-[6px] px-[14px] py-[10px] bg-[#5570f6] text-white text-[14px] font-bold rounded-[8px] hover:bg-[#405bd4] transition-all shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            {t('compliance.addStep')}
+          </button>
+        )}
+
         {/* Collapsible Content */}
         {isFlowExpanded && (
           <div className="w-full mt-[24px] bg-[#fafafb] dark:bg-midnight-900/40 rounded-[12px] border border-[#dee1e6]/60 dark:border-midnight-800/60 overflow-x-auto min-h-[220px]">
-            <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[32px] md:gap-[16px] w-full md:w-max md:min-w-full px-[16px] py-[24px]">
+            <div className="relative flex flex-col md:flex-row justify-between items-center md:items-start gap-[20px] md:gap-[16px] w-full md:w-max md:min-w-full px-[12px] md:px-[16px] py-[16px] md:py-[24px]">
             {stepsLoading ? (
               <div className="py-[32px] text-center text-[#565d6d] dark:text-gray-400 font-base w-full">
                 {t('common.loading')}
@@ -325,27 +344,16 @@ export default function ComplianceHubView() {
       </section>
 
       {/* Section 2: Tools & References */}
-      <section className="flex flex-col gap-[28px]">
+      <section className="flex flex-col gap-[16px] sm:gap-[28px]">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-[16px]">
           <div>
-            <h3 className="text-[24px] font-bold leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px] font-base">
+            <h3 className="text-[18px] sm:text-[24px] font-bold leading-[26px] sm:leading-[32px] text-[#171a1f] dark:text-light tracking-[-0.6px] font-base">
               {t('compliance.toolsTitle')}
             </h3>
             <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-normal">
               {t('compliance.toolsDesc')}
             </p>
           </div>
-          <button
-            onClick={handleDownloadAll}
-            className="flex-shrink-0 inline-flex items-center justify-center gap-[8px] h-[40px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>{t('compliance.bulkDownload')}</span>
-          </button>
         </div>
 
         {/* Filter Bar */}
@@ -365,12 +373,23 @@ export default function ComplianceHubView() {
           />
 
           <div className="flex flex-col gap-[12px] w-full">
-            <div className="flex items-center justify-between w-full">
+            <div className="flex flex-row items-center justify-between gap-[12px] w-full">
               <ItemCount
                 currentPage={currentPageSafe}
                 totalItems={total}
                 itemsPerPage={ITEMS_PER_PAGE}
               />
+              <button
+                onClick={handleDownloadAll}
+                className="flex-shrink-0 inline-flex items-center justify-center gap-[6px] sm:gap-[8px] h-[36px] sm:h-[40px] px-[12px] sm:px-[16px] border border-[#dee1e6] dark:border-midnight-800 hover:border-[#5570f6] hover:text-[#5570f6] bg-white dark:bg-midnight-900 rounded-[8px] text-[13px] sm:text-[14px] font-semibold text-[#565d6d] dark:text-gray-400 transition-colors duration-200"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span>{t('compliance.bulkDownload')}</span>
+              </button>
             </div>
 
             {/* Cards Grid */}
@@ -379,7 +398,7 @@ export default function ComplianceHubView() {
                 {t('common.loading')}
               </div>
             ) : paginatedResources.length > 0 ? (
-              <div className="flex flex-col gap-[28px]">
+              <div className="flex flex-col gap-[16px] sm:gap-[28px]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[24px]">
                   {paginatedResources.map((resource, index) => (
                     <ToolCard key={`${resource.id}-${index}`} tool={resource} onToggleFavorite={toggleFavorite} />
@@ -430,10 +449,10 @@ export default function ComplianceHubView() {
 
       {/* Step Delete Confirmation Modal */}
       {deletingStepId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div className="w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-[16px] bg-black/40 backdrop-blur-[2px]">
+          <div className="w-full max-w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
+            <div className="flex items-center justify-between px-[16px] sm:px-[24px] py-[16px] sm:py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
               <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">{t('compliance.deleteStepModalHeader', 'ステップの削除')}</h3>
               <button
                 type="button"
@@ -448,14 +467,14 @@ export default function ComplianceHubView() {
             </div>
 
             {/* Body */}
-            <div className="px-[24px] py-[20px]">
+            <div className="px-[16px] sm:px-[24px] py-[16px] sm:py-[20px]">
               <p className="text-[14px] leading-[22px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
                 {t('compliance.deleteStepConfirmText', '「{{title}}」を削除してもよろしいですか？この操作は取り消せません。', { title: steps.find(s => s.id === deletingStepId)?.title })}
               </p>
             </div>
 
             {/* Footer */}
-            <div className="px-[24px] py-[16px] bg-[#fafafb] dark:bg-midnight-900 border-t border-[#dee1e6] dark:border-midnight-800 flex justify-between">
+            <div className="px-[16px] sm:px-[24px] py-[16px] bg-[#fafafb] dark:bg-midnight-900 border-t border-[#dee1e6] dark:border-midnight-800 flex justify-between gap-[12px]">
               <button
                 type="button"
                 onClick={() => setDeletingStepId(null)}

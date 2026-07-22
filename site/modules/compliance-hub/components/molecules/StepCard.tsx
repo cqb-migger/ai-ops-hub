@@ -19,11 +19,11 @@ export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = 
       {/* Circle Icon and Buttons container */}
       <div className="relative">
         {/* Circle Icon */}
-        <div className="flex items-center justify-center w-[64px] h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10 transition-all duration-200 group-hover:scale-105 overflow-hidden">
+        <div className="flex items-center justify-center w-[48px] h-[48px] md:w-[64px] md:h-[64px] rounded-full border-4 border-white dark:border-midnight-950 bg-[#f1f4fe] dark:bg-midnight-900 shadow-sm z-10 transition-all duration-200 group-hover:scale-105 overflow-hidden">
           {step.icon && (step.icon.startsWith('data:image/') || step.icon.startsWith('http') || step.icon.startsWith('/')) ? (
             <img src={step.icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${step.icon}` : step.icon} alt={step.title} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-[28px]" role="img" aria-label={step.title}>
+            <span className="text-[22px] md:text-[28px]" role="img" aria-label={step.title}>
               {step.icon}
             </span>
           )}
@@ -81,13 +81,13 @@ export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = 
       </div>
 
       {/* Step Number Label */}
-      <span className="mt-[16px] text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
+      <span className="mt-[10px] md:mt-[16px] text-[10px] md:text-[12px] font-bold tracking-[0.6px] uppercase text-[#565d6d] dark:text-gray-400">
         {t('compliance.step', { order: step.order })}
       </span>
 
       {/* Step Title */}
       <div className="relative w-full group/title mt-[4px]">
-        <div className="text-[14px] font-bold text-[#171a1f] dark:text-light min-h-[20px] w-full truncate px-1">
+        <div className="text-[12px] md:text-[14px] font-bold text-[#171a1f] dark:text-light min-h-[20px] w-full truncate px-1">
           {step.title}
         </div>
         
@@ -101,14 +101,14 @@ export default function StepCard({ step, onEdit, onDelete, canDelete, isAdmin = 
       </div>
 
       {/* Step Description */}
-      <div className="relative w-full mt-[8px]">
+      <div className="relative w-full mt-[6px] md:mt-[8px]">
         <p
           style={{
             height: 'auto',
             wordBreak: 'break-word',
             whiteSpace: 'normal',
           }}
-          className="text-[12px] leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal"
+          className="text-[11px] md:text-[12px] leading-[15px] md:leading-[17px] text-[#565d6d] dark:text-gray-400 font-normal"
         >
           {step.description}
         </p>

@@ -233,7 +233,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
     : (details.prompts || []);
 
   return (
-    <div className="flex flex-col gap-[28px] w-full">
+    <div className="flex flex-col gap-[16px] md:gap-[28px] w-full">
       {/* Title box */}
       {!hideHeader && (
         <div className="flex items-start justify-between gap-[16px] dark:border-midnight-800">
@@ -279,13 +279,13 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
       {/* Login Info & Launch Card */}
       {((tool.loginIds && tool.loginIds.length > 0) || tool.url) && (
-        <div className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm flex flex-col gap-[20px] mt-[12px]">
+        <div className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[16px] md:p-[24px] shadow-sm flex flex-col gap-[14px] md:gap-[20px] mt-[12px]">
           <div className="flex items-center justify-between border-b dark:border-midnight-800 pb-[12px] flex-wrap gap-[12px]">
             <div className="flex items-center gap-[8px]">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-[20px] h-[20px] text-[#5570f6]">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
-              <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+              <h3 className="text-[16px] md:text-[20px] font-semibold leading-[22px] md:leading-[28px] text-[#171a1f] dark:text-light font-base">
                 {t('toolDetail.connectionSettings', '接続・ログイン設定')}
               </h3>
             </div>
@@ -325,15 +325,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                       className="text-[#64748b] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-[#7c91eb] transition-colors flex-shrink-0"
                       title={t('common.copy', 'コピー') as string}
                     >
-                      {copiedLoginIdIndex === index ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-[16px] h-[16px] text-green-500">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-[16px] h-[16px]">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0A2.25 2.25 0 0 1 13.5 5.25h-3a2.25 2.25 0 0 1-2.166-1.612m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.546.546.908 1.287.908 2.112v12.75a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25V5.375c0-.825.362-1.566.908-2.112" />
-                        </svg>
-                      )}
+                      {copiedLoginIdIndex === index ? <CheckIcon /> : <CopyIcon />}
                     </button>
                   </div>
                 ))}
@@ -344,7 +336,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
       )}
 
       {tool.mcp_name && (
-        <div className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm flex flex-col mt-[12px]">
+        <div className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[16px] md:p-[24px] shadow-sm flex flex-col mt-[12px]">
           <div
             className="flex items-center justify-between cursor-pointer select-none"
             onClick={() => setIsMcpOpen(!isMcpOpen)}
@@ -356,7 +348,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                 <line x1="6" x2="6.01" y1="6" y2="6" />
                 <line x1="6" x2="6.01" y1="18" y2="18" />
               </svg>
-              <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+              <h3 className="text-[16px] md:text-[20px] font-semibold leading-[22px] md:leading-[28px] text-[#171a1f] dark:text-light font-base">
                 {t('toolDetail.mcpConnectionSettings')}
               </h3>
             </div>
@@ -579,17 +571,17 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
       {/* Usage Guide */}
       {tool.guideContent && (
-        <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm">
+        <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[16px] md:p-[24px] shadow-sm">
           <div className="flex items-center justify-between pb-[12px] border-b dark:border-midnight-800">
             <div className="flex items-center gap-[8px]">
               <BookOpenIcon />
-              <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+              <h3 className="text-[16px] md:text-[20px] font-semibold leading-[22px] md:leading-[28px] text-[#171a1f] dark:text-light font-base">
                 {t('toolDetail.guide', '活用ガイド')}
               </h3>
             </div>
           </div>
 
-          <div className="prose dark:prose-invert max-w-none text-[14px] leading-[24px] text-[#323842] dark:text-gray-300 font-base">
+          <div className="prose dark:prose-invert max-w-none text-[13px] md:text-[14px] leading-[21px] md:leading-[24px] text-[#323842] dark:text-gray-300 font-base">
             <ReactMarkdown
               components={{
                 h1: ({ node, ...props }) => <h1 className="text-[22px] font-bold mt-4 mb-2 pb-1 border-b border-[#dee1e6] dark:border-midnight-800" {...props} />,
@@ -636,10 +628,10 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
 
       {/* Reference / Downloadable documents */}
       {tool.guide_files && tool.guide_files.length > 0 && (
-        <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[24px] shadow-sm">
+        <div className="flex flex-col gap-[16px] mt-[12px] bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[16px] md:p-[24px] shadow-sm">
           <div className="flex items-center gap-[8px] pb-[12px] border-b dark:border-midnight-800">
             <FileTextIcon />
-            <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+            <h3 className="text-[16px] md:text-[20px] font-semibold leading-[22px] md:leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('toolDetail.reference', 'リファレンス資料')}
             </h3>
           </div>
@@ -686,24 +678,24 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
         <div className="flex items-center justify-between flex-wrap gap-[12px]">
           <div className="flex items-center gap-[8px]">
             <SparklesIcon />
-            <h3 className="text-[20px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base">
+            <h3 className="text-[16px] md:text-[20px] font-semibold leading-[22px] md:leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('toolDetail.recommendedPrompts', '推奨プロンプト')}
             </h3>
           </div>
         </div>
-        <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
+        <p className="text-[12px] md:text-[14px] leading-[18px] md:leading-[20px] text-[#565d6d] dark:text-gray-400 font-base font-normal">
           {t('toolDetail.recommendedPromptsDesc', '以下のプロンプトをコピーし、ツール起動後のチャット入力欄に貼り付けて開始してください。[※]の部分はお手元のデータで書き換える必要があります。')}
         </p>
 
         {/* Prompts Cards List */}
-        <div className="flex flex-col gap-[24px]">
+        <div className="flex flex-col gap-[16px] md:gap-[24px]">
           {displayPrompts.length > 0 ? (
             displayPrompts.map((prompt, idx) => {
               const isRec = prompt.isRecommended;
               return (
                 <div
                   key={idx}
-                  className={`bg-white dark:bg-midnight-950 border rounded-[16px] p-[24px] flex flex-col gap-[16px] shadow-md transition-colors duration-200 ${isRec
+                  className={`bg-white dark:bg-midnight-950 border rounded-[16px] p-[16px] md:p-[24px] flex flex-col gap-[12px] md:gap-[16px] shadow-md transition-colors duration-200 ${isRec
                     ? 'border-[#5570f6]/50 dark:border-[#5570f6]/40'
                     : 'border-[#dee1e6] dark:border-midnight-800'
                     }`}
@@ -711,23 +703,24 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                   {/* Header row */}
                   <div className="flex items-center justify-between gap-[16px] flex-wrap">
                     <div className="flex items-center gap-[12px] min-w-0 flex-1">
-                      <h4 className="text-[18px] font-semibold leading-[28px] text-[#171a1f] dark:text-light font-base break-all">
+                      <h4 className="text-[15px] md:text-[18px] font-semibold leading-[22px] md:leading-[28px] text-[#171a1f] dark:text-light font-base break-all">
                         {prompt.title}
                       </h4>
                     </div>
                     {/* Copy Button */}
                     <button
                       onClick={() => handleCopy(prompt.content, idx)}
-                      className="flex items-center justify-center gap-[8px] h-[36px] min-w-[180px] px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[14px] shadow-sm transition-colors duration-200"
+                      title={(copiedIndex === idx ? t('toolDetail.copied', 'コピーしました') : t('toolDetail.copyPrompt', 'プロンプトをコピー')) as string}
+                      className="flex items-center justify-center gap-[8px] h-[32px] md:h-[36px] w-[32px] md:w-auto md:min-w-[180px] px-0 md:px-[16px] border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-primary-50 dark:hover:bg-midnight-900 text-[#171a1f] dark:text-light font-base font-medium text-[13px] md:text-[14px] shadow-sm transition-colors duration-200 shrink-0"
                     >
                       {copiedIndex === idx ? <CheckIcon /> : <CopyIcon />}
-                      <span>{copiedIndex === idx ? t('toolDetail.copied', 'コピーしました') : t('toolDetail.copyPrompt', 'プロンプトをコピー')}</span>
+                      <span className="hidden md:inline">{copiedIndex === idx ? t('toolDetail.copied', 'コピーしました') : t('toolDetail.copyPrompt', 'プロンプトをコピー')}</span>
                     </button>
                   </div>
 
                   {/* Content Box */}
-                  <div className="bg-[#fafafb]/50 dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] p-[16px] max-h-[330px] overflow-y-auto">
-                    <pre className="text-[14px] leading-[23px] text-[#171a1f] dark:text-light font-mono whitespace-pre-wrap break-all">
+                  <div className="bg-[#fafafb]/50 dark:bg-midnight-900 border border-[rgba(222,225,230,0.5)] dark:border-midnight-800 rounded-[6px] p-[12px] md:p-[16px] max-h-[330px] overflow-y-auto">
+                    <pre className="text-[13px] md:text-[14px] leading-[20px] md:leading-[23px] text-[#171a1f] dark:text-light font-mono whitespace-pre-wrap break-all">
                       {prompt.content}
                     </pre>
                   </div>

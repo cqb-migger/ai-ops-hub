@@ -3,6 +3,12 @@ html {
   touch-action: manipulation;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: $font-base;
   @apply text-gray-900 dark:text-light bg-light dark:bg-dark;

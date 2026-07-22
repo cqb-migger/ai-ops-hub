@@ -799,24 +799,24 @@ export default function CreateToolForm() {
   };
 
   return (
-    <div className="flex flex-col gap-[24px] w-full text-[#171a1f] dark:text-light font-base">
+    <div className="flex flex-col gap-[16px] sm:gap-[24px] w-full text-[#171a1f] dark:text-light font-base">
 
       {/* Header */}
       <div className="flex flex-col gap-[8px]">
-        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
+        <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('manageTools.add')}
         </h2>
-        <p className="text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400">
+        <p className="hidden md:block text-[14px] leading-[20px] text-[#565d6d] dark:text-gray-400">
           {t('manageTools.addDesc', 'ユーザーが利用できる新しいAIツールを登録します。プロンプトテンプレートを事前設定することで、ユーザーの入力手間を省くことができます。')}
         </p>
       </div>
 
       {/* Box 1: 基本情報 (Basic Information) */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[16px] sm:p-[24px] gap-[16px] sm:gap-[20px]">
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <SettingsIcon />
-          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">{t('form.basicInfo')}</h3>
+          <h3 className="font-semibold text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-[#171a1f] dark:text-light font-base">{t('form.basicInfo')}</h3>
         </div>
 
         {/* Form Fields */}
@@ -996,7 +996,7 @@ export default function CreateToolForm() {
             <div className="flex flex-col gap-[8px]">
               {loginIds.map((id, index) => (
                 <div key={index} className="flex flex-col gap-[4px]">
-                  <div className="flex items-center gap-[12px]">
+                  <div className="flex items-center gap-[8px] sm:gap-[12px]">
                     <input
                       id={`login-id-${index}`}
                       type="text"
@@ -1011,7 +1011,7 @@ export default function CreateToolForm() {
                       <button
                         type="button"
                         onClick={() => handleRemoveLoginId(index)}
-                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200 shrink-0"
+                        className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200 shrink-0"
                         title={t('common.delete') as string}
                       >
                         <TrashIcon />
@@ -1034,32 +1034,36 @@ export default function CreateToolForm() {
             {/* Thumbnail Image */}
             <div className="flex flex-col gap-[6px] flex-[2]">
               <span className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.icon')}</span>
-              <div className="flex flex-row items-center gap-[16px] w-full">
+              <div className="flex flex-row items-center gap-[8px] sm:gap-[12px] w-full">
                 {/* Image Preview Box */}
-                <div className="flex items-center justify-center w-[56px] h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden shrink-0">
+                <div className="flex items-center justify-center w-[40px] h-[40px] sm:w-[56px] sm:h-[56px] rounded-[6px] border border-dashed border-[#dee1e6] dark:border-midnight-850 bg-[#fafafb] dark:bg-midnight-900 overflow-hidden shrink-0">
                   {thumbnailUrl ? (
                     <img src={thumbnailUrl} alt="Favicon Preview" className="w-full h-full object-contain" />
                   ) : (
                     <ImageUploadIcon />
                   )}
                 </div>
-                {/* URL Input & Button */}
-                <div className="flex gap-[8px] items-center flex-1 min-w-0">
-                  <input
-                    type="text"
-                    onChange={(e) => setIconUrlInput(e.target.value)}
-                    placeholder="https://example.com"
-                    className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleFetchFavicon}
-                    disabled={fetchingFavicon}
-                    className="h-[40px] px-[16px] bg-[#5570f6] text-white hover:bg-[#395ce0] disabled:bg-gray-400 disabled:cursor-not-allowed rounded-[6px] text-[14px] font-semibold transition-colors shrink-0"
-                  >
-                    {fetchingFavicon ? t('common.fetching') : t('form.getFavicon')}
-                  </button>
-                </div>
+                {/* URL Input */}
+                <input
+                  type="text"
+                  onChange={(e) => setIconUrlInput(e.target.value)}
+                  placeholder="https://example.com"
+                  className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+                />
+                {/* Fetch Favicon Button */}
+                <button
+                  type="button"
+                  onClick={handleFetchFavicon}
+                  disabled={fetchingFavicon}
+                  title={t('form.getFavicon') as string}
+                  className="h-[40px] px-[10px] sm:px-[16px] bg-[#5570f6] text-white hover:bg-[#395ce0] disabled:bg-gray-400 disabled:cursor-not-allowed rounded-[6px] text-[14px] font-semibold transition-colors shrink-0 whitespace-nowrap inline-flex items-center gap-[6px]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] shrink-0">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" x2="16.65" y1="21" y2="16.65" />
+                  </svg>
+                  <span className="hidden sm:inline">{fetchingFavicon ? t('common.fetching') : t('form.getFavicon')}</span>
+                </button>
               </div>
             </div>
 
@@ -1147,12 +1151,12 @@ export default function CreateToolForm() {
       </section>
 
       {/* Custom MCP Connection Settings Section */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[16px] sm:p-[24px] gap-[16px] sm:gap-[20px]">
         {/* Section Title */}
-        <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
-          <div className="flex items-center gap-[8px]">
+        <div className="flex items-center justify-between gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
+          <div className="flex items-center gap-[8px] min-w-0">
             <ServerIcon />
-            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
+            <h3 className="font-semibold text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('mcp.title')}
             </h3>
           </div>
@@ -1160,9 +1164,10 @@ export default function CreateToolForm() {
             href="https://modelcontextprotocol.io/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-[4px] text-[13px] text-gray-500 hover:text-[#5570f6] transition-colors"
+            title={t('mcp.docs') as string}
+            className="flex items-center gap-[4px] text-[13px] text-gray-500 hover:text-[#5570f6] transition-colors shrink-0"
           >
-            <span>{t('mcp.docs')}</span>
+            <span className="hidden sm:inline">{t('mcp.docs')}</span>
             <GlobeIcon />
           </a>
         </div>
@@ -1242,7 +1247,7 @@ export default function CreateToolForm() {
               </label>
               <div className="flex flex-col gap-[8px]">
                 {stdioArgs.map((arg, idx) => (
-                  <div key={idx} className="flex items-center gap-[12px]">
+                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
                     <input
                       type="text"
                       value={arg}
@@ -1253,7 +1258,7 @@ export default function CreateToolForm() {
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpArg(idx)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
                       title={t('common.delete') as string}
                     >
                       <TrashIcon />
@@ -1278,7 +1283,7 @@ export default function CreateToolForm() {
               </label>
               <div className="flex flex-col gap-[8px]">
                 {stdioEnv.map((env, idx) => (
-                  <div key={idx} className="flex items-center gap-[12px]">
+                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
                     <input
                       type="text"
                       value={env.key}
@@ -1296,7 +1301,7 @@ export default function CreateToolForm() {
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpEnv(idx)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
                       title={t('common.delete') as string}
                     >
                       <TrashIcon />
@@ -1321,7 +1326,7 @@ export default function CreateToolForm() {
               </label>
               <div className="flex flex-col gap-[8px]">
                 {stdioEnvPassthrough.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-[12px]">
+                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
                     <input
                       type="text"
                       value={item}
@@ -1332,7 +1337,7 @@ export default function CreateToolForm() {
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpEnvPassthrough(idx)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
                       title={t('common.delete') as string}
                     >
                       <TrashIcon />
@@ -1410,7 +1415,7 @@ export default function CreateToolForm() {
               <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">{t('mcp.headers')}</label>
               <div className="flex flex-col gap-[8px]">
                 {httpHeaders.map((header, idx) => (
-                  <div key={idx} className="flex items-center gap-[12px]">
+                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
                     <input
                       type="text"
                       value={header.key}
@@ -1428,7 +1433,7 @@ export default function CreateToolForm() {
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpHeader(idx)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
                       title={t('common.delete') as string}
                     >
                       <TrashIcon />
@@ -1453,7 +1458,7 @@ export default function CreateToolForm() {
               </label>
               <div className="flex flex-col gap-[8px]">
                 {httpHeadersFromEnv.map((hEnv, idx) => (
-                  <div key={idx} className="flex items-center gap-[12px]">
+                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
                     <input
                       type="text"
                       value={hEnv.key}
@@ -1471,7 +1476,7 @@ export default function CreateToolForm() {
                     <button
                       type="button"
                       onClick={() => handleRemoveMcpHeaderFromEnv(idx)}
-                      className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
+                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
                       title={t('common.delete') as string}
                     >
                       <TrashIcon />
@@ -1493,12 +1498,12 @@ export default function CreateToolForm() {
       </section>
 
       {/* Box 2: プロンプト設定 (Prompt Settings) */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[16px] sm:p-[24px] gap-[16px] sm:gap-[20px]">
         {/* Section Title */}
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <MessageSquareIcon />
-            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
+            <h3 className="font-semibold text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('prompt.title')}
             </h3>
           </div>
@@ -1682,12 +1687,12 @@ export default function CreateToolForm() {
       </section>
 
       {/* Box 3: {t('guide.title')} (Usage Guide Settings) */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[16px] sm:p-[24px] gap-[16px] sm:gap-[20px]">
         {/* Section Title */}
         <div className="flex items-center justify-between pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div className="flex items-center gap-[8px]">
             <BookIcon />
-            <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
+            <h3 className="font-semibold text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-[#171a1f] dark:text-light font-base">
               {t('guide.title')}
             </h3>
           </div>
@@ -1809,11 +1814,11 @@ export default function CreateToolForm() {
       </section>
 
       {/* Box 4: {t('form.supplementary')} (Supplementary Information) */}
-      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[24px] gap-[20px]">
+      <section className="flex flex-col bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-[0px_1px_2.5px_rgba(23,26,31,0.07)] p-[16px] sm:p-[24px] gap-[16px] sm:gap-[20px]">
         {/* Section Title */}
         <div className="flex items-center gap-[8px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800">
           <FileTextIcon />
-          <h3 className="font-semibold text-[18px] leading-[28px] text-[#171a1f] dark:text-light font-base">
+          <h3 className="font-semibold text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-[#171a1f] dark:text-light font-base">
             {t('form.supplementary')}
           </h3>
         </div>
@@ -1834,16 +1839,16 @@ export default function CreateToolForm() {
       </section>
 
       {/* Footer Action Buttons */}
-      <div className="flex items-center justify-center gap-[16px] pt-[8px] pb-[32px]">
+      <div className="flex items-center justify-center gap-[12px] sm:gap-[16px] pt-[8px] pb-[24px] sm:pb-[32px]">
         <button
           type="button"
           onClick={handleCancel}
-          className="h-[40px] px-[32px] bg-white dark:bg-midnight-900 hover:bg-gray-50 border border-[#dee1e6] rounded-[6px] text-[14px] font-semibold text-[#171a1f] dark:text-light transition-colors"
+          className="flex-1 sm:flex-none h-[40px] px-[16px] sm:px-[32px] bg-white dark:bg-midnight-900 hover:bg-gray-50 border border-[#dee1e6] rounded-[6px] text-[14px] font-semibold text-[#171a1f] dark:text-light transition-colors"
         >{t('common.cancel')}</button>
         <button
           type="button"
           onClick={handleSave}
-          className="h-[40px] px-[48px] bg-[#5570f6] hover:bg-[#395ce0] text-white rounded-[6px] text-[14px] font-semibold shadow-[0px_1px_2px_rgba(23,26,31,0.08)] transition-all duration-200"
+          className="flex-1 sm:flex-none h-[40px] px-[16px] sm:px-[48px] bg-[#5570f6] hover:bg-[#395ce0] text-white rounded-[6px] text-[14px] font-semibold shadow-[0px_1px_2px_rgba(23,26,31,0.08)] transition-all duration-200"
         >{t('common.save')}</button>
       </div>
     </div>

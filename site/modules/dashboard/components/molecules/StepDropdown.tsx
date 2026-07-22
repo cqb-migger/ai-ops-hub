@@ -99,7 +99,7 @@ export default function StepDropdown({
   }
 
   return (
-    <div ref={ref} className="relative" style={{ flex: `0 0 ${width}px`, width }}>
+    <div ref={ref} className="relative w-full sm:w-[var(--dd-w)] sm:flex-none" style={{ '--dd-w': `${width}px` } as React.CSSProperties}>
       {/* ── Trigger button ── */}
       <button
         type="button"

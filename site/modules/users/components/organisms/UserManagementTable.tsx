@@ -71,12 +71,12 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center p-[16px] bg-black/40 backdrop-blur-[2px]"
       onClick={handleBackdrop}
     >
-      <div className="w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
+      <div className="w-full max-w-[440px] bg-white dark:bg-midnight-950 rounded-[16px] shadow-[0_8px_40px_rgba(23,26,31,0.18)] border border-[#dee1e6] dark:border-midnight-800 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
+        <div className="flex items-center justify-between px-[16px] sm:px-[24px] py-[16px] sm:py-[20px] border-b border-[#dee1e6] dark:border-midnight-800">
           <div>
             <h3 className="text-[16px] font-bold text-[#171a1f] dark:text-light leading-[24px]">{t('users.changeRole', '役割を変更')}</h3>
             <p className="text-[13px] text-[#565d6d] dark:text-gray-400 mt-[2px]">{user.name}</p>
@@ -91,7 +91,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
         </div>
 
         {/* Body — radio list */}
-        <div className="px-[24px] py-[20px] flex flex-col gap-[10px]">
+        <div className="px-[16px] sm:px-[24px] py-[16px] sm:py-[20px] flex flex-col gap-[10px]">
           <p className="text-[13px] font-medium text-[#565d6d] dark:text-gray-400 mb-[4px]">{t('users.selectRolePrompt', '役割を選択してください')}</p>
           {ROLE_OPTIONS.map((opt) => {
             const checked = pendingRole === opt.value;
@@ -135,7 +135,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-[24px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900/50">
+        <div className="flex items-center justify-between gap-[12px] px-[16px] sm:px-[24px] py-[16px] border-t border-[#dee1e6] dark:border-midnight-800 bg-[#fafafb] dark:bg-midnight-900/50">
           <button
             type="button"
             onClick={onClose}
@@ -198,7 +198,7 @@ export default function UserManagementTable() {
   }
 
   return (
-    <div className="flex flex-col gap-[28px] w-full">
+    <div className="flex flex-col gap-[16px] sm:gap-[28px] w-full">
       {/* Modal */}
       {editingUser && (
         <ChangeRoleModal
@@ -210,10 +210,10 @@ export default function UserManagementTable() {
 
       {/* Title */}
       <div className="flex flex-col gap-[8px]">
-        <h2 className="text-[30px] font-bold leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
+        <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
           {t('nav.userManagement')}
         </h2>
-        <p className="text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
+        <p className="hidden md:block text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
           {t('users.desc', 'ログインするユーザーの権限とアクセス状態を管理します。')}
         </p>
       </div>
@@ -235,8 +235,66 @@ export default function UserManagementTable() {
           itemsPerPage={ITEMS_PER_PAGE}
         />
 
-        {/* Table */}
-        <div className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] overflow-hidden shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)]">
+        {/* Mobile Card List */}
+        <div className="md:hidden flex flex-col gap-[12px]">
+          {loading ? (
+            <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base">
+              {t('common.loading')}
+            </div>
+          ) : paginatedUsers.length > 0 ? (
+            <>
+              {paginatedUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[12px] p-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] flex items-start gap-[12px]"
+                >
+                  <div className="flex-shrink-0 w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] font-bold font-base select-none bg-[#e0e7ff] text-[#5570f6] dark:bg-[#1e1b4b]/50 dark:text-[#c7d2fe]">
+                    {getInitials(user.name)}
+                  </div>
+                  <div className="flex flex-col gap-[6px] min-w-0 flex-1">
+                    <span className="text-[14px] font-semibold leading-[20px] text-[#171a1f] dark:text-light font-base truncate">
+                      {user.name}
+                    </span>
+                    <span className="text-[12px] font-normal leading-[16px] text-[#565d6d] dark:text-gray-400 font-base truncate">
+                      {user.email}
+                    </span>
+                    <div className="flex items-center flex-wrap gap-[8px] mt-[2px]">
+                      <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
+                        {translateRole(user.role, t)}
+                      </span>
+                      <span className="text-[12px] text-[#565d6d] dark:text-gray-400 font-base">
+                        {user.lastLogin}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingUser(user)}
+                    title={t('users.changeRole', '役割を変更') as string}
+                    className="flex-shrink-0 inline-flex items-center justify-center w-[32px] h-[32px] rounded-[6px] text-[#565d6d] dark:text-gray-400 hover:text-[#5570f6] dark:hover:text-[#7c91eb] hover:bg-gray-100 dark:hover:bg-midnight-800 transition-colors"
+                  >
+                    <EditIcon />
+                  </button>
+                </div>
+              ))}
+              <Pagination
+                currentPage={currentPageSafe}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                totalItems={total}
+                itemsPerPage={ITEMS_PER_PAGE}
+                hideItemCount={true}
+              />
+            </>
+          ) : (
+            <div className="py-[48px] text-center text-[#565d6d] dark:text-gray-400 font-base border border-[#dee1e6] dark:border-midnight-800 rounded-[12px]">
+              {t('users.noUsers', '該当するユーザーが見つかりませんでした。')}
+            </div>
+          )}
+        </div>
+
+        {/* Table (desktop) */}
+        <div className="hidden md:block w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] overflow-hidden shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] border-collapse text-left">
               <thead>

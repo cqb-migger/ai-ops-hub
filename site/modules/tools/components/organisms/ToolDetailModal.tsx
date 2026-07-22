@@ -50,7 +50,7 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-[12px] right-[16px] md:top-[16px] md:right-[20px] p-[8px] bg-white/90 dark:bg-midnight-900/90 backdrop-blur-sm rounded-full hover:bg-gray-100 dark:hover:bg-midnight-800 transition-colors z-20 border border-[#dee1e6] dark:border-midnight-700 shadow-sm"
+          className="hidden md:block absolute top-[12px] right-[16px] md:top-[16px] md:right-[20px] p-[8px] bg-white/90 dark:bg-midnight-900/90 backdrop-blur-sm rounded-full hover:bg-gray-100 dark:hover:bg-midnight-800 transition-colors z-20 border border-[#dee1e6] dark:border-midnight-700 shadow-sm"
           title={t('common.close', '閉じる') as string}
         >
           <svg xmlns="http://www.w3.org/2059/svg" className="w-[20px] h-[20px] text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,10 +60,10 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
 
         {/* Fixed Header */}
         {!loading && tool && (
-          <div className="flex-shrink-0 flex items-start justify-between gap-[16px] pt-[12px] px-[16px] md:pt-[16px] md:px-[24px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-950 z-10 relative">
-            <div className="flex items-start gap-[16px]">
+          <div className="flex-shrink-0 flex items-start justify-between gap-[10px] md:gap-[16px] pt-[12px] px-[16px] md:pt-[16px] md:px-[24px] pb-[12px] border-b border-[#dee1e6] dark:border-midnight-800 bg-white dark:bg-midnight-950 z-10 relative">
+            <div className="flex items-start gap-[10px] md:gap-[16px] min-w-0">
               {/* Avatar */}
-              <div className="relative flex-shrink-0 w-[48px] h-[48px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[24px] select-none">
+              <div className="relative flex-shrink-0 w-[36px] h-[36px] md:w-[48px] md:h-[48px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 shadow-sm border border-[#dbe2f9] dark:border-midnight-800 flex items-center justify-center text-[18px] md:text-[24px] select-none">
                 {tool.icon && (tool.icon.startsWith('data:image/') || tool.icon.startsWith('http') || tool.icon.startsWith('/')) ? (
                   <img
                     src={tool.icon}
@@ -76,13 +76,13 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
               </div>
 
               {/* Text */}
-              <div className="flex flex-col gap-[4px] min-w-0 pr-[40px]">
-                <div className="flex items-center gap-[12px] flex-wrap">
-                  <h2 className="text-[24px] font-bold leading-[30px] text-[#171a1f] dark:text-light tracking-[0.5px] font-base truncate">
+              <div className="flex flex-col gap-[4px] min-w-0 md:pr-[52px]">
+                <div className="flex items-center gap-[12px] min-w-0">
+                  <h2 className="text-[20px] md:text-[24px] font-bold leading-[26px] md:leading-[30px] text-[#171a1f] dark:text-light tracking-[0.5px] font-base truncate min-w-0">
                     {tool.name}
                   </h2>
                 </div>
-                <p className="text-[15px] font-normal leading-[24px] text-[#565d6d] dark:text-gray-400 font-base line-clamp-2">
+                <p className="text-[13px] md:text-[15px] font-normal leading-[19px] md:leading-[24px] text-[#565d6d] dark:text-gray-400 font-base line-clamp-2">
                   {tool.description}
                 </p>
               </div>
@@ -95,10 +95,10 @@ export default function ToolDetailModal({ toolId, isOpen, onClose }: ToolDetailM
                   onClose();
                   router.push(`/manage-tools/edit/${tool.id}`);
                 }}
-                className="flex items-center justify-center gap-[8px] h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200 shrink-0 mr-[40px] md:mr-[48px]"
+                className="flex items-center justify-center gap-[8px] h-[32px] w-[32px] md:h-[36px] md:w-auto px-0 md:px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 text-[#171a1f] dark:text-light font-base font-semibold text-[14px] shadow-sm transition-all duration-200 shrink-0 md:mr-[48px]"
               >
                 <PenIcon />
-                <span>{t('common.edit', '編集')}</span>
+                <span className="hidden md:inline">{t('common.edit', '編集')}</span>
               </button>
             )}
           </div>
