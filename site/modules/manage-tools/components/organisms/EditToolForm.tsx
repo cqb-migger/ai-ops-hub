@@ -853,11 +853,11 @@ export default function EditToolForm() {
       };
 
       await updateTool(id as string, toolPayload as any);
-      toast.success(t('manageTools.saveSuccess', 'ツールを保存しました'));
+      toast.success(t('manageTools.saveSuccess'));
       setShowSuccessAlert(true);
       router.push('/manage-tools');
     } catch (err: any) {
-      toast.error(err.message || t('manageTools.saveFailed', 'ツールの保存に失敗しました'));
+      toast.error(err.message || t('manageTools.saveFailed'));
     }
   };
 

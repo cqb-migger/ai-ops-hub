@@ -192,7 +192,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const handleCopy = (content: string, index: number) => {
     navigator.clipboard.writeText(content);
     setCopiedIndex(index);
-    toast.success(t('toolDetail.copySuccessPrompt', 'プロンプトをコピーしました！'));
+    toast.success(t('toolDetail.copySuccessPrompt'));
     setTimeout(() => {
       setCopiedIndex(null);
     }, 2000);
@@ -201,14 +201,14 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const handleCopyLoginId = (content: string, index: number) => {
     navigator.clipboard.writeText(content);
     setCopiedLoginIdIndex(index);
-    toast.success(t('toolDetail.copySuccessLoginId', 'ログインIDをコピーしました！'));
+    toast.success(t('toolDetail.copySuccessLoginId'));
     setTimeout(() => {
       setCopiedLoginIdIndex(null);
     }, 2000);
   };
 
   const handleLaunchTool = () => {
-    toast.success(t('toolDetail.launchSimulation', '外部ツールを起動します... (シミュレーション)'));
+    toast.success(t('toolDetail.launchSimulation'));
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -223,7 +223,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
       const url = `${API_BASE}/tools/${tool.id}/guide-files/${fileId}/download${token ? `?token=${encodeURIComponent(token)}` : ''}`;
       const response = await fetch(url);
       if (!response.ok) {
-        toast.error(t('toolDetail.downloadFailed', 'ファイルのダウンロードに失敗しました。'));
+        toast.error(t('toolDetail.downloadFailed'));
         return;
       }
       const blob = await response.blob();
@@ -236,7 +236,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
       a.remove();
       window.URL.revokeObjectURL(blobUrl);
     } catch {
-      toast.error(t('toolDetail.downloadFailed', 'ファイルのダウンロードに失敗しました。'));
+      toast.error(t('toolDetail.downloadFailed'));
     }
   };
 

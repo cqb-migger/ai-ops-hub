@@ -155,9 +155,9 @@ export default function ToolManagementTable() {
     const { id, name } = deletingTool;
     try {
       await deleteTool(id);
-      toast.success(t('manageTools.deleteSuccess', '{{name}} を削除しました', { name }));
+      toast.success(t('manageTools.deleteSuccess', { name }));
     } catch (err: any) {
-      toast.error(err.message || t('manageTools.deleteFailed', 'ツールの削除に失敗しました。'));
+      toast.error(err.message || t('manageTools.deleteFailed'));
     } finally {
       setDeletingTool(null);
     }
@@ -167,9 +167,9 @@ export default function ToolManagementTable() {
     const nextStatus = currentStatus === 'public' ? 'draft' : 'public';
     try {
       await updateTool(id, { visibility: nextStatus });
-      toast.success(t('manageTools.statusChangeSuccess', '「{{name}}」のステータスを{{status}}に変更しました。', { name, status: nextStatus === 'public' ? t('manageTools.public') : t('manageTools.draft') }));
+      toast.success(t('manageTools.statusChangeSuccess', { name, status: nextStatus === 'public' ? t('manageTools.public') : t('manageTools.draft') }));
     } catch (err: any) {
-      toast.error(err.message || t('manageTools.statusChangeFailed', 'ステータスの更新に失敗しました。'));
+      toast.error(err.message || t('manageTools.statusChangeFailed'));
     }
   };
 

@@ -220,7 +220,7 @@ export default function UserManagementTable() {
   async function handleSaveRoles(newRoles: string[]) {
     if (!editingUser) return;
     await updateUserRoles(editingUser.id, newRoles);
-    toast.success(t('users.saveSuccess', 'ユーザー権限を更新しました'));
+    toast.success(t('users.saveSuccess'));
   }
 
   return (

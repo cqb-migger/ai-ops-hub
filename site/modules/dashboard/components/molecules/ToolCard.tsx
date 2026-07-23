@@ -59,13 +59,13 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
         });
         setIsFavorite(res.is_favorite);
         if (res.is_favorite) {
-          toast.success(t('dashboard.favAddSuccess', 'お気に入りに追加しました'));
+          toast.success(t('dashboard.favAddSuccess'));
         } else {
-          toast.success(t('dashboard.favRemoveSuccess', 'お気に入りから削除しました'));
+          toast.success(t('dashboard.favRemoveSuccess'));
         }
       }
     } catch (err) {
-      toast.error(t('common.error', 'エラーが発生しました'));
+      toast.error(t('common.error'));
       setIsFavorite(!!tool.is_favorite);
     }
   };
@@ -75,7 +75,7 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
       window.open(tool.url, '_blank', 'noopener,noreferrer');
     } else {
       import('react-hot-toast').then(({ default: toast }) => {
-        toast.success(t('dashboard.simulatingLaunch', '{{name}}を起動しています... (シミュレーション)', { name: tool.name }), { duration: 2000 });
+        toast.success(t('dashboard.simulatingLaunch', { name: tool.name }), { duration: 2000 });
       });
     }
   };

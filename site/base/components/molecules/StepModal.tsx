@@ -109,16 +109,16 @@ export default function StepModal({ isOpen, onClose, onSave, initialData }: Step
                       if (file) {
                         const formData = new FormData();
                         formData.append('file', file);
-                        const uploadToastId = toast.loading(t('compliance.uploading', '画像をアップロード中...'));
+                        const uploadToastId = toast.loading(t('compliance.uploading'));
                         try {
                           const res = await apiFetch<any>('/upload/file', {
                             method: 'POST',
                             body: formData,
                           });
                           setSelectedIcon(res.file_url);
-                          toast.success(t('compliance.uploadSuccess', 'アイコン画像をアップロードしました'), { id: uploadToastId });
+                          toast.success(t('compliance.uploadSuccess'), { id: uploadToastId });
                         } catch (err: any) {
-                          toast.error(err.message || t('compliance.uploadFailed', '画像のアップロードに失敗しました'), { id: uploadToastId });
+                          toast.error(err.message || t('compliance.uploadFailed'), { id: uploadToastId });
                         }
                       }
                     }}
