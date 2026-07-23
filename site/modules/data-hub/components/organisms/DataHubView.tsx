@@ -30,25 +30,33 @@ export default function DataHubView() {
   const { t } = useTranslation('common');
 
   const handleDownloadAll = async () => {
+    // Nothing matches the current filters — no point calling the API.
+    if (total === 0) {
+      toast.error(t('common.noDocsToDownload', 'ダウンロードできる資料がありません。'));
+      return;
+    }
+
+    // Mirror the exact filters used for the visible list so only those tools are downloaded.
     const params = new URLSearchParams();
     params.append('hub', 'data');
-    if (searchQuery) params.append('search', searchQuery);
+    if (debouncedSearch) params.append('search', debouncedSearch);
     if (selectedRole) params.append('role', selectedRole);
+    params.append('visibility', 'public');
     if (token) params.append('token', token);
 
     const downloadUrl = `${API_BASE}/tools/download-guides?${params.toString()}`;
-    
+
     try {
       const response = await fetch(downloadUrl);
       if (!response.ok) {
         if (response.status === 404) {
-          toast.error("No documents available to download");
+          toast.error(t('common.noDocsToDownload', 'ダウンロードできる資料がありません。'));
         } else {
           toast.error(t('manageTools.saveFailed', 'ツールの保存に失敗しました'));
         }
         return;
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -59,7 +67,7 @@ export default function DataHubView() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error("No documents available to download");
+      toast.error(t('common.noDocsToDownload', 'ダウンロードできる資料がありません。'));
     }
   };
 

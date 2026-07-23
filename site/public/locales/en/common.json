@@ -58,7 +58,10 @@
     "add": "Add",
     "select": "Select...",
     "create": "Create",
-    "preview": "Preview"
+    "preview": "Preview",
+    "show": "Show",
+    "hide": "Hide",
+    "noDocsToDownload": "No documents available to download"
   },
   "dashboard": {
     "searchPlaceholder": "Search tools...",

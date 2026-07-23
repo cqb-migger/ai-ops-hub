@@ -58,7 +58,10 @@
     "select": "選択...",
     "create": "作成",
     "preview": "プレビュー",
-    "name": "名前"
+    "name": "名前",
+    "show": "表示",
+    "hide": "非表示",
+    "noDocsToDownload": "ダウンロードできる資料がありません。"
   },
   "dashboard": {
     "searchPlaceholder": "ツールを検索...",

@@ -49,26 +49,34 @@ export default function ComplianceHubView() {
   const { t } = useTranslation('common');
 
   const handleDownloadAll = async () => {
+    // Nothing matches the current filters — no point calling the API.
+    if (total === 0) {
+      toast.error(t('common.noDocsToDownload', 'ダウンロードできる資料がありません。'));
+      return;
+    }
+
+    // Mirror the exact filters used for the visible list so only those tools are downloaded.
     const params = new URLSearchParams();
     params.append('hub', 'compliance');
-    if (searchQuery) params.append('search', searchQuery);
+    if (debouncedSearch) params.append('search', debouncedSearch);
     if (selectedRole) params.append('role', selectedRole);
     if (selectedStep) params.append('step_id', selectedStep);
+    params.append('visibility', 'public');
     if (token) params.append('token', token);
 
     const downloadUrl = `${API_BASE}/tools/download-guides?${params.toString()}`;
-    
+
     try {
       const response = await fetch(downloadUrl);
       if (!response.ok) {
         if (response.status === 404) {
-          toast.error("No documents available to download");
+          toast.error(t('common.noDocsToDownload', 'ダウンロードできる資料がありません。'));
         } else {
           toast.error(t('manageTools.saveFailed', 'ツールの保存に失敗しました'));
         }
         return;
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -79,7 +87,7 @@ export default function ComplianceHubView() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error("No documents available to download");
+      toast.error(t('common.noDocsToDownload', 'ダウンロードできる資料がありません。'));
     }
   };
 
@@ -241,7 +249,7 @@ export default function ComplianceHubView() {
           </div>
 
           <div className="flex items-center gap-[12px] flex-shrink-0">
-            {isFlowExpanded && steps.length < 6 && (
+            {isAdmin && isFlowExpanded && steps.length < 6 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -269,7 +277,7 @@ export default function ComplianceHubView() {
         </div>
 
         {/* Add Step — mobile only, own row */}
-        {isFlowExpanded && steps.length < 6 && (
+        {isAdmin && isFlowExpanded && steps.length < 6 && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -305,12 +313,13 @@ export default function ComplianceHubView() {
                 {steps.map((step, index) => (
                   <React.Fragment key={step.id}>
                     <div
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, index)}
-                      onDragOver={(e) => handleDragOver(e, index)}
-                      onDrop={(e) => handleDrop(e, index)}
-                      onDragEnd={handleDragEnd}
-                      className={`transition-all duration-200 cursor-move rounded-[12px] p-[4px] w-full max-w-[280px] md:flex-1 md:min-w-[180px] md:max-w-none md:flex-shrink-0 ${draggedIndex === index ? 'opacity-40 scale-95' : ''
+                      draggable={isAdmin}
+                      onDragStart={isAdmin ? (e) => handleDragStart(e, index) : undefined}
+                      onDragOver={isAdmin ? (e) => handleDragOver(e, index) : undefined}
+                      onDrop={isAdmin ? (e) => handleDrop(e, index) : undefined}
+                      onDragEnd={isAdmin ? handleDragEnd : undefined}
+                      className={`transition-all duration-200 rounded-[12px] p-[4px] w-full max-w-[280px] md:flex-1 md:min-w-[180px] md:max-w-none md:flex-shrink-0 ${isAdmin ? 'cursor-move' : ''
+                        } ${draggedIndex === index ? 'opacity-40 scale-95' : ''
                         } ${dragOverIndex === index ? 'ring-2 ring-dashed ring-[#5570f6] bg-[#f1f4fe] dark:bg-midnight-900' : ''
                         }`}
                     >
@@ -330,7 +339,7 @@ export default function ComplianceHubView() {
                       <div className="flex-1 w-full md:w-auto md:min-w-[48px] md:mt-[4px] flex items-center justify-center">
                         <StepConnector
                           onClick={() => handleAddStepAt(index + 1)}
-                          disabled={steps.length >= 6}
+                          disabled={!isAdmin || steps.length >= 6}
                         />
                       </div>
                     )}

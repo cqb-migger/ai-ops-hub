@@ -19,6 +19,23 @@ input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/**
+ * iOS Safari zooms the viewport whenever a focused text field renders below
+ * 16px. Most of our controls are 13–14px by design, so force every text-entry
+ * control up to 16px on small screens — that is the only size iOS accepts to
+ * skip the zoom. `!important` is required because Tailwind's `text-[14px]`
+ * utilities are single classes and outweigh a bare element selector.
+ *
+ * Scoped to the mobile breakpoint so the desktop type scale stays untouched.
+ */
+@media (max-width: 640px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
 .dot:before{
   content: "\2022";
 }

@@ -156,20 +156,12 @@ export function useTools(options: UseToolsOptions = {}) {
     const data = await apiFetch<{ is_favorite: boolean }>(`/tools/${id}/favorite`, {
       method: 'POST',
     });
-    setTools((prev) => {
-      const updated = prev.map((t) => {
-        if (String(t.id) === String(id)) {
-          return { ...t, is_favorite: data.is_favorite };
-        }
-        return t;
-      });
-      return [...updated].sort((a, b) => {
-        const aFav = a.is_favorite ? 1 : 0;
-        const bFav = b.is_favorite ? 1 : 0;
-        if (aFav !== bFav) return bFav - aFav;
-        return Number(b.id) - Number(a.id);
-      });
-    });
+    // Only flip the flag in place — keep the current list order untouched.
+    setTools((prev) =>
+      prev.map((t) =>
+        String(t.id) === String(id) ? { ...t, is_favorite: data.is_favorite } : t
+      )
+    );
     return data;
   };
 

@@ -206,10 +206,11 @@ export default function ToolManagementTable() {
           />
           <button
             onClick={handleAddNew}
-            className="md:hidden flex-shrink-0 inline-flex items-center justify-center gap-[6px] h-[36px] px-[12px] bg-[#5570f6] text-white hover:bg-primary-600 rounded-[6px] shadow-sm font-base font-medium text-[13px] transition-all duration-200"
+            title={t('manageTools.add') as string}
+            aria-label={t('manageTools.add') as string}
+            className="md:hidden flex-shrink-0 inline-flex items-center justify-center w-[36px] h-[36px] bg-[#5570f6] text-white hover:bg-primary-600 rounded-[6px] shadow-sm transition-all duration-200"
           >
             <PlusIcon />
-            <span>{t('manageTools.add')}</span>
           </button>
         </div>
 
@@ -226,9 +227,10 @@ export default function ToolManagementTable() {
                   key={tool.id}
                   className="w-full bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[12px] p-[16px] shadow-[0px_1px_1.25px_rgba(23,26,31,0.07)] flex flex-col gap-[12px]"
                 >
-                  {/* Top: icon + name/desc + actions */}
-                  <div className="flex items-start gap-[12px]">
-                    <div className="relative flex-shrink-0 w-[40px] h-[40px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 border border-[#dbe2f9] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
+                  {/* Top: floated icon so the title/description wrap beside it,
+                      then run the full card width on the lines below. */}
+                  <div className="min-w-0">
+                    <div className="float-left mr-[12px] w-[40px] h-[40px] rounded-full overflow-hidden bg-[#f3f6fd] dark:bg-midnight-900 border border-[#dbe2f9] dark:border-midnight-700 flex items-center justify-center text-[20px] select-none">
                       {tool.imageUrl && (tool.imageUrl.startsWith('http') || tool.imageUrl.startsWith('/')) ? (
                         <img
                           src={tool.imageUrl.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${tool.imageUrl}` : tool.imageUrl}
@@ -239,26 +241,100 @@ export default function ToolManagementTable() {
                         <span>{tool.imageUrl || '🔧'}</span>
                       )}
                     </div>
-                    <div className="flex flex-col gap-[2px] min-w-0 flex-1">
-                      <span className="text-[14px] font-semibold leading-[20px] text-[#171a1f] dark:text-light font-base truncate">
-                        {tool.name}
+                    <h3 className="text-[14px] font-semibold leading-[20px] text-[#171a1f] dark:text-light font-base break-words text-justify">
+                      {tool.name}
+                    </h3>
+                    <p className="mt-[4px] text-[12px] font-normal leading-[17px] text-[#565d6d] dark:text-gray-400 font-base break-words text-justify">
+                      {tool.description}
+                    </p>
+                    <div className="clear-both" />
+                  </div>
+
+                  {/* Category */}
+                  <div className="flex flex-col gap-[6px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.4px] text-[#565d6d] dark:text-gray-400 font-base">
+                      {t('filter.category')}
+                    </span>
+                    {tool.category.length > 0 ? (
+                      <div className="flex flex-wrap gap-[6px] items-center">
+                        {tool.category.map((cat) => (
+                          <span key={cat} className="inline-flex items-center justify-center bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] font-base whitespace-nowrap">
+                            {translateCategory(cat, t)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[12px] text-gray-400 dark:text-gray-500 italic font-base">
+                        {t('common.notSet')}
                       </span>
-                      <span className="text-[12px] font-normal leading-[16px] text-[#565d6d] dark:text-gray-400 font-base line-clamp-2">
-                        {tool.description}
+                    )}
+                  </div>
+
+                  {/* Role */}
+                  <div className="flex flex-col gap-[6px]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.4px] text-[#565d6d] dark:text-gray-400 font-base">
+                      {t('filter.role')}
+                    </span>
+                    {tool.roles && tool.roles.length > 0 ? (
+                      <div className="flex flex-wrap gap-[6px] items-center">
+                        {tool.roles.map((rVal) => (
+                          <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
+                            {translateRole(rVal, t)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[12px] text-gray-400 dark:text-gray-500 italic font-base">
+                        {t('common.notSet')}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-[4px] flex-shrink-0">
+                    )}
+                  </div>
+
+                  {/* Footer: status badge + icon-only actions on one row */}
+                  <div className="flex items-center justify-between gap-[8px] border-t border-[#dee1e6] dark:border-midnight-800 pt-[12px]">
+                    {/* Current status */}
+                    <span
+                      className={`inline-flex items-center gap-[6px] text-[11px] font-semibold px-[10px] h-[22px] rounded-full whitespace-nowrap font-base ${tool.status === 'public'
+                        ? 'bg-green-50 dark:bg-green-950/30 text-[#22c55e] dark:text-[#4ade80] border border-[#22c55e]/30'
+                        : 'bg-gray-100 dark:bg-midnight-900 text-[#565d6d] dark:text-gray-400 border border-[#dee1e6] dark:border-midnight-800'
+                        }`}
+                    >
+                      <span className={`w-[6px] h-[6px] rounded-full ${tool.status === 'public' ? 'bg-[#22c55e]' : 'bg-[#9095a0]'}`} />
+                      {tool.status === 'public' ? t('manageTools.public') : t('manageTools.draft')}
+                    </span>
+
+                    <div className="flex items-center gap-[8px] flex-shrink-0">
+                      {/* Publish toggle */}
+                      <button
+                        role="switch"
+                        aria-checked={tool.status === 'public'}
+                        onClick={() => handleToggleStatus(tool.id, tool.name, tool.status)}
+                        className={`relative inline-flex h-[20px] w-[36px] flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${tool.status === 'public' ? 'bg-[#22c55e]' : 'bg-[#dee1e6] dark:bg-midnight-800'}`}
+                        title={(tool.status === 'public' ? t('manageTools.makeDraft') : t('manageTools.makePublic')) as string}
+                        aria-label={(tool.status === 'public' ? t('manageTools.makeDraft') : t('manageTools.makePublic')) as string}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${tool.status === 'public' ? 'translate-x-[16px]' : 'translate-x-0'}`}
+                        />
+                      </button>
+
+                      {/* Edit */}
                       <button
                         onClick={() => handleEdit(tool.id)}
-                        className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-300 transition-colors duration-200"
                         title={t('common.edit') as string}
+                        aria-label={t('common.edit') as string}
+                        className="w-[28px] h-[28px] flex items-center justify-center bg-transparent text-[#565d6d] dark:text-gray-300 hover:text-[#5570f6] dark:hover:text-[#7c91eb] transition-colors duration-200"
                       >
                         <PenIcon />
                       </button>
+
+                      {/* Delete */}
                       {tool.status === 'public' ? (
                         <button
-                          className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-40"
+                          className="w-[28px] h-[28px] flex items-center justify-center bg-transparent text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50"
                           title={t('manageTools.publicDeleteError', '公開中のため削除できません') as string}
+                          aria-label={t('manageTools.publicDeleteError', '公開中のため削除できません') as string}
                           disabled
                         >
                           <TrashIcon />
@@ -266,52 +342,13 @@ export default function ToolManagementTable() {
                       ) : (
                         <button
                           onClick={() => handleDelete(tool.id, tool.name)}
-                          className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors duration-200"
                           title={t('common.delete') as string}
+                          aria-label={t('common.delete') as string}
+                          className="w-[28px] h-[28px] flex items-center justify-center bg-transparent text-[#f25a5a] hover:text-[#e04545] transition-colors duration-200"
                         >
                           <TrashIcon />
                         </button>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Category + Role badges */}
-                  {(tool.category.length > 0 || (tool.roles && tool.roles.length > 0)) && (
-                    <div className="flex flex-wrap gap-[6px] items-center">
-                      {tool.category.map((cat) => (
-                        <span key={cat} className="inline-flex items-center justify-center bg-[#f0f3fa] dark:bg-midnight-900/60 border border-[#cbd7f0] dark:border-[#4a5a8a] text-[11px] font-semibold text-[#2c5097] dark:text-[#8fa4f5] rounded-full px-[10px] h-[20px] font-base whitespace-nowrap">
-                          {translateCategory(cat, t)}
-                        </span>
-                      ))}
-                      {tool.roles && tool.roles.map((rVal) => (
-                        <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                          {translateRole(rVal, t)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Status toggle */}
-                  <div className="flex items-center justify-between border-t border-[#dee1e6] dark:border-midnight-800 pt-[12px]">
-                    <span className="text-[12px] text-[#565d6d] dark:text-gray-400 font-base">
-                      {t('common.status')}
-                    </span>
-                    <div className="flex items-center gap-[8px]">
-                      <button
-                        role="switch"
-                        aria-checked={tool.status === 'public'}
-                        onClick={() => handleToggleStatus(tool.id, tool.name, tool.status)}
-                        className={`relative inline-flex h-[20px] w-[36px] flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${tool.status === 'public' ? 'bg-[#22c55e]' : 'bg-[#dee1e6] dark:bg-midnight-800'}`}
-                        title={(tool.status === 'public' ? t('manageTools.makeDraft') : t('manageTools.makePublic')) as string}
-                      >
-                        <span
-                          aria-hidden="true"
-                          className={`pointer-events-none inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${tool.status === 'public' ? 'translate-x-[16px]' : 'translate-x-0'}`}
-                        />
-                      </button>
-                      <span className={`text-[12px] font-semibold font-base whitespace-nowrap ${tool.status === 'public' ? 'text-[#22c55e] dark:text-[#4ade80]' : 'text-[#565d6d] dark:text-gray-400'}`}>
-                        {tool.status === 'public' ? t('manageTools.public') : t('manageTools.draft')}
-                      </span>
                     </div>
                   </div>
                 </div>

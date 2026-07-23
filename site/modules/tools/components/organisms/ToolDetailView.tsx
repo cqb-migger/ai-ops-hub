@@ -107,6 +107,26 @@ function PaperclipIcon() {
   );
 }
 
+function EyeIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[15px] h-[15px]">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[15px] h-[15px]">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3.5 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
+  );
+}
+
 function ShieldAlertIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-amber-600 dark:text-amber-400">
@@ -114,6 +134,41 @@ function ShieldAlertIcon() {
       <line x1="12" x2="12" y1="8" y2="12" />
       <line x1="12" x2="12.01" y1="16" y2="16" />
     </svg>
+  );
+}
+
+/** Secret value that stays masked until the user clicks the eye toggle. */
+function SecretValue({
+  value,
+  revealed,
+  onToggle,
+  showLabel,
+  hideLabel,
+}: {
+  value: string;
+  revealed: boolean;
+  onToggle: () => void;
+  showLabel: string;
+  hideLabel: string;
+}) {
+  const hasValue = Boolean(value);
+  return (
+    <div className="flex items-center gap-[8px] min-w-0">
+      <span className="font-mono text-[14px] text-[#171a1f] dark:text-light break-all min-w-0">
+        {!hasValue ? '-' : revealed ? value : '••••••'}
+      </span>
+      {hasValue && (
+        <button
+          type="button"
+          onClick={onToggle}
+          title={revealed ? hideLabel : showLabel}
+          aria-label={revealed ? hideLabel : showLabel}
+          className="flex-shrink-0 flex items-center justify-center w-[24px] h-[24px] rounded-[4px] text-[#64748b] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-[#7c91eb] hover:bg-[#f1f5f9] dark:hover:bg-midnight-800 transition-colors"
+        >
+          {revealed ? <EyeOffIcon /> : <EyeIcon />}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -125,6 +180,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
   const [isMcpOpen, setIsMcpOpen] = useState<boolean>(false);
+  const [revealedValues, setRevealedValues] = useState<Record<string, boolean>>({});
   const [mcpTab, setMcpTab] = useState<'stdio' | 'http'>('stdio');
 
   useEffect(() => {
@@ -447,8 +503,19 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                             <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
                               {env.key || '-'}
                             </div>
-                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
-                              {(user?.role === 'admin') ? (env.value || '-') : '••••••'}
+                            <div className="flex-1 min-w-0">
+                              <SecretValue
+                                value={env.value || ''}
+                                revealed={!!revealedValues[`stdio-env-${idx}`]}
+                                onToggle={() =>
+                                  setRevealedValues((prev) => ({
+                                    ...prev,
+                                    [`stdio-env-${idx}`]: !prev[`stdio-env-${idx}`],
+                                  }))
+                                }
+                                showLabel={t('common.show', '表示') as string}
+                                hideLabel={t('common.hide', '非表示') as string}
+                              />
                             </div>
                           </div>
                         ))
@@ -525,8 +592,19 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
                             <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
                               {h.key || '-'}
                             </div>
-                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
-                              {(user?.role === 'admin') ? (h.value || '-') : '••••••'}
+                            <div className="flex-1 min-w-0">
+                              <SecretValue
+                                value={h.value || ''}
+                                revealed={!!revealedValues[`http-header-${idx}`]}
+                                onToggle={() =>
+                                  setRevealedValues((prev) => ({
+                                    ...prev,
+                                    [`http-header-${idx}`]: !prev[`http-header-${idx}`],
+                                  }))
+                                }
+                                showLabel={t('common.show', '表示') as string}
+                                hideLabel={t('common.hide', '非表示') as string}
+                              />
                             </div>
                           </div>
                         ))

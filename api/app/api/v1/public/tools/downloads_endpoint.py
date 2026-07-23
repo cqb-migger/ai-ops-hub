@@ -134,6 +134,7 @@ async def download_guides(
     role: Optional[str] = None,
     search: Optional[str] = None,
     step_id: Optional[int] = None,
+    visibility: Optional[str] = None,
 ):
     base_q = (
         select(Tool)
@@ -149,6 +150,10 @@ async def download_guides(
     # For security, normal users can only access visible public/active tools
     if current_user.role != 'admin':
         base_q = base_q.where(Tool.visibility == 'public')
+    elif visibility:
+        # Admins may see drafts, so honour the caller's filter to keep the ZIP
+        # aligned with the tools actually listed on screen.
+        base_q = base_q.where(Tool.visibility == visibility)
 
     if category_id:
         sub = select(ToolCategory.tool_id).where(ToolCategory.category_id == category_id)
