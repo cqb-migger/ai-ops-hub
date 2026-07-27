@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from '@base/stores/useAuthStore';
 import useAppConfigStore from '@base/stores/useAppConfigStore';
+import PageTemplate from '@base/components/templates/PageTemplate';
+import DashboardFooter from '@base/components/organisms/DashboardFooter';
 import '../styles/index.scss';
 
 function ZikJobApp({ Component, pageProps }: AppProps) {
@@ -65,9 +67,16 @@ function ZikJobApp({ Component, pageProps }: AppProps) {
     );
   }
 
+  const content = <Component {...pageProps} />;
+  const layout = isPublic ? content : (
+    <PageTemplate footer={<DashboardFooter />}>
+      {content}
+    </PageTemplate>
+  );
+
   return (
     <>
-      <Component {...pageProps} />
+      {layout}
       <Toaster position="top-right" reverseOrder={false} />
     </>
   );

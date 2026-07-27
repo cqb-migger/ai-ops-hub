@@ -6,9 +6,9 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 function DashboardPage() {
   return (
-    <PageTemplate footer={<DashboardFooter />}>
+    <>
       <ToolGrid />
-    </PageTemplate>
+    </>
   );
 }
 

@@ -6,9 +6,9 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 function ManageToolsPage() {
   return (
-    <PageTemplate footer={<DashboardFooter />}>
+    <>
       <ToolManagementTable />
-    </PageTemplate>
+    </>
   );
 }
 

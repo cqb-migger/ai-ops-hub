@@ -172,7 +172,8 @@ function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) 
   const containerRef = useRef<HTMLDivElement>(null);
   const { roles: apiRoles } = useRoles();
   const { t } = useTranslation('common');
-  const actualPlaceholder = (placeholder || t('common.select')) as string;
+  const router = useRouter();
+  const actualPlaceholder = (placeholder || t('common.select', '選択してください')) as string;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -206,7 +207,7 @@ function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) 
         className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
       >
         <span className={selectedOption ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
-          {selectedOption ? (translateRole(selectedOption.value, t, apiRoles) as string) : actualPlaceholder}
+          {selectedOption ? (translateRole(selectedOption.value, t, apiRoles, router.locale) as string) : actualPlaceholder}
         </span>
         <ChevronDownIcon />
       </div>
@@ -240,7 +241,7 @@ function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) 
                     : 'text-[#171a1f] dark:text-light'
                     }`}
                 >
-                  <span>{translateRole(opt.value, t, apiRoles)}</span>
+                  <span>{translateRole(opt.value, t, apiRoles, router.locale)}</span>
                   {opt.value === value && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
                       <polyline points="20 6 9 17 4 12" />
@@ -1049,7 +1050,7 @@ export default function EditToolForm() {
                     className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
                   />
                   <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
-                    {translateRole(opt.code, t, apiRoles)}
+                    {translateRole(opt.code, t, apiRoles, router.locale)}
                   </span>
                 </label>
               ))}
@@ -1087,9 +1088,8 @@ export default function EditToolForm() {
                         handleUpdateLoginId(index, e.target.value);
                       }}
                       placeholder={t('form.loginIdPlaceholder') as string}
-                      className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${
-                        errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
-                      } rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light`}
+                      className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border ${errors[`loginId_${index}`] ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
+                        } rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light`}
                     />
                     {loginIds.length > 1 && (
                       <button
@@ -1252,7 +1252,7 @@ export default function EditToolForm() {
           <textarea
             value={mcpConfig}
             onChange={(e) => setMcpConfig(e.target.value)}
-            placeholder={`{\n  "mcpServers": {\n    "example-server": {\n      "command": "npx",\n      "args": [\n        "-y",\n        "@modelcontextprotocol/server-postgres",\n        "postgresql://localhost/mydb"\n      ]\n    }\n  }\n}`}
+            placeholder={`MCP Connection Settings`}
             className="w-full h-[200px] p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] font-mono outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light resize-y"
           />
         </div>

@@ -385,7 +385,7 @@ export default function UserManagementTable() {
                       {/* Role badge */}
                       <td className="py-[16px] px-[20px]">
                         <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] rounded-full whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
-                          {translateRole(user.role, t, roles)}
+                          {translateRole(user.role, t, roles, router.locale)}
                         </span>
                       </td>
 

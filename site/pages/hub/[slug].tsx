@@ -11,9 +11,9 @@ function CategoryHubPage() {
   const slugStr = Array.isArray(slug) ? slug[0] : slug;
 
   return (
-    <PageTemplate footer={<DashboardFooter />}>
+    <>
       {slugStr ? <CategoryHubView slug={slugStr} /> : null}
-    </PageTemplate>
+    </>
   );
 }
 

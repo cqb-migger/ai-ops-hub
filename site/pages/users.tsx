@@ -6,9 +6,9 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 function UsersPage() {
   return (
-    <PageTemplate footer={<DashboardFooter />}>
+    <>
       <UserManagementTable />
-    </PageTemplate>
+    </>
   );
 }
 

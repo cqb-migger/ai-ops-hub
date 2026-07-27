@@ -281,7 +281,7 @@ export default function ToolManagementTable() {
                       <div className="flex flex-wrap gap-[6px] items-center">
                         {tool.roles.map((rVal) => (
                           <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                            {translateRole(rVal, t, roles)}
+                            {translateRole(rVal, t, roles, router.locale)}
                           </span>
                         ))}
                       </div>
@@ -460,7 +460,7 @@ export default function ToolManagementTable() {
                           <div className="flex flex-wrap gap-[6px] items-center">
                             {tool.roles.map((rVal) => (
                               <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                                {translateRole(rVal, t, roles)}
+                                {translateRole(rVal, t, roles, router.locale)}
                               </span>
                             ))}
                           </div>

@@ -113,7 +113,7 @@ function ToolDetailPage() {
   }, [router.isReady, id]);
 
   return (
-    <PageTemplate footer={<DashboardFooter />}>
+    <>
       {loading ? (
         <div className="flex flex-col items-center justify-center p-[48px] text-center w-full">
           <p className="text-[16px] text-[#565d6d] dark:text-gray-400 font-medium font-base">
@@ -129,7 +129,7 @@ function ToolDetailPage() {
           </p>
         </div>
       )}
-    </PageTemplate>
+    </>
   );
 }
 

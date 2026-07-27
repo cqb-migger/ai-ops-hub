@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { translateRole } from '../../../../base/utils/labels';
 import { useRoles } from '../../../../base/hooks/useRoles';
@@ -73,10 +74,11 @@ export default function RoleDropdown({
   const ref = useRef<HTMLDivElement>(null);
 
   const { t } = useTranslation('common');
+  const router = useRouter();
   const { roles } = useRoles();
   const hasRole = selectedRole !== '';
   const selectedOption = roles.find((r) => r.code === selectedRole);
-  const selectedLabel = selectedOption ? translateRole(selectedOption.code, t, roles) : null;
+  const selectedLabel = selectedOption ? translateRole(selectedOption.code, t, roles, router.locale) : null;
 
   // Close on outside click
   useEffect(() => {
@@ -139,7 +141,7 @@ export default function RoleDropdown({
           <div className="max-h-[280px] overflow-y-auto overflow-x-hidden">
             {roles.map((opt) => {
               const isSelected = selectedRole === opt.code;
-              const roleName = translateRole(opt.code, t, roles);
+              const roleName = translateRole(opt.code, t, roles, router.locale);
               return (
                 <button
                   key={opt.code}
