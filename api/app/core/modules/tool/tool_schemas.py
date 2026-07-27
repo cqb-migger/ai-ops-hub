@@ -74,16 +74,7 @@ class ToolCreate(BaseModel):
     step_ids: List[int] = []
     details: Optional[Dict[str, Any]] = None
     mcp_name: Optional[str] = None
-    mcp_type: Optional[str] = None
-    mcp_stdio_command: Optional[str] = None
-    mcp_stdio_args: Optional[List[str]] = None
-    mcp_stdio_env: Optional[List[dict]] = None
-    mcp_stdio_env_passthrough: Optional[List[str]] = None
-    mcp_stdio_work_dir: Optional[str] = None
-    mcp_http_url: Optional[str] = None
-    mcp_http_bearer_token_env: Optional[str] = None
-    mcp_http_headers: Optional[List[dict]] = None
-    mcp_http_headers_from_env: Optional[List[dict]] = None
+    mcp_config: Optional[str] = None
     prompts: List[PromptCreate] = []
     guide_files: List[GuideFileCreate] = []
 
@@ -102,16 +93,7 @@ class ToolUpdate(BaseModel):
     step_ids: Optional[List[int]] = None
     details: Optional[Dict[str, Any]] = None
     mcp_name: Optional[str] = None
-    mcp_type: Optional[str] = None
-    mcp_stdio_command: Optional[str] = None
-    mcp_stdio_args: Optional[List[str]] = None
-    mcp_stdio_env: Optional[List[dict]] = None
-    mcp_stdio_env_passthrough: Optional[List[str]] = None
-    mcp_stdio_work_dir: Optional[str] = None
-    mcp_http_url: Optional[str] = None
-    mcp_http_bearer_token_env: Optional[str] = None
-    mcp_http_headers: Optional[List[dict]] = None
-    mcp_http_headers_from_env: Optional[List[dict]] = None
+    mcp_config: Optional[str] = None
     prompts: Optional[List[PromptCreate]] = None
     guide_files: Optional[List[GuideFileCreate]] = None
 
@@ -129,16 +111,8 @@ class ToolListItem(BaseModel):
     step_ids: List[int] = []
     is_favorite: bool = False
     mcp_name: Optional[str] = None
-    mcp_type: Optional[str] = None
-    mcp_stdio_command: Optional[str] = None
-    mcp_stdio_args: Optional[List[str]] = None
-    mcp_stdio_env: Optional[List[dict]] = None
-    mcp_stdio_env_passthrough: Optional[List[str]] = None
-    mcp_stdio_work_dir: Optional[str] = None
-    mcp_http_url: Optional[str] = None
-    mcp_http_bearer_token_env: Optional[str] = None
-    mcp_http_headers: Optional[List[dict]] = None
-    mcp_http_headers_from_env: Optional[List[dict]] = None
+    mcp_config: Optional[str] = None
+    has_guide_files: bool = False
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
@@ -156,16 +130,7 @@ class ToolDetailResponse(BaseModel):
     admin_memo: Optional[str] = None
     details: Optional[Dict[str, Any]] = None
     mcp_name: Optional[str] = None
-    mcp_type: Optional[str] = None
-    mcp_stdio_command: Optional[str] = None
-    mcp_stdio_args: Optional[List[str]] = None
-    mcp_stdio_env: Optional[List[dict]] = None
-    mcp_stdio_env_passthrough: Optional[List[str]] = None
-    mcp_stdio_work_dir: Optional[str] = None
-    mcp_http_url: Optional[str] = None
-    mcp_http_bearer_token_env: Optional[str] = None
-    mcp_http_headers: Optional[List[dict]] = None
-    mcp_http_headers_from_env: Optional[List[dict]] = None
+    mcp_config: Optional[str] = None
     step_ids: List[int] = []
     is_favorite: bool = False
     categories: List[CategoryInTool] = []

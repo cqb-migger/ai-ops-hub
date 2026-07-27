@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../molecules/FilterBar';
 import ToolCard from '../molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
-import { useCategories } from '../../../../base/hooks/useCategories';
+import { useRouter } from 'next/router';
+import { useCategories, categoryDisplayName } from '../../../../base/hooks/useCategories';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { useTranslation } from 'next-i18next';
@@ -23,23 +24,24 @@ export default function ToolGrid() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
-  const [selectedSort, setSelectedSort] = useState('name_asc');
+  const [selectedSort, setSelectedSort] = useState('favorite');
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
 
+  const router = useRouter();
   const { categories } = useCategories();
 
-  // Category options (names) for the dropdown, from the full category list
+  // Category options (localized display names) for the dropdown.
   const uniqueCategories = useMemo(
-    () => categories.map((c) => c.name),
-    [categories]
+    () => categories.map((c) => categoryDisplayName(c, router.locale)),
+    [categories, router.locale]
   );
 
-  // Map selected category name -> id for the API filter
+  // Map the selected display name back to a category id for the API filter.
   const selectedCategoryId = useMemo(() => {
     if (!selectedCategory) return undefined;
-    return categories.find((c) => c.name === selectedCategory)?.id;
-  }, [categories, selectedCategory]);
+    return categories.find((c) => categoryDisplayName(c, router.locale) === selectedCategory)?.id;
+  }, [categories, selectedCategory, router.locale]);
 
   // Debounce the search input so we don't hit the API on every keystroke
   useEffect(() => {

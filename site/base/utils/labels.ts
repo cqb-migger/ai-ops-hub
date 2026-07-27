@@ -14,7 +14,20 @@ export function translateCategory(name: string, t: TFunction): string {
   return slug ? (t(`filter.categoryOptions.${slug}`, name) as string) : name;
 }
 
-/** Translate a role value for display. Falls back to the raw value when unknown. */
-export function translateRole(value: string, t: TFunction): string {
+interface RoleLike {
+  code: string;
+  name: string;
+  name_ja?: string | null;
+  name_en?: string | null;
+}
+
+/** Translate a role value for display. Prefers the localized dynamic role name. */
+export function translateRole(value: string, t: TFunction, roles?: RoleLike[], locale?: string): string {
+  const dynamicRole = roles?.find((r) => r.code === value);
+  if (dynamicRole) {
+    const isEn = (locale || 'ja').startsWith('en');
+    const primary = isEn ? dynamicRole.name_en : dynamicRole.name_ja;
+    return primary || dynamicRole.name_ja || dynamicRole.name_en || dynamicRole.name;
+  }
   return t(`filter.roleOptions.${value}`, value) as string;
 }

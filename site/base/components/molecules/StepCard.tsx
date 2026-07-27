@@ -1,6 +1,6 @@
 import React from 'react';
-import { Step } from '../../constants/steps';
-import { API_BASE } from '../../../../base/utils/api';
+import { Step } from '@base/types/steps';
+import { API_BASE } from '@base/utils/api';
 import { useTranslation } from 'next-i18next';
 
 interface StepCardProps {

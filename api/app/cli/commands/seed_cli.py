@@ -16,6 +16,8 @@ from app.core.modules.tool.models.tool_prompt import ToolPrompt, ToolPromptCateg
 from app.core.modules.tool.models.tool_role import ToolRole
 from app.core.modules.tool.models.tool_step import ToolStep
 from app.core.modules.user.models.user import User
+from app.core.modules.user.models.user_role import UserRole
+from app.core.modules.role.models.role import Role
 
 app = typer.Typer()
 
@@ -32,6 +34,25 @@ def get_json_data(file_name: str):
                 return json.load(f)
     raise FileNotFoundError(f"Could not find mock data file {file_name} in searched paths.")
 
+async def seed_roles_async():
+    typer.echo("Seeding roles...")
+    roles_data = [
+        {"code": "sale", "name": "営業"},
+        {"code": "marketing", "name": "マーケティング"},
+        {"code": "backoffice", "name": "バックオフィス"},
+        {"code": "accounting", "name": "経理"},
+        {"code": "admin", "name": "管理者"},
+    ]
+    async with AsyncSessionLocal() as session:
+        for r in roles_data:
+            res = await session.execute(select(Role).where(Role.code == r['code']))
+            if res.scalars().first():
+                continue
+            db_role = Role(code=r['code'], name=r['name'])
+            session.add(db_role)
+        await session.commit()
+    typer.echo("Roles seeded successfully!")
+
 async def seed_users_async():
     typer.echo("Seeding users...")
     users_data = get_json_data('users.json')
@@ -47,17 +68,21 @@ async def seed_users_async():
                 name=u['name'],
                 first_name=u['name'].split(' ')[0] if ' ' in u['name'] else u['name'],
                 last_name=u['name'].split(' ')[-1] if ' ' in u['name'] else "",
-                role=u.get('role', 'sale').lower(),  # Align with sale, marketing, admin etc.
                 last_login=datetime.now()
             )
             session.add(db_user)
+            await session.flush()
+            session.add(UserRole(user_id=db_user.id, role=u.get('role', 'sale').lower()))
         await session.commit()
     typer.echo("Users seeded successfully!")
 
 CATEGORY_SEED = [
-    {"slug": "creative", "name": "クリエイティブハブ", "order": 1},
-    {"slug": "compliance", "name": "コンプライアンスフロー", "order": 2},
-    {"slug": "data", "name": "データハブ", "order": 3},
+    {"slug": "creative", "name_ja": "クリエイティブ", "name_en": "Creative",
+     "menu_name_ja": "クリエイティブハブ", "menu_name_en": "Creative Hub", "order": 1, "has_step_flow": False},
+    {"slug": "compliance", "name_ja": "コンプライアンス", "name_en": "Compliance",
+     "menu_name_ja": "コンプライアンスハブ", "menu_name_en": "Compliance Hub", "order": 2, "has_step_flow": True},
+    {"slug": "data", "name_ja": "データ", "name_en": "Data",
+     "menu_name_ja": "データハブ", "menu_name_en": "Data Hub", "order": 3, "has_step_flow": False},
 ]
 
 async def seed_categories_async(session):
@@ -65,17 +90,26 @@ async def seed_categories_async(session):
     typer.echo("Seeding categories...")
     slug_to_id = {}
     for cat in CATEGORY_SEED:
-        res = await session.execute(select(Category).where(Category.name == cat["name"]))
+        res = await session.execute(select(Category).where(Category.slug == cat["slug"]))
         db_cat = res.scalars().first()
         if db_cat is None:
-            db_cat = Category(name=cat["name"], order=cat["order"])
+            db_cat = Category(
+                slug=cat["slug"],
+                name_ja=cat["name_ja"],
+                name_en=cat["name_en"],
+                menu_name_ja=cat["menu_name_ja"],
+                menu_name_en=cat["menu_name_en"],
+                order=cat["order"],
+                has_step_flow=cat["has_step_flow"],
+            )
             session.add(db_cat)
             await session.flush()
         slug_to_id[cat["slug"]] = db_cat.id
     return slug_to_id
 
-async def seed_steps_async():
+async def seed_steps_async(slug_to_id: dict):
     typer.echo("Seeding steps...")
+    compliance_id = slug_to_id.get("compliance")
     steps_data = get_json_data('steps.json')
     step_mapping = {}
     async with AsyncSessionLocal() as session:
@@ -87,6 +121,7 @@ async def seed_steps_async():
                 continue
 
             db_step = Step(
+                category_id=compliance_id,
                 order=s['order'],
                 icon=s.get('icon'),
                 title=s['title'],
@@ -181,8 +216,10 @@ async def seed_tools_async(step_mapping=None):
     typer.echo("Tools seeded successfully!")
 
 async def seed_all_async():
+    await seed_roles_async()
     await seed_users_async()
-    step_map = await seed_steps_async()
+    slug_to_id = await seed_categories_async(AsyncSessionLocal())
+    step_map = await seed_steps_async(slug_to_id)
     await seed_tools_async(step_map)
 
 @app.command()

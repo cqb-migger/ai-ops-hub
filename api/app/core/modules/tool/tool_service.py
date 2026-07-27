@@ -36,7 +36,7 @@ async def _enrich_tool(db: AsyncSession, tool: Tool, user_id: Optional[int] = No
     cats_map: dict = {}
     if cat_ids:
         res = await db.execute(select(Category).where(Category.id.in_(cat_ids)))
-        cats_map = {c.id: {'name': c.name, 'order': c.order} for c in res.scalars().all()}
+        cats_map = {c.id: {'name': (c.name_ja or c.name_en or ''), 'order': c.order} for c in res.scalars().all()}
 
     prompts = []
     for p in tool.prompts:
@@ -44,7 +44,7 @@ async def _enrich_tool(db: AsyncSession, tool: Tool, user_id: Optional[int] = No
         p_cats_map: dict = {}
         if p_cat_ids:
             res2 = await db.execute(select(Category).where(Category.id.in_(p_cat_ids)))
-            p_cats_map = {c.id: {'name': c.name, 'order': c.order} for c in res2.scalars().all()}
+            p_cats_map = {c.id: {'name': (c.name_ja or c.name_en or ''), 'order': c.order} for c in res2.scalars().all()}
         
         prompts.append({
             'id': p.id,
@@ -75,10 +75,7 @@ async def _enrich_tool(db: AsyncSession, tool: Tool, user_id: Optional[int] = No
         **{c: getattr(tool, c) for c in [
             'id', 'name', 'description', 'icon', 'url', 'status', 'visibility',
             'login_ids', 'guide_content', 'admin_memo', 'details',
-            'mcp_name', 'mcp_type', 'mcp_stdio_command', 'mcp_stdio_args',
-            'mcp_stdio_env', 'mcp_stdio_env_passthrough', 'mcp_stdio_work_dir',
-            'mcp_http_url', 'mcp_http_bearer_token_env', 'mcp_http_headers',
-            'mcp_http_headers_from_env',
+            'mcp_name', 'mcp_config',
             'created_at', 'updated_at',
         ]},
         'login_ids': tool.login_ids or [],
@@ -118,6 +115,7 @@ async def get_tools_service(
             selectinload(Tool.tool_categories),
             selectinload(Tool.tool_roles),
             selectinload(Tool.tool_steps),
+            selectinload(Tool.guide_files),
         )
     )
 
@@ -128,14 +126,15 @@ async def get_tools_service(
         user_res = await db.execute(select(User).where(User.id == user_id))
         user = user_res.scalars().first()
         if user:
-            user_role = user.role.lower()
-            if user_role == 'admin':
+            user_roles = [r.lower() for r in user.roles]
+            if 'admin' in user_roles:
                 if role:
                     role_sub = select(ToolRole.tool_id).where(func.lower(ToolRole.role) == role.lower())
                     no_restriction_sub = select(Tool.id).where(~Tool.id.in_(select(ToolRole.tool_id)))
                     base_q = base_q.where(or_(Tool.id.in_(role_sub), Tool.id.in_(no_restriction_sub)))
             else:
-                role_sub = select(ToolRole.tool_id).where(func.lower(ToolRole.role) == user_role)
+                # Non-admin: tools matching ANY of the user's roles.
+                role_sub = select(ToolRole.tool_id).where(func.lower(ToolRole.role).in_(user_roles))
                 base_q = base_q.where(Tool.id.in_(role_sub))
     else:
         if role:
@@ -147,9 +146,8 @@ async def get_tools_service(
         sub = select(ToolCategory.tool_id).where(ToolCategory.category_id == category_id)
         base_q = base_q.where(Tool.id.in_(sub))
     elif hub:
-        slug_map = {'creative': 'クリエイティブ', 'compliance': 'コンプライアンス', 'data': 'データ'}
-        keyword = slug_map.get(hub.lower(), hub)
-        cat_sub = select(Category.id).where(Category.name.ilike(f'%{keyword}%'))
+        # Categories are now identified by slug (e.g. 'creative', 'compliance', 'data').
+        cat_sub = select(Category.id).where(Category.slug == hub.lower())
         tc_sub = select(ToolCategory.tool_id).where(ToolCategory.category_id.in_(cat_sub))
         base_q = base_q.where(Tool.id.in_(tc_sub))
 
@@ -198,7 +196,7 @@ async def get_tools_service(
     cats_map: dict = {}
     if all_cat_ids:
         res = await db.execute(select(Category).where(Category.id.in_(all_cat_ids)))
-        cats_map = {c.id: {'name': c.name, 'order': c.order} for c in res.scalars().all()}
+        cats_map = {c.id: {'name': (c.name_ja or c.name_en or ''), 'order': c.order} for c in res.scalars().all()}
 
     items = []
     for tool in tools:
@@ -220,16 +218,8 @@ async def get_tools_service(
             ],
             'roles': [tr.role for tr in tool.tool_roles],
             'mcp_name': tool.mcp_name,
-            'mcp_type': tool.mcp_type,
-            'mcp_stdio_command': tool.mcp_stdio_command,
-            'mcp_stdio_args': tool.mcp_stdio_args or [],
-            'mcp_stdio_env': tool.mcp_stdio_env or [],
-            'mcp_stdio_env_passthrough': tool.mcp_stdio_env_passthrough or [],
-            'mcp_stdio_work_dir': tool.mcp_stdio_work_dir,
-            'mcp_http_url': tool.mcp_http_url,
-            'mcp_http_bearer_token_env': tool.mcp_http_bearer_token_env,
-            'mcp_http_headers': tool.mcp_http_headers or [],
-            'mcp_http_headers_from_env': tool.mcp_http_headers_from_env or [],
+            'mcp_config': tool.mcp_config,
+            'has_guide_files': len(tool.guide_files) > 0,
             'created_at': tool.created_at,
             'updated_at': tool.updated_at,
         })
@@ -258,12 +248,11 @@ async def get_tool_service(db: AsyncSession, tool_id: int, user_id: Optional[int
         user_res = await db.execute(select(User).where(User.id == user_id))
         user = user_res.scalars().first()
         if user:
-            user_role = user.role.lower()
-            if user_role == 'admin':
-                pass
-            else:
+            user_roles = [r.lower() for r in user.roles]
+            if 'admin' not in user_roles:
                 tool_roles = [r.role.lower() for r in tool.tool_roles]
-                if user_role not in tool_roles:
+                # Deny only if the tool is role-restricted and shares no role with the user.
+                if tool_roles and not any(r in tool_roles for r in user_roles):
                     return None
 
     return await _enrich_tool(db, tool, user_id=user_id)
@@ -346,16 +335,7 @@ async def create_tool_service(db: AsyncSession, tool_in: ToolCreate) -> dict:
         admin_memo=tool_in.admin_memo,
         details=tool_in.details,
         mcp_name=tool_in.mcp_name,
-        mcp_type=tool_in.mcp_type,
-        mcp_stdio_command=tool_in.mcp_stdio_command,
-        mcp_stdio_args=tool_in.mcp_stdio_args,
-        mcp_stdio_env=tool_in.mcp_stdio_env,
-        mcp_stdio_env_passthrough=tool_in.mcp_stdio_env_passthrough,
-        mcp_stdio_work_dir=tool_in.mcp_stdio_work_dir,
-        mcp_http_url=tool_in.mcp_http_url,
-        mcp_http_bearer_token_env=tool_in.mcp_http_bearer_token_env,
-        mcp_http_headers=tool_in.mcp_http_headers,
-        mcp_http_headers_from_env=tool_in.mcp_http_headers_from_env,
+        mcp_config=tool_in.mcp_config,
     )
     db.add(db_tool)
     await db.flush()
@@ -378,10 +358,7 @@ async def update_tool_service(db: AsyncSession, tool_id: int, tool_in: ToolUpdat
 
     scalar_fields = ['name', 'description', 'icon', 'url', 'status', 'visibility',
                      'login_ids', 'guide_content', 'admin_memo', 'details',
-                     'mcp_name', 'mcp_type', 'mcp_stdio_command', 'mcp_stdio_args',
-                     'mcp_stdio_env', 'mcp_stdio_env_passthrough', 'mcp_stdio_work_dir',
-                     'mcp_http_url', 'mcp_http_bearer_token_env', 'mcp_http_headers',
-                     'mcp_http_headers_from_env']
+                     'mcp_name', 'mcp_config']
     update_data = tool_in.model_dump(exclude_unset=True, exclude={'category_ids', 'roles', 'prompts', 'step_ids'})
     for field in scalar_fields:
         if field in update_data:

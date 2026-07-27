@@ -2,13 +2,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { useTools } from '../../../../base/hooks/useTools';
-import { useCategories } from '../../../../base/hooks/useCategories';
+import { useCategories, categoryDisplayName } from '../../../../base/hooks/useCategories';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { API_BASE } from '../../../../base/utils/api';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { ROLE_BADGE_COLORS } from '../../constants/roles';
 import { translateCategory, translateRole } from '../../../../base/utils/labels';
+import { useRoles } from '../../../../base/hooks/useRoles';
 import { useTranslation } from 'next-i18next';
 
 interface ManagedTool {
@@ -71,7 +72,7 @@ function XIcon() {
   );
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
 export default function ToolManagementTable() {
   const router = useRouter();
@@ -84,11 +85,12 @@ export default function ToolManagementTable() {
   const { t } = useTranslation('common');
 
   const { categories } = useCategories();
+  const { roles } = useRoles();
 
   // Map selected category name -> id for the API filter
   const selectedCategoryId = useMemo(() => {
     if (!selectedCategory) return undefined;
-    return categories.find((c) => c.name === selectedCategory)?.id;
+    return categories.find((c) => categoryDisplayName(c, router.locale) === selectedCategory)?.id;
   }, [categories, selectedCategory]);
 
   // Debounce the search input so we don't hit the API on every keystroke
@@ -193,7 +195,7 @@ export default function ToolManagementTable() {
         onCategoryChange={setSelectedCategory}
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
-        categories={categories.map((c) => c.name)}
+        categories={categories.map((c) => categoryDisplayName(c, router.locale))}
         showBothFilters
       />
 
@@ -279,7 +281,7 @@ export default function ToolManagementTable() {
                       <div className="flex flex-wrap gap-[6px] items-center">
                         {tool.roles.map((rVal) => (
                           <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                            {translateRole(rVal, t)}
+                            {translateRole(rVal, t, roles)}
                           </span>
                         ))}
                       </div>
@@ -388,10 +390,10 @@ export default function ToolManagementTable() {
                   <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[180px]">
                     {t('filter.role')}
                   </th>
-                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-center w-[120px]">
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[120px]">
                     {t('common.status')}
                   </th>
-                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base text-right w-[120px]">
+                  <th className="py-[14px] px-[20px] text-[14px] font-semibold text-[#171a1f] dark:text-light font-base w-[120px]">
                     {t('common.action')}
                   </th>
                 </tr>
@@ -458,7 +460,7 @@ export default function ToolManagementTable() {
                           <div className="flex flex-wrap gap-[6px] items-center">
                             {tool.roles.map((rVal) => (
                               <span key={rVal} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${ROLE_BADGE_COLORS[rVal] || ROLE_BADGE_COLORS.default}`}>
-                                {translateRole(rVal, t)}
+                                {translateRole(rVal, t, roles)}
                               </span>
                             ))}
                           </div>
@@ -493,8 +495,8 @@ export default function ToolManagementTable() {
                         </div>
                       </td>
 
-                      <td className="py-[16px] px-[20px] text-right">
-                        <div className="flex items-center justify-end gap-[4px]">
+                      <td className="py-[16px] px-[20px]">
+                        <div className="flex gap-[4px]">
                           <button
                             onClick={() => handleEdit(tool.id)}
                             className="w-[32px] h-[32px] flex items-center justify-center rounded-[6px] hover:bg-gray-100 dark:hover:bg-midnight-800 text-[#565d6d] dark:text-gray-300 transition-colors duration-200"

@@ -101,7 +101,8 @@ export default function ToolCard({ tool, onToggleFavorite }: ToolCardProps) {
             <div className="relative min-w-0 group/title">
               <h3
                 ref={titleRef}
-                className="text-[15px] font-bold leading-[22px] text-[#0f295a] dark:text-light tracking-[-0.3px] font-base truncate"
+                className="text-[15px] font-bold leading-[22px] text-[#0f295a] dark:text-light tracking-[-0.3px] font-base whitespace-normal break-words overflow-hidden"
+                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
               >
                 {tool.name}
               </h3>

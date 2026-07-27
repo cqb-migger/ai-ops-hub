@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import useAuthStore, { User } from '@base/stores/useAuthStore';
+import useAppConfigStore from '@base/stores/useAppConfigStore';
+import { resolveLogoUrl } from '@base/components/organisms/Sidebar';
 import { apiFetch } from '@base/utils/api';
 import toast, { Toaster } from 'react-hot-toast';
 import { useTranslation } from 'next-i18next';
@@ -12,6 +14,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { t } = useTranslation('common');
   const loginStore = useAuthStore((state) => state.login);
+  const appName = useAppConfigStore((state) => state.appName);
+  const logoUrl = useAppConfigStore((state) => state.logoUrl);
+  const resolvedLogo = resolveLogoUrl(logoUrl);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -189,23 +194,31 @@ export default function LoginPage() {
 
         {/* Brand/Logo Section */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 shadow-[0_0_15px_rgba(59,130,246,0.5)] mb-3 transition-transform hover:scale-105 duration-200">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-6 h-6 text-white"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-            </svg>
-          </div>
+          {resolvedLogo ? (
+            <img
+              src={resolvedLogo}
+              alt={appName}
+              className="w-12 h-12 rounded-xl object-cover shadow-[0_0_15px_rgba(59,130,246,0.5)] mb-3 transition-transform hover:scale-105 duration-200"
+            />
+          ) : (
+            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-violet-600 shadow-[0_0_15px_rgba(59,130,246,0.5)] mb-3 transition-transform hover:scale-105 duration-200">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-6 h-6 text-white"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+              </svg>
+            </div>
+          )}
           <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300 font-sans tracking-wide">
-            AI Navigator
+            {appName}
           </h1>
           <p className="text-xs text-slate-400 mt-1">{t('login.subtitle')}</p>
         </div>

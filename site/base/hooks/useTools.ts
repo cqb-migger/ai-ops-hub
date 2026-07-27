@@ -48,19 +48,11 @@ function mapApiTool(t: any): Tool {
     admin_memo: t.admin_memo,
     details: t.details,
     mcp_name: t.mcp_name,
-    mcp_type: t.mcp_type,
-    mcp_stdio_command: t.mcp_stdio_command,
-    mcp_stdio_args: t.mcp_stdio_args || [],
-    mcp_stdio_env: t.mcp_stdio_env || [],
-    mcp_stdio_env_passthrough: t.mcp_stdio_env_passthrough || [],
-    mcp_stdio_work_dir: t.mcp_stdio_work_dir,
-    mcp_http_url: t.mcp_http_url,
-    mcp_http_bearer_token_env: t.mcp_http_bearer_token_env,
-    mcp_http_headers: t.mcp_http_headers || [],
-    mcp_http_headers_from_env: t.mcp_http_headers_from_env || [],
+    mcp_config: t.mcp_config,
     step_id: t.step_id || (t.step_ids && t.step_ids[0]) || null,
     step_ids: t.step_ids || [],
     is_favorite: !!t.is_favorite,
+    has_guide_files: !!t.has_guide_files,
     categories: t.categories || [],
     roles: t.roles || [],
     guide_files: t.guide_files || [],
@@ -162,6 +154,10 @@ export function useTools(options: UseToolsOptions = {}) {
         String(t.id) === String(id) ? { ...t, is_favorite: data.is_favorite } : t
       )
     );
+
+    if (sort === 'favorite') {
+      await fetchTools();
+    }
     return data;
   };
 
@@ -217,16 +213,7 @@ function buildToolRequestBody(tool: Partial<Tool>): Record<string, any> {
   else if ((tool as any).step_ids !== undefined) body.step_ids = (tool as any).step_ids;
   if (tool.details !== undefined) body.details = tool.details;
   if (tool.mcp_name !== undefined) body.mcp_name = tool.mcp_name;
-  if (tool.mcp_type !== undefined) body.mcp_type = tool.mcp_type;
-  if (tool.mcp_stdio_command !== undefined) body.mcp_stdio_command = tool.mcp_stdio_command;
-  if (tool.mcp_stdio_args !== undefined) body.mcp_stdio_args = tool.mcp_stdio_args;
-  if (tool.mcp_stdio_env !== undefined) body.mcp_stdio_env = tool.mcp_stdio_env;
-  if (tool.mcp_stdio_env_passthrough !== undefined) body.mcp_stdio_env_passthrough = tool.mcp_stdio_env_passthrough;
-  if (tool.mcp_stdio_work_dir !== undefined) body.mcp_stdio_work_dir = tool.mcp_stdio_work_dir;
-  if (tool.mcp_http_url !== undefined) body.mcp_http_url = tool.mcp_http_url;
-  if (tool.mcp_http_bearer_token_env !== undefined) body.mcp_http_bearer_token_env = tool.mcp_http_bearer_token_env;
-  if (tool.mcp_http_headers !== undefined) body.mcp_http_headers = tool.mcp_http_headers;
-  if (tool.mcp_http_headers_from_env !== undefined) body.mcp_http_headers_from_env = tool.mcp_http_headers_from_env;
+  if (tool.mcp_config !== undefined) body.mcp_config = tool.mcp_config;
 
   // Handle categories: accept either API format (categories[]) or legacy format (category[])
   if (tool.categories !== undefined) {

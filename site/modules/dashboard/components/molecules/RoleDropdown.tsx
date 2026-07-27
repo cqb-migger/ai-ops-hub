@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ROLE_OPTIONS } from '../../../manage-tools/constants/roles';
 import { useTranslation } from 'next-i18next';
 import { translateRole } from '../../../../base/utils/labels';
+import { useRoles } from '../../../../base/hooks/useRoles';
 
 export interface RoleDropdownProps {
   selectedRole?: string;
@@ -63,13 +63,6 @@ function CheckIcon() {
   );
 }
 
-/**
- * Custom role dropdown.
- * - Dropdown list chỉ gồm các role thực (từ ROLE_OPTIONS), không có option "all".
- * - Khi chưa chọn (value = ''), hiển thị placeholder và chevron ▾.
- * - Khi đã chọn role, hiển thị label (truncated nếu dài) và nút clear ×.
- * - Width cố định (default 200px), text dài sẽ bị cắt "...".
- */
 export default function RoleDropdown({
   selectedRole = '',
   onRoleChange,
@@ -80,9 +73,10 @@ export default function RoleDropdown({
   const ref = useRef<HTMLDivElement>(null);
 
   const { t } = useTranslation('common');
+  const { roles } = useRoles();
   const hasRole = selectedRole !== '';
-  const selectedOption = ROLE_OPTIONS.find((r) => r.value === selectedRole);
-  const selectedLabel = selectedOption ? translateRole(selectedOption.value, t) : null;
+  const selectedOption = roles.find((r) => r.code === selectedRole);
+  const selectedLabel = selectedOption ? translateRole(selectedOption.code, t, roles) : null;
 
   // Close on outside click
   useEffect(() => {
@@ -95,84 +89,76 @@ export default function RoleDropdown({
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  function handleSelect(value: string) {
-    onRoleChange(value);
+  const handleSelect = (val: string) => {
+    onRoleChange(val);
     setOpen(false);
-  }
+  };
 
-  function handleClear(e: React.MouseEvent) {
+  const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     onRoleChange('');
-  }
+  };
+
+  const actualPlaceholder = placeholder || t('filter.allRoles', 'すべての役割');
 
   return (
-    <div ref={ref} className="relative w-full sm:w-[var(--dd-w)] sm:flex-none" style={{ '--dd-w': `${width}px` } as React.CSSProperties}>
-      {/* ── Trigger button ── */}
+    <div className="relative" ref={ref} style={{ width }}>
       <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        style={{ width: '100%' }}
-        className={`flex items-center h-[40px] pl-[12px] pr-[8px] rounded-[6px] border text-[14px] font-medium transition-all select-none overflow-hidden ${
-          hasRole
-            ? 'bg-[#eef0fd] dark:bg-[#2a3060] border-[#5570f6] dark:border-[#5570f6]/60 text-[#5570f6] dark:text-[#7c91eb]'
-            : 'bg-white dark:bg-midnight-900 border-[#dee1e6] dark:border-midnight-800 text-[#565d6d] dark:text-gray-400 hover:border-[#9095a0] dark:hover:border-midnight-700'
-        }`}
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between h-[36px] px-[16px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] hover:bg-gray-50 dark:hover:bg-midnight-800 transition-colors"
       >
-        {/* Label — truncate khi dài */}
-        <span
-          className={`flex-1 min-w-0 truncate text-left ${
-            hasRole ? 'text-[#5570f6] dark:text-[#7c91eb] font-semibold' : ''
-          }`}
-        >
-          {selectedLabel ?? (placeholder || t('filter.allRoles'))}
-        </span>
-
-        {/* Clear × khi đã chọn role, chevron ▾ khi mặc định */}
-        {hasRole ? (
-          <span
-            role="button"
-            onClick={handleClear}
-            title={t('common.clear', 'クリア') as string}
-            className="flex-shrink-0 ml-[6px] flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#5570f6]/15 hover:bg-[#5570f6]/30 text-[#5570f6] dark:text-[#7c91eb] transition-colors"
-          >
-            <XIcon size={11} />
-          </span>
-        ) : (
-          <span className="flex-shrink-0 ml-[6px] text-[#9095a0] dark:text-gray-500">
+        <div className="flex items-center min-w-0 flex-1">
+          {hasRole ? (
+            <span className="text-[14px] font-medium text-[#171a1f] dark:text-light truncate font-base leading-none">
+              {selectedLabel}
+            </span>
+          ) : (
+            <span className="text-[14px] font-medium text-[#565d6d] dark:text-gray-400 font-base leading-none truncate">
+              {actualPlaceholder}
+            </span>
+          )}
+        </div>
+        <div className="flex-shrink-0 flex items-center gap-[6px] ml-[8px]">
+          {hasRole && (
+            <div
+              onClick={handleClear}
+              className="text-[#9095a0] dark:text-gray-400 hover:text-[#171a1f] dark:hover:text-light transition-colors"
+              title={t('filter.clearRole', 'クリア') as string}
+            >
+              <XIcon />
+            </div>
+          )}
+          <div className="text-[#9095a0] dark:text-gray-400">
             <ChevronIcon />
-          </span>
-        )}
+          </div>
+        </div>
       </button>
 
-      {/* ── Dropdown panel ── */}
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[8px] shadow-[0_4px_16px_rgba(23,26,31,0.12)] py-[4px]">
-          {ROLE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleSelect(opt.value)}
-              className={`group/item relative w-full flex items-center justify-between gap-[8px] px-[12px] py-[8px] text-[14px] text-left transition-colors ${
-                selectedRole === opt.value
-                  ? 'bg-[#eef0fd] dark:bg-[#2a3060] text-[#5570f6] dark:text-[#7c91eb] font-semibold'
-                  : 'text-[#171a1f] dark:text-light hover:bg-[#fafafb] dark:hover:bg-midnight-800'
-              }`}
-            >
-              <span className="truncate flex-1 min-w-0">{translateRole(opt.value, t)}</span>
-              {selectedRole === opt.value && (
-                <span className="flex-shrink-0 text-[#5570f6] dark:text-[#7c91eb]">
-                  <CheckIcon />
-                </span>
-              )}
-              {/* Custom Tooltip */}
-              {translateRole(opt.value, t).length > 15 && (
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-[8px] hidden group-hover/item:block w-max max-w-[240px] p-[10px] bg-[#171a1f] dark:bg-[#1c2230] text-white dark:text-light text-[12px] leading-[18px] rounded-[8px] shadow-xl z-[60] text-left font-normal border border-[#dee1e6] dark:border-midnight-800 break-all pointer-events-none whitespace-normal">
-                  {translateRole(opt.value, t)}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-[6px] border-transparent border-t-[#171a1f] dark:border-t-[#1c2230]" />
-                </div>
-              )}
-            </button>
-          ))}
+        <div className="absolute top-full left-0 mt-[4px] w-full bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] shadow-lg z-50 py-[8px]">
+          <div className="max-h-[280px] overflow-y-auto overflow-x-hidden">
+            {roles.map((opt) => {
+              const isSelected = selectedRole === opt.code;
+              const roleName = translateRole(opt.code, t, roles);
+              return (
+                <button
+                  key={opt.code}
+                  onClick={() => handleSelect(opt.code)}
+                  className="w-full flex items-center justify-between px-[16px] py-[8px] hover:bg-[#f3f6fd] dark:hover:bg-midnight-800 transition-colors group relative"
+                  title={roleName.length > 15 ? roleName : undefined}
+                >
+                  <span className="text-[14px] text-[#171a1f] dark:text-light font-base text-left truncate flex-1 min-w-0">
+                    {roleName}
+                  </span>
+                  {isSelected && (
+                    <span className="flex-shrink-0 ml-[12px] text-[#395ce0] dark:text-[#5c77e6]">
+                      <CheckIcon />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

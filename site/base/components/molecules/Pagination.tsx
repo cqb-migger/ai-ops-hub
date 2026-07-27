@@ -17,7 +17,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
   const { t } = useTranslation('common');
   const currentPageSafe = Math.max(1, Math.min(currentPage, Math.max(1, totalPages)));
 
-  const showPaginationControls = totalPages >= 1;
+  if (totalPages <= 1) return null;
+
+  const showPaginationControls = totalPages > 1;
   const canShowItemCount = totalItems !== undefined && itemsPerPage !== undefined;
   const showItemCount = (showItemCountProp ?? !hideItemCount) && canShowItemCount;
   // Keep record count at the start and page controls at the end. When the count

@@ -1,9 +1,6 @@
 {
   "nav": {
     "dashboard": "ダッシュボード",
-    "creativeHub": "クリエイティブハブ",
-    "complianceHub": "コンプライアンスハブ",
-    "dataHub": "データハブ",
     "manageTools": "ツール管理",
     "userManagement": "ユーザー管理",
     "language": "言語",
@@ -61,7 +58,8 @@
     "name": "名前",
     "show": "表示",
     "hide": "非表示",
-    "noDocsToDownload": "ダウンロードできる資料がありません。"
+    "noDocsToDownload": "ダウンロードできる資料がありません。",
+    "back": "戻る"
   },
   "dashboard": {
     "searchPlaceholder": "ツールを検索...",
@@ -90,8 +88,8 @@
     "favFirst": "お気に入り優先",
     "newest": "新着順",
     "sortOptions": {
-      "nameAsc": "名前（A→Z）",
-      "favorite": "お気に入り優先"
+      "favorite": "お気に入り優先",
+      "ascending": "昇順"
     },
     "allCategories": "すべてのカテゴリ",
     "allRoles": "すべての役割",
@@ -153,9 +151,7 @@
   },
   "toolDetail": {
     "backToDashboard": "ダッシュボードに戻る",
-    "backToCompliance": "コンプライアンスハブに戻る",
-    "backToCreative": "クリエイティブハブに戻る",
-    "backToData": "データハブに戻る",
+    "backToHub": "戻る",
     "backToManageTools": "ツール管理に戻る",
     "copySuccessPrompt": "プロンプトをコピーしました！",
     "copySuccessLoginId": "ログインIDをコピーしました！",
@@ -182,7 +178,24 @@
     "mcpHttpUrl": "接続URL (SSE/HTTP)",
     "mcpHttpBearerTokenEnv": "Bearerトークン環境変数",
     "mcpHttpHeaders": "追加ヘッダー",
-    "mcpHttpHeadersFromEnv": "環境変数から取得するヘッダー"
+    "mcpHttpHeadersFromEnv": "環境変数から取得するヘッダー",
+    "downloadDocuments": "資料ダウンロード"
+  },
+  "roles": {
+    "manageRoles": "役割の管理",
+    "addNew": "新しい役割の追加",
+    "editRole": "役割の編集",
+    "code": "役割コード (Code)",
+    "name": "役割名 (Name)",
+    "description": "説明 (Description)",
+    "existingRoles": "既存の役割",
+    "addRole": "役割を追加",
+    "noRoles": "役割がありません",
+    "confirmDelete": "この役割を削除してもよろしいですか？",
+    "deleteSuccess": "役割を削除しました",
+    "saveSuccess": "役割を保存しました",
+    "nameJa": "役割名 (日本語)",
+    "nameEn": "役割名 (English)"
   },
   "users": {
     "title": "ユーザー一覧",
@@ -347,5 +360,46 @@
     "browse": "ブラウズ",
     "refMaterials": "参照資料 (PDF/画像)",
     "refMaterialsHelp": "チェック業務に必要な関連規約や資料をアップロードします。(最大3ファイル)"
+  },
+  "settings": {
+    "title": "アプリ設定",
+    "desc": "アプリケーションの名称とロゴを設定します。全ユーザーに表示されます。",
+    "appName": "アプリ名",
+    "logo": "ロゴ",
+    "uploadLogo": "ロゴをアップロード",
+    "removeLogo": "ロゴを削除",
+    "logoHint": "PNG / JPG / SVG。正方形の画像を推奨します。",
+    "logoMustBeImage": "画像ファイルを選択してください",
+    "uploadFailed": "アップロードに失敗しました",
+    "nameRequired": "アプリ名を入力してください",
+    "saveSuccess": "設定を保存しました",
+    "saveFailed": "設定の保存に失敗しました"
+  },
+  "hub": {
+    "notFound": "カテゴリが見つかりませんでした。"
+  },
+  "categories": {
+    "manage": "カテゴリを管理",
+    "add": "カテゴリを追加",
+    "addTitle": "カテゴリを追加",
+    "editTitle": "カテゴリを編集",
+    "empty": "カテゴリがありません",
+    "inNav": "メニュー表示",
+    "internalName": "内部名",
+    "internalNameHint": "ユニークな内部識別名（英語推奨）。slug はこれから自動生成されます。",
+    "nameJa": "カテゴリ名 (日本語)",
+    "nameEn": "カテゴリ名 (English)",
+    "menuNameJa": "メニュー名 (日本語)",
+    "menuNameEn": "メニュー名 (English)",
+    "icon": "アイコン (絵文字)",
+    "hasStepFlow": "ステップ（レビューフロー）を表示する",
+    "nameRequired": "内部名を入力してください",
+    "created": "カテゴリを作成しました",
+    "updated": "カテゴリを更新しました",
+    "deleted": "カテゴリを削除しました",
+    "saveFailed": "カテゴリの保存に失敗しました",
+    "deleteFailed": "カテゴリの削除に失敗しました",
+    "fieldRequired": "この項目は必須です",
+    "deleteInUse": "このカテゴリはツールに紐づいているため削除できません。"
   }
 }

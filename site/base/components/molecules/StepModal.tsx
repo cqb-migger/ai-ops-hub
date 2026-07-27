@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Step } from '../../constants/steps';
+import { Step } from '@base/types/steps';
 import { toast } from 'react-hot-toast';
-import { API_BASE, apiFetch } from '../../../../base/utils/api';
+import { API_BASE, apiFetch } from '@base/utils/api';
 import { useTranslation } from 'next-i18next';
 
 interface StepModalProps {

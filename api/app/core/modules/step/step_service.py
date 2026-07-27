@@ -26,9 +26,12 @@ async def _assert_step_not_in_use(db: AsyncSession, step_id: int) -> None:
         )
 
 
-async def get_steps_service(db: AsyncSession) -> List[Step]:
-    """Retrieve all steps ordered by their sort order."""
-    result = await db.execute(select(Step).order_by(Step.order))
+async def get_steps_service(db: AsyncSession, category_id: Optional[int] = None) -> List[Step]:
+    """Retrieve all steps ordered by their sort order, optionally filtered by category."""
+    query = select(Step)
+    if category_id is not None:
+        query = query.where(Step.category_id == category_id)
+    result = await db.execute(query.order_by(Step.order))
     return list(result.scalars().all())
 
 async def get_step_service(db: AsyncSession, step_id: int) -> Optional[Step]:
@@ -36,10 +39,11 @@ async def get_step_service(db: AsyncSession, step_id: int) -> Optional[Step]:
     result = await db.execute(select(Step).where(Step.id == step_id))
     return result.scalars().first()
 
-async def create_step_service(db: AsyncSession, step_in: StepCreate) -> Step:
+async def create_step_service(db: AsyncSession, step_in: StepCreate, category_id: Optional[int] = None) -> Step:
     """Create a new step."""
     db_step = Step(
         id=step_in.id,
+        category_id=step_in.category_id if step_in.category_id is not None else category_id,
         order=step_in.order,
         icon=step_in.icon,
         title=step_in.title,
@@ -77,13 +81,13 @@ async def delete_step_service(db: AsyncSession, step_id: int) -> Optional[Step]:
     await db.flush()
     return db_step
 
-async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate]) -> List[Step]:
+async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate], category_id: Optional[int] = None) -> List[Step]:
     """
     Saves a list of steps in bulk (useful for reordering).
     Performs smart upsert (updates existing by ID, creates new, deletes those not in list)
     to preserve step_id foreign key references on tools where possible.
     """
-    current_steps = await get_steps_service(db)
+    current_steps = await get_steps_service(db, category_id)
     current_map = {s.id: s for s in current_steps}
 
     incoming_ids = {s_in.id for s_in in steps_in if s_in.id is not None}
@@ -99,6 +103,8 @@ async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate]) 
     for s_in in steps_in:
         if s_in.id is not None and s_in.id in current_map:
             db_step = current_map[s_in.id]
+            if s_in.category_id is not None:
+                db_step.category_id = s_in.category_id
             db_step.order = s_in.order
             db_step.icon = s_in.icon
             db_step.title = s_in.title
@@ -107,6 +113,7 @@ async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate]) 
         else:
             db_step = Step(
                 id=s_in.id,
+                category_id=s_in.category_id if s_in.category_id is not None else category_id,
                 order=s_in.order,
                 icon=s_in.icon,
                 title=s_in.title,

@@ -1,9 +1,6 @@
 {
   "nav": {
     "dashboard": "Dashboard",
-    "creativeHub": "Creative Hub",
-    "complianceHub": "Compliance Hub",
-    "dataHub": "Data Hub",
     "manageTools": "Manage Tools",
     "userManagement": "User Management",
     "language": "Language",
@@ -61,7 +58,8 @@
     "preview": "Preview",
     "show": "Show",
     "hide": "Hide",
-    "noDocsToDownload": "No documents available to download"
+    "noDocsToDownload": "No documents available to download",
+    "back": "Back"
   },
   "dashboard": {
     "searchPlaceholder": "Search tools...",
@@ -90,8 +88,8 @@
     "favFirst": "Favorites First",
     "newest": "Newest First",
     "sortOptions": {
-      "nameAsc": "Name (A–Z)",
-      "favorite": "Favorites First"
+      "favorite": "Favorites First",
+      "ascending": "Ascending"
     },
     "allCategories": "All Categories",
     "allRoles": "All Roles",
@@ -153,9 +151,7 @@
   },
   "toolDetail": {
     "backToDashboard": "Back to Dashboard",
-    "backToCompliance": "Back to Compliance Hub",
-    "backToCreative": "Back to Creative Hub",
-    "backToData": "Back to Data Hub",
+    "backToHub": "Back",
     "backToManageTools": "Back to Tool Management",
     "copySuccessPrompt": "Prompt copied to clipboard!",
     "copySuccessLoginId": "Login ID copied to clipboard!",
@@ -182,7 +178,24 @@
     "mcpHttpUrl": "Connection URL (SSE/HTTP)",
     "mcpHttpBearerTokenEnv": "Bearer Token Env Var",
     "mcpHttpHeaders": "Headers",
-    "mcpHttpHeadersFromEnv": "Headers from Env"
+    "mcpHttpHeadersFromEnv": "Headers from Env",
+    "downloadDocuments": "Download Documents"
+  },
+  "roles": {
+    "manageRoles": "Manage Roles",
+    "addNew": "Add New Role",
+    "editRole": "Edit Role",
+    "code": "Role Code",
+    "name": "Role Name",
+    "description": "Description",
+    "existingRoles": "Existing Roles",
+    "addRole": "Add Role",
+    "noRoles": "No roles found",
+    "confirmDelete": "Are you sure you want to delete this role?",
+    "deleteSuccess": "Role deleted successfully",
+    "saveSuccess": "Role saved successfully",
+    "nameJa": "Role Name (Japanese)",
+    "nameEn": "Role Name (English)"
   },
   "users": {
     "title": "Users List",
@@ -347,5 +360,46 @@
     "browse": "Browse",
     "refMaterials": "Reference Materials (PDF/Images)",
     "refMaterialsHelp": "Upload related terms or guidelines needed for check operations. (Max 3 files)"
+  },
+  "settings": {
+    "title": "App Settings",
+    "desc": "Configure the application name and logo. These are shown to all users.",
+    "appName": "App Name",
+    "logo": "Logo",
+    "uploadLogo": "Upload Logo",
+    "removeLogo": "Remove Logo",
+    "logoHint": "PNG / JPG / SVG. A square image is recommended.",
+    "logoMustBeImage": "Please choose an image file",
+    "uploadFailed": "Upload failed",
+    "nameRequired": "Please enter an app name",
+    "saveSuccess": "Settings saved",
+    "saveFailed": "Failed to save settings"
+  },
+  "hub": {
+    "notFound": "Category not found."
+  },
+  "categories": {
+    "manage": "Manage Categories",
+    "add": "Add Category",
+    "addTitle": "Add Category",
+    "editTitle": "Edit Category",
+    "empty": "No categories yet",
+    "inNav": "In menu",
+    "internalName": "Internal name",
+    "internalNameHint": "Unique internal identifier (English recommended). The slug is generated from this.",
+    "nameJa": "Category name (Japanese)",
+    "nameEn": "Category name (English)",
+    "menuNameJa": "Menu name (Japanese)",
+    "menuNameEn": "Menu name (English)",
+    "icon": "Icon (emoji)",
+    "hasStepFlow": "Display steps (review flow)",
+    "nameRequired": "Please enter an internal name",
+    "created": "Category created",
+    "updated": "Category updated",
+    "deleted": "Category deleted",
+    "saveFailed": "Failed to save category",
+    "deleteFailed": "Failed to delete category",
+    "fieldRequired": "This field is required",
+    "deleteInUse": "This category is linked to tools and cannot be deleted."
   }
 }

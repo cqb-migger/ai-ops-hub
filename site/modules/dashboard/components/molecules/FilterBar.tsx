@@ -3,7 +3,7 @@ import CategoryDropdown from './CategoryDropdown';
 import RoleDropdown from './RoleDropdown';
 import StepDropdown from './StepDropdown';
 import SortDropdown from './SortDropdown';
-import { Step } from '../../../compliance-hub/constants/steps';
+import { Step } from '../../../../base/types/steps';
 import { useTranslation } from 'next-i18next';
 import useAuthStore from '@base/stores/useAuthStore';
 

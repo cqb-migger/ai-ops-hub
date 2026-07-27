@@ -10,8 +10,8 @@ export interface SortDropdownProps {
 }
 
 export const SORT_OPTIONS: { value: string; key: string }[] = [
-  { value: 'name_asc', key: 'filter.sortOptions.nameAsc' },
   { value: 'favorite', key: 'filter.sortOptions.favorite' },
+  { value: 'name_asc', key: 'filter.sortOptions.ascending' },
 ];
 
 function ChevronIcon() {

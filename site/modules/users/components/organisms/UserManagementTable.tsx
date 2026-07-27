@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import FilterBar from '../../../dashboard/components/molecules/FilterBar';
 import { useUsers, SSOUser } from '../../../../base/hooks/useUsers';
 import Pagination from '../../../../base/components/molecules/Pagination';
 import ItemCount from '../../../../base/components/molecules/ItemCount';
-import { ROLE_OPTIONS, ROLE_BADGE_COLORS } from '../../../manage-tools/constants/roles';
+import { ROLE_BADGE_COLORS } from '../../../manage-tools/constants/roles';
 import { translateRole } from '../../../../base/utils/labels';
 import { useTranslation } from 'next-i18next';
+import { useRoles } from '../../../../base/hooks/useRoles';
+import RoleManagerModal from './RoleManagerModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -45,19 +48,34 @@ function XIcon() {
 interface ChangeRoleModalProps {
   user: SSOUser;
   onClose: () => void;
-  onSave: (newRole: string) => Promise<void>;
+  onSave: (newRoles: string[]) => Promise<void>;
 }
 
 function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
-  const [pendingRole, setPendingRole] = useState(user.role);
+  const [pendingRoles, setPendingRoles] = useState<string[]>(user.roles || (user.role ? [user.role] : []));
   const [saving, setSaving] = useState(false);
   const { t } = useTranslation('common');
+  const { roles } = useRoles();
+  const router = useRouter();
+
+  // Admin is exclusive: selecting admin clears others; selecting another clears admin.
+  const toggleRole = (code: string) => {
+    setPendingRoles((prev) => {
+      if (code === 'admin') {
+        return prev.includes('admin') ? [] : ['admin'];
+      }
+      const withoutAdmin = prev.filter((r) => r !== 'admin');
+      return withoutAdmin.includes(code)
+        ? withoutAdmin.filter((r) => r !== code)
+        : [...withoutAdmin, code];
+    });
+  };
 
   async function handleSave() {
-    if (pendingRole === user.role) { onClose(); return; }
+    if (pendingRoles.length === 0) return;
     setSaving(true);
     try {
-      await onSave(pendingRole);
+      await onSave(pendingRoles);
       onClose();
     } finally {
       setSaving(false);
@@ -92,39 +110,44 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
 
         {/* Body — radio list */}
         <div className="px-[16px] sm:px-[24px] py-[16px] sm:py-[20px] flex flex-col gap-[10px]">
-          <p className="text-[13px] font-medium text-[#565d6d] dark:text-gray-400 mb-[4px]">{t('users.selectRolePrompt', '役割を選択してください')}</p>
-          {ROLE_OPTIONS.map((opt) => {
-            const checked = pendingRole === opt.value;
+          <p className="text-[13px] font-medium text-[#565d6d] dark:text-gray-400 mb-[4px]">{t('users.selectRolesPrompt', '役割を選択してください（複数選択可）')}</p>
+          {roles.map((opt) => {
+            const checked = pendingRoles.includes(opt.code);
+            const disabled = pendingRoles.includes('admin') && opt.code !== 'admin';
             return (
               <label
-                key={opt.value}
-                className={`flex items-center gap-[12px] px-[16px] py-[14px] rounded-[10px] border cursor-pointer transition-all select-none ${checked
+                key={opt.code}
+                className={`flex items-center gap-[12px] px-[16px] py-[14px] rounded-[10px] border transition-all select-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${checked
                   ? 'bg-[#eef0fd] dark:bg-[#2a3060] border-[#5570f6] dark:border-[#5570f6]/60'
                   : 'bg-white dark:bg-midnight-900 border-[#dee1e6] dark:border-midnight-800 hover:border-[#9095a0] dark:hover:border-midnight-700'
                   }`}
               >
-                {/* Custom radio */}
-                <span className={`flex-shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${checked
+                {/* Custom checkbox */}
+                <span className={`flex-shrink-0 w-[18px] h-[18px] rounded-[5px] border-2 flex items-center justify-center transition-colors ${checked
                   ? 'border-[#5570f6] bg-[#5570f6]'
                   : 'border-[#dee1e6] dark:border-midnight-700 bg-white dark:bg-midnight-900'
                   }`}>
-                  {checked && <span className="w-[7px] h-[7px] rounded-full bg-white" />}
+                  {checked && (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-[11px] h-[11px]">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
                 </span>
                 <input
-                  type="radio"
-                  name="role"
-                  value={opt.value}
+                  type="checkbox"
+                  value={opt.code}
                   checked={checked}
-                  onChange={() => setPendingRole(opt.value)}
+                  disabled={disabled}
+                  onChange={() => toggleRole(opt.code)}
                   className="sr-only"
                 />
                 <div className="flex-1 min-w-0">
                   <span className={`text-[14px] font-medium ${checked ? 'text-[#5570f6] dark:text-[#7c91eb]' : 'text-[#171a1f] dark:text-light'}`}>
-                    {t(`filter.roleOptions.${opt.value}`, opt.label)}
+                    {translateRole(opt.code, t, roles, router.locale)}
                   </span>
                 </div>
                 {/* Current badge */}
-                {opt.value === user.role && (
+                {(user.roles || []).includes(opt.code) && (
                   <span className="flex-shrink-0 text-[10px] font-semibold px-[8px] py-[2px] rounded-full bg-[#f3f4f6] dark:bg-midnight-800 text-[#565d6d] dark:text-gray-400 border border-[#dee1e6] dark:border-midnight-700">
                     {t('users.currentRole', '現在')}
                   </span>
@@ -159,7 +182,7 @@ function ChangeRoleModal({ user, onClose, onSave }: ChangeRoleModalProps) {
 
 // ─── Main Table ───────────────────────────────────────────────────────────────
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
 export default function UserManagementTable() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,6 +193,8 @@ export default function UserManagementTable() {
 
   // Modal state
   const [editingUser, setEditingUser] = useState<SSOUser | null>(null);
+  const [managingRoles, setManagingRoles] = useState(false);
+  const router = useRouter();
 
   // Debounce + trim search before sending to the API
   useEffect(() => {
@@ -180,7 +205,8 @@ export default function UserManagementTable() {
   // Reset to first page whenever the filters change
   useEffect(() => { setCurrentPage(1); }, [debouncedSearch, selectedRole]);
 
-  const { users, total, loading, updateUserRole } = useUsers({
+  const { roles } = useRoles();
+  const { users, total, loading, updateUserRoles } = useUsers({
     search: debouncedSearch || undefined,
     role: selectedRole || undefined,
     limit: ITEMS_PER_PAGE,
@@ -191,9 +217,9 @@ export default function UserManagementTable() {
   const currentPageSafe = Math.min(currentPage, totalPages);
   const paginatedUsers = users;
 
-  async function handleSaveRole(newRole: string) {
+  async function handleSaveRoles(newRoles: string[]) {
     if (!editingUser) return;
-    await updateUserRole(editingUser.id, newRole as any);
+    await updateUserRoles(editingUser.id, newRoles);
     toast.success(t('users.saveSuccess', 'ユーザー権限を更新しました'));
   }
 
@@ -204,18 +230,30 @@ export default function UserManagementTable() {
         <ChangeRoleModal
           user={editingUser}
           onClose={() => setEditingUser(null)}
-          onSave={handleSaveRole}
+          onSave={handleSaveRoles}
         />
       )}
+      
+      {managingRoles && (
+        <RoleManagerModal onClose={() => setManagingRoles(false)} />
+      )}
 
-      {/* Title */}
-      <div className="flex flex-col gap-[8px]">
-        <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
-          {t('nav.userManagement')}
-        </h2>
-        <p className="hidden md:block text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
-          {t('users.desc', 'ログインするユーザーの権限とアクセス状態を管理します。')}
-        </p>
+      {/* Title & Actions */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[12px]">
+        <div className="flex flex-col gap-[8px]">
+          <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base">
+            {t('nav.userManagement')}
+          </h2>
+          <p className="hidden md:block text-[14px] font-normal leading-[20px] text-[#565d6d] dark:text-gray-400 font-base">
+            {t('users.desc', 'ログインするユーザーの権限とアクセス状態を管理します。')}
+          </p>
+        </div>
+        <button
+          onClick={() => setManagingRoles(true)}
+          className="h-[36px] px-[16px] flex items-center justify-center rounded-[8px] bg-[#5570f6] text-white text-[14px] font-semibold hover:bg-primary-600 transition-colors shadow-sm"
+        >
+          {t('roles.manageRoles', '役割の管理')}
+        </button>
       </div>
 
       {/* Search & filter */}
@@ -259,9 +297,11 @@ export default function UserManagementTable() {
                       {user.email}
                     </span>
                     <div className="flex items-center flex-wrap gap-[8px] mt-[2px]">
-                      <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
-                        {translateRole(user.role, t)}
-                      </span>
+                      {(user.roles && user.roles.length ? user.roles : [user.role]).map((rc) => (
+                        <span key={rc} className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] rounded-full whitespace-nowrap font-base ${getRoleBadgeStyle(rc)}`}>
+                          {translateRole(rc, t, roles, router.locale)}
+                        </span>
+                      ))}
                       <span className="text-[12px] text-[#565d6d] dark:text-gray-400 font-base">
                         {user.lastLogin}
                       </span>
@@ -344,8 +384,8 @@ export default function UserManagementTable() {
 
                       {/* Role badge */}
                       <td className="py-[16px] px-[20px]">
-                        <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
-                          {translateRole(user.role, t)}
+                        <span className={`inline-flex items-center text-[11px] font-semibold px-[10px] py-[3px] rounded-full whitespace-nowrap font-base ${getRoleBadgeStyle(user.role)}`}>
+                          {translateRole(user.role, t, roles)}
                         </span>
                       </td>
 
@@ -357,7 +397,7 @@ export default function UserManagementTable() {
                       </td>
 
                       {/* Action */}
-                      <td className="py-[16px] px-[20px] text-right whitespace-nowrap">
+                      <td className="py-[16px] px-[20px] whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => setEditingUser(user)}

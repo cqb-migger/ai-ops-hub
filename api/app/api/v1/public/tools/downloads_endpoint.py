@@ -135,6 +135,7 @@ async def download_guides(
     search: Optional[str] = None,
     step_id: Optional[int] = None,
     visibility: Optional[str] = None,
+    tool_id: Optional[int] = None,
 ):
     base_q = (
         select(Tool)
@@ -155,13 +156,16 @@ async def download_guides(
         # aligned with the tools actually listed on screen.
         base_q = base_q.where(Tool.visibility == visibility)
 
+    # Single-tool download takes precedence over the broader filters.
+    if tool_id:
+        base_q = base_q.where(Tool.id == tool_id)
+
     if category_id:
         sub = select(ToolCategory.tool_id).where(ToolCategory.category_id == category_id)
         base_q = base_q.where(Tool.id.in_(sub))
     elif hub:
-        slug_map = {'creative': 'クリエイティブ', 'compliance': 'コンプライアンス', 'data': 'データ'}
-        keyword = slug_map.get(hub.lower(), hub)
-        cat_sub = select(Category.id).where(Category.name.ilike(f'%{keyword}%'))
+        # Categories are identified by slug (e.g. 'creative', 'compliance', 'data').
+        cat_sub = select(Category.id).where(Category.slug == hub.lower())
         tc_sub = select(ToolCategory.tool_id).where(ToolCategory.category_id.in_(cat_sub))
         base_q = base_q.where(Tool.id.in_(tc_sub))
 

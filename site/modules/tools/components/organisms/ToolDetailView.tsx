@@ -180,22 +180,13 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedLoginIdIndex, setCopiedLoginIdIndex] = useState<number | null>(null);
   const [isMcpOpen, setIsMcpOpen] = useState<boolean>(false);
-  const [revealedValues, setRevealedValues] = useState<Record<string, boolean>>({});
-  const [mcpTab, setMcpTab] = useState<'stdio' | 'http'>('stdio');
-
-  useEffect(() => {
-    if (tool?.mcp_type) {
-      setMcpTab(tool.mcp_type);
-    }
-  }, [tool?.mcp_type]);
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
 
   const fromPath = router.query.from as string;
   const backHref = fromPath || '/';
 
   let backLabel = t('toolDetail.backToDashboard', 'ダッシュボードに戻る');
-  if (fromPath?.startsWith('/compliance-hub')) backLabel = t('toolDetail.backToCompliance', 'コンプライアンスハブに戻る');
-  else if (fromPath?.startsWith('/creative-hub')) backLabel = t('toolDetail.backToCreative', 'クリエイティブハブに戻る');
-  else if (fromPath?.startsWith('/data-hub')) backLabel = t('toolDetail.backToData', 'データハブに戻る');
+  if (fromPath?.startsWith('/hub/')) backLabel = t('toolDetail.backToHub', '戻る');
   else if (fromPath?.startsWith('/manage-tools')) backLabel = t('toolDetail.backToManageTools', 'ツール管理に戻る');
 
   const handleCopy = (content: string, index: number) => {
@@ -261,25 +252,8 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
     ],
   };
 
-  const currentPath = router.pathname;
-  let filterCategoryId: number | null = null;
-  if (currentPath.startsWith('/creative-hub') || fromPath?.startsWith('/creative-hub')) {
-    filterCategoryId = 1;
-  } else if (currentPath.startsWith('/compliance-hub') || fromPath?.startsWith('/compliance-hub')) {
-    filterCategoryId = 2;
-  } else if (currentPath.startsWith('/data-hub') || fromPath?.startsWith('/data-hub')) {
-    filterCategoryId = 3;
-  }
-
   const displayPrompts = (tool.prompts && tool.prompts.length > 0)
     ? tool.prompts
-      .filter(p => {
-        if (filterCategoryId === null) return true;
-        return (
-          p.categories?.some((cat: any) => cat.id === filterCategoryId) ||
-          (p as any).category_ids?.includes(filterCategoryId)
-        );
-      })
       .map(p => ({
         title: p.title || '',
         description: p.description || '',
@@ -310,7 +284,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
             {/* Text */}
             <div className="flex flex-col gap-[8px] min-w-0">
               <div className="flex items-center gap-[12px] flex-wrap">
-                <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base truncate">
+                <h2 className="text-[22px] sm:text-[30px] font-bold leading-[30px] sm:leading-[36px] text-[#171a1f] dark:text-light tracking-[-0.75px] font-base line-clamp-2">
                   {tool.name}
                 </h2>
               </div>
@@ -391,7 +365,7 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
         </div>
       )}
 
-      {tool.mcp_name && (
+      {tool.mcp_config && (
         <div className="bg-white dark:bg-midnight-950 border border-[#dee1e6] dark:border-midnight-800 rounded-[16px] p-[16px] md:p-[24px] shadow-sm flex flex-col mt-[12px]">
           <div
             className="flex items-center justify-between cursor-pointer select-none"
@@ -423,225 +397,14 @@ export default function ToolDetailView({ tool, hideHeader = false, hideLaunchBut
           {isMcpOpen && (
             <div className="mt-[20px] border-t border-[#dee1e6] dark:border-midnight-800 pt-[20px] flex flex-col gap-[20px]">
 
-              {/* Name Field */}
+              {/* Configuration Field */}
               <div className="flex flex-col gap-[6px]">
-                <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-                  {t('common.name')}
-                </label>
-                <div className="text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                  {tool.mcp_name || ''}
+                <div className="bg-[#fafafb] dark:bg-midnight-900/40 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[16px] overflow-x-auto">
+                  <pre className="text-[13px] font-mono text-[#171a1f] dark:text-light whitespace-pre-wrap">
+                    {tool.mcp_config || '-'}
+                  </pre>
                 </div>
               </div>
-
-              {/* Tab Selector (Fully Interactive) */}
-              <div className="flex border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] overflow-hidden p-[2px] bg-[#f3f4f6] dark:bg-midnight-900 select-none">
-                <button
-                  type="button"
-                  onClick={() => setMcpTab('stdio')}
-                  className={`flex-1 py-[8px] text-center text-[13px] font-semibold rounded-[4px] transition-all duration-200 ${mcpTab === 'stdio'
-                    ? 'bg-[#c5c7cb] dark:bg-midnight-700 text-[#171a1f] dark:text-light shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
-                >
-                  STDIO
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMcpTab('http')}
-                  className={`flex-1 py-[8px] text-center text-[13px] font-semibold rounded-[4px] transition-all duration-200 ${mcpTab === 'http'
-                    ? 'bg-[#c5c7cb] dark:bg-midnight-700 text-[#171a1f] dark:text-light shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
-                >
-                  {t('mcp.streamableHttp')}
-                </button>
-              </div>
-
-              {/* Tab Content Box */}
-              {mcpTab === 'stdio' ? (
-                <div className="border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 flex flex-col gap-[20px]">
-
-                  {/* Command */}
-                  <div className="flex flex-col gap-[6px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpStdioCommand')}
-                    </span>
-                    <div className="font-mono text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                      {tool.mcp_stdio_command || '-'}
-                    </div>
-                  </div>
-
-                  {/* Arguments */}
-                  <div className="flex flex-col gap-[8px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpStdioArgs')}
-                    </span>
-                    <div className="flex flex-col gap-[8px] py-[4px]">
-                      {tool.mcp_stdio_args && tool.mcp_stdio_args.length > 0 ? (
-                        tool.mcp_stdio_args.map((arg, idx) => (
-                          <div key={idx} className="font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
-                            {arg || '-'}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="font-mono text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                          -
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Environment variables */}
-                  <div className="flex flex-col gap-[8px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpStdioEnv')}
-                    </span>
-                    <div className="flex flex-col gap-[8px] py-[4px]">
-                      {tool.mcp_stdio_env && tool.mcp_stdio_env.length > 0 ? (
-                        tool.mcp_stdio_env.map((env, idx) => (
-                          <div key={idx} className="flex items-center gap-[12px]">
-                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
-                              {env.key || '-'}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <SecretValue
-                                value={env.value || ''}
-                                revealed={!!revealedValues[`stdio-env-${idx}`]}
-                                onToggle={() =>
-                                  setRevealedValues((prev) => ({
-                                    ...prev,
-                                    [`stdio-env-${idx}`]: !prev[`stdio-env-${idx}`],
-                                  }))
-                                }
-                                showLabel={t('common.show', '表示') as string}
-                                hideLabel={t('common.hide', '非表示') as string}
-                              />
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="font-mono text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                          -
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Env Passthrough */}
-                  <div className="flex flex-col gap-[8px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpStdioEnvPassthrough')}
-                    </span>
-                    <div className="flex flex-col gap-[8px] py-[4px]">
-                      {tool.mcp_stdio_env_passthrough && tool.mcp_stdio_env_passthrough.length > 0 ? (
-                        tool.mcp_stdio_env_passthrough.map((p, idx) => (
-                          <div key={idx} className="font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
-                            {p || '-'}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="font-mono text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                          -
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Working directory */}
-                  <div className="flex flex-col gap-[6px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpStdioWorkDir')}
-                    </span>
-                    <div className="font-mono text-[14px] text-[#171a1f] dark:text-light break-all py-[4px]">
-                      {tool.mcp_stdio_work_dir || '-'}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 flex flex-col gap-[20px]">
-
-                  {/* HTTP URL */}
-                  <div className="flex flex-col gap-[6px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpHttpUrl')}
-                    </span>
-                    <div className="font-mono text-[14px] text-[#171a1f] dark:text-light break-all py-[4px]">
-                      {tool.mcp_http_url || '-'}
-                    </div>
-                  </div>
-
-                  {/* Bearer Token */}
-                  <div className="flex flex-col gap-[6px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpHttpBearerTokenEnv')}
-                    </span>
-                    <div className="font-mono text-[14px] text-[#171a1f] dark:text-light break-all py-[4px]">
-                      {tool.mcp_http_bearer_token_env || '-'}
-                    </div>
-                  </div>
-
-                  {/* Headers */}
-                  <div className="flex flex-col gap-[8px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpHttpHeaders')}
-                    </span>
-                    <div className="flex flex-col gap-[8px] py-[4px]">
-                      {tool.mcp_http_headers && tool.mcp_http_headers.length > 0 ? (
-                        tool.mcp_http_headers.map((h, idx) => (
-                          <div key={idx} className="flex items-center gap-[12px]">
-                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
-                              {h.key || '-'}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <SecretValue
-                                value={h.value || ''}
-                                revealed={!!revealedValues[`http-header-${idx}`]}
-                                onToggle={() =>
-                                  setRevealedValues((prev) => ({
-                                    ...prev,
-                                    [`http-header-${idx}`]: !prev[`http-header-${idx}`],
-                                  }))
-                                }
-                                showLabel={t('common.show', '表示') as string}
-                                hideLabel={t('common.hide', '非表示') as string}
-                              />
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="font-mono text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                          -
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Headers from Env */}
-                  <div className="flex flex-col gap-[8px]">
-                    <span className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                      {t('toolDetail.mcpHttpHeadersFromEnv')}
-                    </span>
-                    <div className="flex flex-col gap-[8px] py-[4px]">
-                      {tool.mcp_http_headers_from_env && tool.mcp_http_headers_from_env.length > 0 ? (
-                        tool.mcp_http_headers_from_env.map((h, idx) => (
-                          <div key={idx} className="flex items-center gap-[12px]">
-                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all pr-[4px]">
-                              {h.key || '-'}
-                            </div>
-                            <div className="flex-1 font-mono text-[14px] text-[#171a1f] dark:text-light break-all">
-                              {h.value || '-'}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="font-mono text-[14px] text-[#171a1f] dark:text-light py-[4px]">
-                          -
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

@@ -1,18 +1,23 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 import PageTemplate from '@base/components/templates/PageTemplate';
 import DashboardFooter from '@base/components/organisms/DashboardFooter';
-import ComplianceHubView from '../modules/compliance-hub/components/organisms/ComplianceHubView';
+import CategoryHubView from '../../modules/hub/components/organisms/CategoryHubView';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
-function ComplianceHubPage() {
+function CategoryHubPage() {
+  const router = useRouter();
+  const { slug } = router.query;
+  const slugStr = Array.isArray(slug) ? slug[0] : slug;
+
   return (
     <PageTemplate footer={<DashboardFooter />}>
-      <ComplianceHubView />
+      {slugStr ? <CategoryHubView slug={slugStr} /> : null}
     </PageTemplate>
   );
 }
 
-export async function getStaticProps({ locale }: any) {
+export async function getServerSideProps({ locale }: any) {
   return {
     props: {
       ...(await serverSideTranslations(locale || 'ja', ['common'])),
@@ -20,4 +25,4 @@ export async function getStaticProps({ locale }: any) {
   };
 }
 
-export default ComplianceHubPage;
+export default CategoryHubPage;

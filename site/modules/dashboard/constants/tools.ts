@@ -70,19 +70,11 @@ export interface Tool {
   admin_memo?: string;
   details?: ToolDetails;
   mcp_name?: string;
-  mcp_type?: 'stdio' | 'http';
-  mcp_stdio_command?: string;
-  mcp_stdio_args?: string[];
-  mcp_stdio_env?: { key: string; value: string }[];
-  mcp_stdio_env_passthrough?: string[];
-  mcp_stdio_work_dir?: string;
-  mcp_http_url?: string;
-  mcp_http_bearer_token_env?: string;
-  mcp_http_headers?: { key: string; value: string }[];
-  mcp_http_headers_from_env?: { key: string; value: string }[];
+  mcp_config?: string;
   step_id?: number | null;
   step_ids?: number[];
   is_favorite?: boolean;
+  has_guide_files?: boolean;
 
   // Relational data
   categories?: ToolCategory[];

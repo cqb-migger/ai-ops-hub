@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
+import { useRoles } from '../../../../base/hooks/useRoles';
 import { API_BASE, apiFetch } from '../../../../base/utils/api';
 import { useTranslation } from 'next-i18next';
-import { translateCategory } from '../../../../base/utils/labels';
+import { categoryDisplayName } from '../../../../base/hooks/useCategories';
 import { useTools } from '../../../../base/hooks/useTools';
 import { useCategories } from '../../../../base/hooks/useCategories';
 import { useSteps } from '../../../../base/hooks/useSteps';
-import { ROLE_OPTIONS } from '../../constants/roles';
+import { translateCategory, translateRole } from '../../../../base/utils/labels';
 import { withDuplicateLoginIdErrors } from '../../constants/loginIds';
 
 // SVG Icons
@@ -146,7 +147,7 @@ interface PromptItem {
   name: string;
   content: string;
   isPublic?: boolean;
-  categories?: string[];
+  categories?: number[];
 }
 
 interface RoleSelectProps {
@@ -160,6 +161,7 @@ function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const { roles } = useRoles();
   const { t } = useTranslation('common');
   const actualPlaceholder = (placeholder || t('common.select')) as string;
 
@@ -195,7 +197,7 @@ function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) 
         className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] flex items-center justify-between cursor-pointer select-none"
       >
         <span className={selectedOption ? "text-[#171a1f] dark:text-light font-semibold" : "text-[#565d6d] dark:text-gray-400"}>
-          {selectedOption ? (t(`filter.roleOptions.${selectedOption.value}`, selectedOption.label) as string) : actualPlaceholder}
+          {selectedOption ? (translateRole(selectedOption.value, t, roles) as string) : actualPlaceholder}
         </span>
         <ChevronDownIcon />
       </div>
@@ -229,7 +231,7 @@ function RoleSelect({ value, onChange, options, placeholder }: RoleSelectProps) 
                     : 'text-[#171a1f] dark:text-light'
                     }`}
                 >
-                  <span>{t(`filter.roleOptions.${opt.value}`, opt.label)}</span>
+                  <span>{translateRole(opt.value, t, roles)}</span>
                   {opt.value === value && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[16px] h-[16px] text-[#5570f6] dark:text-primary-400">
                       <polyline points="20 6 9 17 4 12" />
@@ -276,67 +278,27 @@ export default function CreateToolForm() {
     ''
   );
   const [redirectUrl, setRedirectUrl] = useState('');
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<number[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
   const [stepIds, setStepIds] = useState<string[]>([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isStepOpen, setIsStepOpen] = useState(false);
-  const [loginIds, setLoginIds] = useState<string[]>(['']);
+  const [loginIds, setLoginIds] = useState<any[]>([]);
+
+  const { roles: apiRoles } = useRoles();
   const [visibility, setVisibility] = useState<'public' | 'draft'>('public');
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [iconUrlInput, setIconUrlInput] = useState('');
   const [fetchingFavicon, setFetchingFavicon] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // MCP connection states
-  const [mcpName, setMcpName] = useState('');
-  const [mcpType, setMcpType] = useState<'stdio' | 'http'>('stdio');
-  // STDIO
-  const [stdioCommand, setStdioCommand] = useState('');
-  const [stdioArgs, setStdioArgs] = useState<string[]>(['']);
-  const [stdioEnv, setStdioEnv] = useState<{ key: string; value: string }[]>([{ key: '', value: '' }]);
-  const [stdioEnvPassthrough, setStdioEnvPassthrough] = useState<string[]>(['']);
-  const [stdioWorkDir, setStdioWorkDir] = useState('');
-  // HTTP
-  const [httpUrl, setHttpUrl] = useState('');
-  const [httpBearerTokenEnv, setHttpBearerTokenEnv] = useState('');
-  const [httpHeaders, setHttpHeaders] = useState<{ key: string; value: string }[]>([{ key: '', value: '' }]);
-  const [httpHeadersFromEnv, setHttpHeadersFromEnv] = useState<{ key: string; value: string }[]>([{ key: '', value: '' }]);
-
-  // MCP input helper functions
-  const handleAddMcpArg = () => setStdioArgs((prev) => [...prev, '']);
-  const handleUpdateMcpArg = (idx: number, val: string) =>
-    setStdioArgs((prev) => prev.map((item, i) => (i === idx ? val : item)));
-  const handleRemoveMcpArg = (idx: number) =>
-    setStdioArgs((prev) => prev.filter((_, i) => i !== idx));
-
-  const handleAddMcpEnv = () => setStdioEnv((prev) => [...prev, { key: '', value: '' }]);
-  const handleUpdateMcpEnv = (idx: number, field: 'key' | 'value', val: string) =>
-    setStdioEnv((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
-  const handleRemoveMcpEnv = (idx: number) =>
-    setStdioEnv((prev) => prev.filter((_, i) => i !== idx));
-
-  const handleAddMcpEnvPassthrough = () => setStdioEnvPassthrough((prev) => [...prev, '']);
-  const handleUpdateMcpEnvPassthrough = (idx: number, val: string) =>
-    setStdioEnvPassthrough((prev) => prev.map((item, i) => (i === idx ? val : item)));
-  const handleRemoveMcpEnvPassthrough = (idx: number) =>
-    setStdioEnvPassthrough((prev) => prev.filter((_, i) => i !== idx));
-
-  const handleAddMcpHeader = () => setHttpHeaders((prev) => [...prev, { key: '', value: '' }]);
-  const handleUpdateMcpHeader = (idx: number, field: 'key' | 'value', val: string) =>
-    setHttpHeaders((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
-  const handleRemoveMcpHeader = (idx: number) =>
-    setHttpHeaders((prev) => prev.filter((_, i) => i !== idx));
-
-  const handleAddMcpHeaderFromEnv = () => setHttpHeadersFromEnv((prev) => [...prev, { key: '', value: '' }]);
-  const handleUpdateMcpHeaderFromEnv = (idx: number, field: 'key' | 'value', val: string) =>
-    setHttpHeadersFromEnv((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
-  const handleRemoveMcpHeaderFromEnv = (idx: number) =>
-    setHttpHeadersFromEnv((prev) => prev.filter((_, i) => i !== idx));
+  // MCP connection state
+  const [mcpConfig, setMcpConfig] = useState('');
 
 
+  // A tool shows the step selector when it belongs to a step-enabled category.
   const isComplianceSelected = apiCategories.some(
-    (c) => c.id === 2 && categories.includes(c.name)
+    (c) => c.has_step_flow && categories.includes(c.id)
   );
   const { steps: apiSteps, loading: stepsLoading } = useSteps({ enabled: isComplianceSelected });
 
@@ -520,7 +482,7 @@ export default function CreateToolForm() {
     setPrompts(prompts.filter(p => p.id !== id));
   };
 
-  const handleToggleCategory = (cat: string) => {
+  const handleToggleCategory = (cat: number) => {
     let nextCategories;
     if (categories.includes(cat)) {
       nextCategories = categories.filter((c) => c !== cat);
@@ -630,6 +592,7 @@ export default function CreateToolForm() {
       // Public prompts must have at least one category (from Basic Information selection)
       if (p.isPublic !== false) {
         const selected = (p.categories || []).filter((c) => categories.includes(c));
+        // (c and categories are category ids)
         if (selected.length === 0) {
           const key = `prompt_category_${p.id}`;
           newErrors[key] = t('validation.promptCategoryRequired');
@@ -653,21 +616,7 @@ export default function CreateToolForm() {
       }
     }
 
-    // Validate MCP settings
-    if (mcpName.trim()) {
-      if (mcpType === 'http') {
-        const trimmedMcpUrl = httpUrl.trim();
-        if (trimmedMcpUrl) {
-          if (trimmedMcpUrl.length < 10 || !isValidUrl(trimmedMcpUrl)) {
-            newErrors.httpUrl = t('validation.invalidMcpUrl');
-            setErrorKey('httpUrl');
-          } else if (trimmedMcpUrl.length > 2048) {
-            newErrors.httpUrl = t('validation.mcpUrlTooLong');
-            setErrorKey('httpUrl');
-          }
-        }
-      }
-    }
+
 
     setErrors(newErrors);
 
@@ -709,14 +658,6 @@ export default function CreateToolForm() {
           const promptId = firstErrorKey.replace('prompt_category_', '');
           const el = document.getElementById(`prompt-category-${promptId}`);
           el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else if (firstErrorKey === 'stdioCommand') {
-          const el = document.getElementById('stdio-command-input');
-          el?.focus();
-          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else if (firstErrorKey === 'httpUrl') {
-          const el = document.getElementById('http-url-input');
-          el?.focus();
-          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (firstErrorKey === 'redirectUrl') {
           const el = document.getElementById('redirect-url-input');
           el?.focus();
@@ -734,10 +675,10 @@ export default function CreateToolForm() {
       return;
     }
     try {
-      // Map selected category names to IDs from API categories
+      // Selected categories are stored as ids; build the {id, name} objects the API expects.
       const selectedCategories = apiCategories
-        .filter((c) => categories.includes(c.name))
-        .map((c) => ({ id: c.id, name: c.name }));
+        .filter((c) => categories.includes(c.id))
+        .map((c) => ({ id: c.id, name: categoryDisplayName(c, router.locale) }));
 
       const toolPayload: Record<string, any> = {
         name: toolName.trim(),
@@ -753,23 +694,13 @@ export default function CreateToolForm() {
         admin_memo: adminMemo.trim() || null,
         step_ids: stepIds.map(Number),
         details: null,
-        mcp_name: mcpName.trim() || null,
-        mcp_type: mcpName.trim() ? mcpType : null,
-        mcp_stdio_command: (mcpName.trim() && mcpType === 'stdio') ? (stdioCommand.trim() || null) : null,
-        mcp_stdio_args: (mcpName.trim() && mcpType === 'stdio') ? stdioArgs.filter(Boolean) : [],
-        mcp_stdio_env: (mcpName.trim() && mcpType === 'stdio') ? stdioEnv.filter((item) => item.key.trim() !== '') : [],
-        mcp_stdio_env_passthrough: (mcpName.trim() && mcpType === 'stdio') ? stdioEnvPassthrough.filter(Boolean) : [],
-        mcp_stdio_work_dir: (mcpName.trim() && mcpType === 'stdio') ? (stdioWorkDir.trim() || null) : null,
-        mcp_http_url: (mcpName.trim() && mcpType === 'http') ? (httpUrl.trim() || null) : null,
-        mcp_http_bearer_token_env: (mcpName.trim() && mcpType === 'http') ? (httpBearerTokenEnv.trim() || null) : null,
-        mcp_http_headers: (mcpName.trim() && mcpType === 'http') ? httpHeaders.filter((item) => item.key.trim() !== '') : [],
-        mcp_http_headers_from_env: (mcpName.trim() && mcpType === 'http') ? httpHeadersFromEnv.filter((item) => item.key.trim() !== '') : [],
+        mcp_config: mcpConfig.trim() || null,
         prompts: prompts
           .filter((p) => p.name.trim() || p.content.trim())
           .map((p, i) => {
             const promptCategories = apiCategories
-              .filter((c) => (p.categories || []).includes(c.name))
-              .map((c) => ({ id: c.id, name: c.name }));
+              .filter((c) => (p.categories || []).includes(c.id))
+              .map((c) => ({ id: c.id, name: categoryDisplayName(c, router.locale) }));
             return {
               title: p.name.trim(),
               description: '',
@@ -905,12 +836,12 @@ export default function CreateToolForm() {
                   >
                     <input
                       type="checkbox"
-                      checked={categories.includes(cat.name)}
-                      onChange={() => handleToggleCategory(cat.name)}
+                      checked={categories.includes(cat.id)}
+                      onChange={() => handleToggleCategory(cat.id)}
                       className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
                     />
                     <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
-                      {translateCategory(cat.name, t)}
+                      {categoryDisplayName(cat, router.locale)}
                     </span>
                   </label>
                 ))
@@ -955,19 +886,19 @@ export default function CreateToolForm() {
             <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">{t('form.allRoles')}<span className="text-[#f25a5a]">*</span>
             </label>
             <div id="roles-container" className="flex flex-wrap gap-[20px] py-[6px]">
-              {ROLE_OPTIONS.map((opt) => (
+              {apiRoles.map((opt) => (
                 <label
-                  key={opt.value}
+                  key={opt.code}
                   className="flex items-center gap-[8px] cursor-pointer text-[14px] text-[#171a1f] dark:text-light select-none group"
                 >
                   <input
                     type="checkbox"
-                    checked={roles.includes(opt.value)}
-                    onChange={() => handleToggleRole(opt.value)}
+                    checked={roles.includes(opt.code)}
+                    onChange={() => handleToggleRole(opt.code)}
                     className="w-[18px] h-[18px] accent-[#5570f6] rounded border-[#dee1e6] dark:border-midnight-800 cursor-pointer"
                   />
                   <span className="group-hover:text-[#5570f6] dark:group-hover:text-primary-400 transition-colors font-medium">
-                    {t('filter.roleOptions.' + opt.value, opt.label)}
+                    {translateRole(opt.code, t, apiRoles)}
                   </span>
                 </label>
               ))}
@@ -1160,341 +1091,17 @@ export default function CreateToolForm() {
               {t('mcp.title')}
             </h3>
           </div>
-          <a
-            href="https://modelcontextprotocol.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title={t('mcp.docs') as string}
-            className="flex items-center gap-[4px] text-[13px] text-gray-500 hover:text-[#5570f6] transition-colors shrink-0"
-          >
-            <span className="hidden sm:inline">{t('mcp.docs')}</span>
-            <GlobeIcon />
-          </a>
         </div>
 
-        {/* Name Input */}
+        {/* MCP Config Textarea */}
         <div className="flex flex-col gap-[6px]">
-          <label className="text-[14px] font-semibold text-[#171a1f] dark:text-light">
-            {t('common.name')}
-          </label>
-          <input
-            type="text"
-            value={mcpName}
-            onChange={(e) => setMcpName(e.target.value)}
-            placeholder="MCP server name"
-            className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
+          <textarea
+            value={mcpConfig}
+            onChange={(e) => setMcpConfig(e.target.value)}
+            placeholder={`{\n  "mcpServers": {\n    "example-server": {\n      "command": "npx",\n      "args": [\n        "-y",\n        "@modelcontextprotocol/server-postgres",\n        "postgresql://localhost/mydb"\n      ]\n    }\n  }\n}`}
+            className="w-full h-[200px] p-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] font-mono outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light resize-y"
           />
         </div>
-
-        {/* Tab Buttons Segmented Control */}
-        <div className="flex border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] overflow-hidden p-[2px] bg-[#f3f4f6] dark:bg-midnight-900">
-          <button
-            type="button"
-            onClick={() => setMcpType('stdio')}
-            className={`flex-1 py-[8px] text-center text-[13px] font-semibold rounded-[4px] transition-all duration-250 ${
-              mcpType === 'stdio'
-                ? 'bg-[#c5c7cb] dark:bg-midnight-700 text-[#171a1f] dark:text-light shadow-sm'
-                : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            STDIO
-          </button>
-          <button
-            type="button"
-            onClick={() => setMcpType('http')}
-            className={`flex-1 py-[8px] text-center text-[13px] font-semibold rounded-[4px] transition-all duration-250 ${
-              mcpType === 'http'
-                ? 'bg-[#c5c7cb] dark:bg-midnight-700 text-[#171a1f] dark:text-light shadow-sm'
-                : 'bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            {t('mcp.streamableHttp')}
-          </button>
-        </div>
-
-        {/* Tab Content Box */}
-        {mcpType === 'stdio' ? (
-          <div className="border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 flex flex-col gap-[20px]">
-            {/* Command */}
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.stdioCommand')}
-              </label>
-              <input
-                id="stdio-command-input"
-                type="text"
-                value={stdioCommand}
-                onChange={(e) => {
-                  setStdioCommand(e.target.value);
-                  if (e.target.value.trim()) {
-                    setErrors((prev) => ({ ...prev, stdioCommand: '' }));
-                  }
-                }}
-                placeholder="openai-dev-mcp serve-sqlite"
-                className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
-                  errors.stdioCommand ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
-                }`}
-              />
-              {errors.stdioCommand && (
-                <p className="text-[12px] text-red-500 font-semibold">{errors.stdioCommand}</p>
-              )}
-            </div>
-
-            {/* Arguments */}
-            <div className="flex flex-col gap-[8px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.stdioArgs')}
-              </label>
-              <div className="flex flex-col gap-[8px]">
-                {stdioArgs.map((arg, idx) => (
-                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
-                    <input
-                      type="text"
-                      value={arg}
-                      onChange={(e) => handleUpdateMcpArg(idx, e.target.value)}
-                      placeholder={t('mcp.argPlaceholder') as string}
-                      className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMcpArg(idx)}
-                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddMcpArg}
-                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
-                >
-                  <PlusIcon />
-                  <span>{t('mcp.addArg')}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Env Vars */}
-            <div className="flex flex-col gap-[8px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.stdioEnv')}
-              </label>
-              <div className="flex flex-col gap-[8px]">
-                {stdioEnv.map((env, idx) => (
-                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
-                    <input
-                      type="text"
-                      value={env.key}
-                      onChange={(e) => handleUpdateMcpEnv(idx, 'key', e.target.value)}
-                      placeholder={t('mcp.key') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <input
-                      type="text"
-                      value={env.value}
-                      onChange={(e) => handleUpdateMcpEnv(idx, 'value', e.target.value)}
-                      placeholder={t('mcp.value') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMcpEnv(idx)}
-                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddMcpEnv}
-                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
-                >
-                  <PlusIcon />
-                  <span>{t('mcp.addEnv')}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Env Vars Passthrough */}
-            <div className="flex flex-col gap-[8px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.envPassthrough')}
-              </label>
-              <div className="flex flex-col gap-[8px]">
-                {stdioEnvPassthrough.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
-                    <input
-                      type="text"
-                      value={item}
-                      onChange={(e) => handleUpdateMcpEnvPassthrough(idx, e.target.value)}
-                      placeholder={t('mcp.varPlaceholder') as string}
-                      className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMcpEnvPassthrough(idx)}
-                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddMcpEnvPassthrough}
-                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
-                >
-                  <PlusIcon />
-                  <span>{t('mcp.addVariable')}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Working Directory */}
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.workDir')}
-              </label>
-              <input
-                type="text"
-                value={stdioWorkDir}
-                onChange={(e) => setStdioWorkDir(e.target.value)}
-                placeholder="~/code"
-                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] p-[20px] bg-[#fafafb] dark:bg-midnight-900/40 flex flex-col gap-[20px]">
-            {/* URL */}
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                URL
-              </label>
-              <input
-                id="http-url-input"
-                type="text"
-                value={httpUrl}
-                onChange={(e) => {
-                  setHttpUrl(e.target.value);
-                  if (e.target.value.trim()) {
-                    setErrors((prev) => ({ ...prev, httpUrl: '' }));
-                  }
-                }}
-                placeholder="https://mcp.example.com/mcp"
-                className={`w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light ${
-                  errors.httpUrl ? 'border-red-500 focus:border-red-500' : 'border-[#dee1e6] dark:border-midnight-800'
-                }`}
-              />
-              {errors.httpUrl && (
-                <p className="text-[12px] text-red-500 font-semibold">{errors.httpUrl}</p>
-              )}
-            </div>
-
-            {/* Bearer Token */}
-            <div className="flex flex-col gap-[6px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.bearerTokenEnv')}
-              </label>
-              <input
-                type="text"
-                value={httpBearerTokenEnv}
-                onChange={(e) => setHttpBearerTokenEnv(e.target.value)}
-                placeholder="MCP_BEARER_TOKEN"
-                className="w-full h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-              />
-            </div>
-
-            {/* Headers */}
-            <div className="flex flex-col gap-[8px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">{t('mcp.headers')}</label>
-              <div className="flex flex-col gap-[8px]">
-                {httpHeaders.map((header, idx) => (
-                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
-                    <input
-                      type="text"
-                      value={header.key}
-                      onChange={(e) => handleUpdateMcpHeader(idx, 'key', e.target.value)}
-                      placeholder={t('mcp.key') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <input
-                      type="text"
-                      value={header.value}
-                      onChange={(e) => handleUpdateMcpHeader(idx, 'value', e.target.value)}
-                      placeholder={t('mcp.value') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMcpHeader(idx)}
-                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddMcpHeader}
-                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
-                >
-                  <PlusIcon />
-                  <span>{t('mcp.addHeader')}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Headers from Env */}
-            <div className="flex flex-col gap-[8px]">
-              <label className="text-[13px] font-semibold text-[#171a1f] dark:text-light">
-                {t('mcp.headersFromEnv')}
-              </label>
-              <div className="flex flex-col gap-[8px]">
-                {httpHeadersFromEnv.map((hEnv, idx) => (
-                  <div key={idx} className="flex items-center gap-[8px] sm:gap-[12px]">
-                    <input
-                      type="text"
-                      value={hEnv.key}
-                      onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'key', e.target.value)}
-                      placeholder={t('mcp.key') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <input
-                      type="text"
-                      value={hEnv.value}
-                      onChange={(e) => handleUpdateMcpHeaderFromEnv(idx, 'value', e.target.value)}
-                      placeholder={t('mcp.value') as string}
-                      className="flex-1 min-w-0 h-[40px] px-[12px] bg-white dark:bg-midnight-900 border border-[#dee1e6] dark:border-midnight-800 rounded-[6px] text-[14px] outline-none focus:border-[#5570f6] text-[#171a1f] dark:text-light"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMcpHeaderFromEnv(idx)}
-                      className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px] flex items-center justify-center rounded-[6px] hover:bg-red-50 dark:hover:bg-red-950/30 text-[#f25a5a] transition-colors shrink-0"
-                      title={t('common.delete') as string}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddMcpHeaderFromEnv}
-                  className="w-full h-[36px] bg-[#fafafb] hover:bg-gray-100 border border-[#dee1e6] dark:border-midnight-800 hover:border-gray-300 rounded-[6px] text-[13px] font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-[6px] transition-colors"
-                >
-                  <PlusIcon />
-                  <span>{t('mcp.addVariable')}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* Box 2: プロンプト設定 (Prompt Settings) */}
@@ -1629,9 +1236,9 @@ export default function CreateToolForm() {
                         </span>
                       ) : (
                         apiCategories
-                          .filter((cat) => categories.includes(cat.name))
+                          .filter((cat) => categories.includes(cat.id))
                           .map((cat) => {
-                            const isChecked = (prompt.categories || []).includes(cat.name);
+                            const isChecked = (prompt.categories || []).includes(cat.id);
                             return (
                               <label key={cat.id} className="flex items-center gap-[8px] cursor-pointer text-[13px]">
                                 <input
@@ -1640,8 +1247,8 @@ export default function CreateToolForm() {
                                   onChange={() => {
                                     const currentSelected = prompt.categories || [];
                                     const nextSelected = isChecked
-                                      ? currentSelected.filter((c) => c !== cat.name)
-                                      : [...currentSelected, cat.name];
+                                      ? currentSelected.filter((c) => c !== cat.id)
+                                      : [...currentSelected, cat.id];
                                     handleUpdatePrompt(prompt.id, 'categories', nextSelected);
                                     if (errors[`prompt_category_${prompt.id}`] && nextSelected.length > 0) {
                                       setErrors((prev) => ({ ...prev, [`prompt_category_${prompt.id}`]: '' }));
@@ -1650,7 +1257,7 @@ export default function CreateToolForm() {
                                   className="w-[14px] h-[14px] accent-[#5570f6] cursor-pointer rounded-[3px]"
                                 />
                                 <span className={isChecked ? 'text-[#171a1f] dark:text-light font-medium' : 'text-[#565d6d]'}>
-                                  {translateCategory(cat.name, t)}
+                                  {categoryDisplayName(cat, router.locale)}
                                 </span>
                               </label>
                             );

@@ -4,8 +4,19 @@ import { useRouter } from 'next/router';
 import routes from '@base/configs/routers';
 import useMenuStore from '@base/stores/useMenuStore';
 import useAuthStore from '@base/stores/useAuthStore';
+import useAppConfigStore from '@base/stores/useAppConfigStore';
+import AppSettingsModal from '@base/components/organisms/AppSettingsModal';
+import CategoryManagerModal from '@base/components/organisms/CategoryManagerModal';
+import { useCategories, categoryMenuLabel } from '@base/hooks/useCategories';
+import { API_BASE } from '@base/utils/api';
 import { useIsDesktop } from '@base/hooks/useIsDesktop';
 import { useTranslation } from 'next-i18next';
+
+/** Resolve a stored logo path (which may be a relative /static path) to a full URL. */
+export function resolveLogoUrl(logoUrl: string | null): string | null {
+  if (!logoUrl) return null;
+  return logoUrl.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${logoUrl}` : logoUrl;
+}
 
 // Icons
 function CompassIcon() {
@@ -75,6 +86,27 @@ function UsersIcon() {
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
+}
+
+function TagIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
+      <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+      <circle cx="7.5" cy="7.5" r="0.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Renders a category's custom icon (image URL or emoji) or a default tag icon. */
+function CategoryNavIcon({ icon }: { icon?: string | null }) {
+  if (icon && (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:image/'))) {
+    const src = icon.startsWith('/static') ? `${API_BASE.replace('/v1', '')}${icon}` : icon;
+    return <img src={src} alt="" className="w-[20px] h-[20px] rounded-[4px] object-cover" />;
+  }
+  if (icon) {
+    return <span className="text-[18px] leading-none">{icon}</span>;
+  }
+  return <TagIcon />;
 }
 
 function MenuIcon() {
@@ -158,6 +190,14 @@ export default function Sidebar() {
 
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const appName = useAppConfigStore((state) => state.appName);
+  const logoUrl = useAppConfigStore((state) => state.logoUrl);
+  const resolvedLogo = resolveLogoUrl(logoUrl);
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const [showAppSettings, setShowAppSettings] = React.useState(false);
+  const [showCategoryManager, setShowCategoryManager] = React.useState(false);
+  const { categories, refetch: refetchCategories } = useCategories();
+  const locale = router.locale;
   const isDesktop = useIsDesktop();
   const { t } = useTranslation('common');
 
@@ -168,9 +208,11 @@ export default function Sidebar() {
   const fromPath = router.query.from as string;
   const isToolDetail = router.pathname.startsWith('/tools/');
 
+  const currentPath = router.asPath.split('?')[0];
+
   const checkIsActive = (href: string) => {
-    if (router.pathname === href) return true;
-    if (href !== '/' && router.pathname.startsWith(href)) return true;
+    if (currentPath === href) return true;
+    if (href !== '/' && currentPath.startsWith(href)) return true;
     if (isToolDetail) {
       if (fromPath) {
         return fromPath === href || (href !== '/' && fromPath.startsWith(href));
@@ -187,25 +229,21 @@ export default function Sidebar() {
       icon: <DashboardIcon />,
       active: checkIsActive(routes.path.home),
     },
-    {
-      href: routes.path.complianceHub,
-      label: t('nav.complianceHub'),
-      icon: <ShieldCheckIcon />,
-      active: checkIsActive(routes.path.complianceHub),
-    },
-    {
-      href: routes.path.creativeHub,
-      label: t('nav.creativeHub'),
-      icon: <PaletteIcon />,
-      active: checkIsActive(routes.path.creativeHub),
-    },
-    {
-      href: routes.path.dataHub,
-      label: t('nav.dataHub'),
-      icon: <ChartColumnIcon />,
-      active: checkIsActive(routes.path.dataHub),
-    },
   ];
+
+  // Every category is rendered as a sidebar menu, ordered by its `order`.
+  const dynamicNavItems = [...categories]
+    .filter((c) => c.slug)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((c) => {
+      const href = `/hub/${c.slug}`;
+      return {
+        href,
+        label: categoryMenuLabel(c, locale),
+        icon: <CategoryNavIcon icon={c.icon} />,
+        active: checkIsActive(href),
+      };
+    });
 
   const adminItems = [
     {
@@ -240,6 +278,18 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* App settings modal (admin only) — opened from the brand name edit icon */}
+      {showAppSettings && <AppSettingsModal onClose={() => setShowAppSettings(false)} />}
+
+      {/* Category manager modal (admin only) — opened from the NAVIGATION header + button */}
+      {showCategoryManager && (
+        <CategoryManagerModal
+          categories={categories}
+          onClose={() => setShowCategoryManager(false)}
+          onChanged={refetchCategories}
+        />
+      )}
+
       {/* Mobile backdrop — tap to close the drawer */}
       {isMobileMenuActive && (
         <div
@@ -266,15 +316,35 @@ export default function Sidebar() {
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between h-[64px] border-b border-[#dee1e6] dark:border-midnight-800 px-[16px]">
-            <Link href="/" className="flex items-center gap-[8px] min-w-0 cursor-pointer">
-              <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-[6px] bg-[#5570f6]">
-                <CompassIcon />
-              </div>
-              <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[17px] leading-[20px] text-[#5570f6] dark:text-primary-400 whitespace-nowrap overflow-hidden text-ellipsis">
-                AI Navigator
-              </span>
-            </Link>
+          <div className="group/brand flex items-center justify-between h-[64px] border-b border-[#dee1e6] dark:border-midnight-800 px-[16px]">
+            <div className="flex items-center gap-[6px] min-w-0">
+              <Link href="/" className="flex items-center gap-[8px] min-w-0 cursor-pointer">
+                {resolvedLogo ? (
+                  <img src={resolvedLogo} alt={appName} className="flex-shrink-0 w-[28px] h-[28px] rounded-[6px] object-cover" />
+                ) : (
+                  <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-[6px] bg-[#5570f6]">
+                    <CompassIcon />
+                  </div>
+                )}
+                <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[17px] leading-[20px] text-[#5570f6] dark:text-primary-400 whitespace-nowrap overflow-hidden text-ellipsis">
+                  {appName}
+                </span>
+              </Link>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setShowAppSettings(true)}
+                  title={t('settings.title', 'アプリ設定') as string}
+                  aria-label={t('settings.title', 'アプリ設定') as string}
+                  className="flex-shrink-0 flex items-center justify-center w-[22px] h-[22px] rounded-[5px] text-[#9095a0] hover:text-[#5570f6] hover:bg-primary-50 dark:hover:bg-midnight-800 opacity-0 group-hover/brand:opacity-100 focus:opacity-100 transition-all duration-200"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[14px] h-[14px]">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              )}
+            </div>
             <button
               onClick={() => setIsSidebarCollapsed(true)}
               className="flex-shrink-0 hidden lg:flex items-center justify-center w-[24px] h-[24px] rounded-[6px] text-[#565d6d] hover:text-[#5570f6] dark:text-gray-400 dark:hover:text-white hover:bg-primary-50 dark:hover:bg-midnight-800 transition-all duration-200 cursor-pointer"
@@ -290,12 +360,28 @@ export default function Sidebar() {
           {/* Navigation Section */}
           <div className="flex flex-col gap-[8px]">
             {!collapsed && (
-              <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase px-[16px] mt-[12px]">
-                {t('nav.navigation')}
-              </span>
+              <div className="flex items-center justify-between px-[16px] mt-[12px]">
+                <span className="text-[12px] font-[600] leading-[16px] text-[#565d6d] dark:text-gray-400 tracking-[0.6px] uppercase">
+                  {t('nav.navigation')}
+                </span>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryManager(true)}
+                    title={t('categories.manage', 'カテゴリを管理') as string}
+                    aria-label={t('categories.manage', 'カテゴリを管理') as string}
+                    className="flex-shrink-0 flex items-center justify-center w-[20px] h-[20px] rounded-full bg-primary-50 dark:bg-midnight-800 text-[#5570f6] dark:text-primary-400 hover:bg-[#5570f6] hover:text-white dark:hover:bg-[#5570f6] dark:hover:text-white transition-all duration-200"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[13px] h-[13px]">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             )}
             <div className="flex flex-col gap-[4px]">
-              {navItems.map((item) => (
+              {[...navItems, ...dynamicNavItems].map((item) => (
                 <SidebarLink
                   key={item.href}
                   href={item.href}

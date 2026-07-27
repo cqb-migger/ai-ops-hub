@@ -43,15 +43,7 @@ function ToolDetailPage() {
             'sales-analyzer-admin@company.local'
           ],
           mcp_name: 'sales-analysis-mcp',
-          mcp_type: 'stdio',
-          mcp_stdio_command: 'python',
-          mcp_stdio_args: ['-m', 'sales_mcp_server', '--verbose'],
-          mcp_stdio_env: [
-            { key: 'API_KEY', value: 'sk-proj-••••••••••••••••' },
-            { key: 'DATABASE_URL', value: 'postgresql://localhost/sales_db' }
-          ],
-          mcp_stdio_env_passthrough: ['PATH', 'HOME'],
-          mcp_stdio_work_dir: '/var/www/sales-mcp',
+          mcp_config: '{\n  "mcpServers": {\n    "sales-analysis": {\n      "command": "python",\n      "args": ["-m", "sales_mcp_server", "--verbose"]\n    }\n  }\n}',
           guideContent: `# 商談データ分析アシスタント 活用ガイド
   
 このツールは、商談中の会話メモや議事録、CRMに登録されている履歴データから、**「顧客の潜在課題」「次に取るべき具体的なアクション」「見込まれる受注確度 (A/B/C/D)」**を自動的に分析し、レポートを作成します。

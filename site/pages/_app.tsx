@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from '@base/stores/useAuthStore';
+import useAppConfigStore from '@base/stores/useAppConfigStore';
 import '../styles/index.scss';
 
 function ZikJobApp({ Component, pageProps }: AppProps) {
@@ -12,9 +13,16 @@ function ZikJobApp({ Component, pageProps }: AppProps) {
   const user = useAuthStore((state) => state.user);
   const [hydrated, setHydrated] = useState(false);
 
+  const fetchConfig = useAppConfigStore((state) => state.fetchConfig);
+
   useEffect(() => {
     setHydrated(true);
   }, []);
+
+  // Load app branding (name/logo) once on startup — public endpoint, works pre-login.
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   useEffect(() => {
     if (!hydrated) return;

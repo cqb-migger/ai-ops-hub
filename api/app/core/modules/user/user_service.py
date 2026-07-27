@@ -1,13 +1,46 @@
 from typing import List, Optional, Tuple
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.public.users.schemas.user_request import UserCreate, UserUpdate
 from app.core.modules.auth.auth_securities import get_password_hash
 from app.core.modules.user.models.user import User
+from app.core.modules.user.models.user_role import UserRole
+
+DEFAULT_ROLE = 'sale'
+
+
+def _normalize_roles(roles: Optional[List[str]]) -> List[str]:
+    """Clean role codes; 'admin' is exclusive (wins over everything else)."""
+    cleaned = [r.strip() for r in (roles or []) if r and r.strip()]
+    # de-duplicate, keep order
+    seen = []
+    for r in cleaned:
+        if r not in seen:
+            seen.append(r)
+    if 'admin' in seen:
+        return ['admin']
+    return seen or [DEFAULT_ROLE]
+
+
+async def _count_admins(db: AsyncSession) -> int:
+    result = await db.execute(
+        select(func.count(func.distinct(UserRole.user_id)))
+        .select_from(UserRole)
+        .join(User, User.id == UserRole.user_id)
+        .where(UserRole.role == 'admin', User.deleted_at.is_(None))
+    )
+    return result.scalar_one()
+
+
+async def _set_user_roles(db: AsyncSession, user_id: int, roles: List[str]) -> None:
+    """Replace a user's roles with the given (normalized) set."""
+    await db.execute(delete(UserRole).where(UserRole.user_id == user_id))
+    for code in _normalize_roles(roles):
+        db.add(UserRole(user_id=user_id, role=code))
 
 
 async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
@@ -27,10 +60,13 @@ async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
         name=user_in.name,
         first_name=user_in.first_name,
         last_name=user_in.last_name,
-        role=user_in.role or 'sale',
     )
     db.add(db_user)
     try:
+        await db.flush()
+        # Roles come from `roles` (multi) or the legacy single `role`.
+        initial_roles = user_in.roles if user_in.roles else ([user_in.role] if user_in.role else [DEFAULT_ROLE])
+        await _set_user_roles(db, db_user.id, initial_roles)
         await db.flush()
         await db.refresh(db_user)
     except IntegrityError:
@@ -44,11 +80,12 @@ async def create_user_service(db: AsyncSession, user_in: UserCreate) -> User:
         raise
     return db_user
 
+
 async def get_user_service(db: AsyncSession, user_id: int) -> Optional[User]:
     """Gets a single user by ID (active only)."""
     result = await db.execute(select(User).where(User.id == user_id, User.deleted_at.is_(None)))
-    user = result.scalars().first()
-    return user
+    return result.scalars().first()
+
 
 async def get_users_service(
     db: AsyncSession,
@@ -61,7 +98,8 @@ async def get_users_service(
     base_query = select(User).where(User.deleted_at.is_(None))
 
     if role:
-        base_query = base_query.where(User.role == role)
+        role_sub = select(UserRole.user_id).where(UserRole.role == role)
+        base_query = base_query.where(User.id.in_(role_sub))
 
     if search:
         search_filter = f"%{search}%"
@@ -72,29 +110,35 @@ async def get_users_service(
             )
         )
 
-    # Get total count
     count_query = select(func.count()).select_from(base_query.subquery())
-    total_result = await db.execute(count_query)
-    total = total_result.scalar_one()
+    total = (await db.execute(count_query)).scalar_one()
 
-    # Get paginated items
     query = base_query.order_by(User.id).offset(skip).limit(limit)
     result = await db.execute(query)
     users = result.scalars().all()
 
     return list(users), total
 
+
 async def update_user_service(db: AsyncSession, user_id: int, user_in: UserUpdate) -> Optional[User]:
-    """Updates an existing user."""
+    """Updates an existing user (including its role set)."""
     db_user = await get_user_service(db, user_id)
     if not db_user:
         return None
 
     update_data = user_in.model_dump(exclude_unset=True)
-    if 'role' in update_data and update_data['role'] == 'sale' and db_user.role == 'admin':
-        result = await db.execute(select(User).where(User.role == 'admin', User.deleted_at.is_(None)))
-        admins = result.scalars().all()
-        if len(admins) <= 1:
+
+    # Determine the incoming role set (roles[] wins; falls back to legacy single role).
+    new_roles: Optional[List[str]] = None
+    if 'roles' in update_data:
+        new_roles = _normalize_roles(update_data.pop('roles'))
+    elif 'role' in update_data and update_data['role']:
+        new_roles = _normalize_roles([update_data['role']])
+    update_data.pop('role', None)
+
+    # Guard the last administrator when demoting away from admin.
+    if new_roles is not None and 'admin' in db_user.roles and 'admin' not in new_roles:
+        if await _count_admins(db) <= 1:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='少なくとも1人の管理者アカウントが必要です。',
@@ -102,13 +146,14 @@ async def update_user_service(db: AsyncSession, user_id: int, user_in: UserUpdat
 
     for field, value in update_data.items():
         if field == 'password':
-            hashed_password = get_password_hash(value)
-            setattr(db_user, field, hashed_password)
+            setattr(db_user, field, get_password_hash(value))
         else:
             setattr(db_user, field, value)
 
-    db.add(db_user)
     try:
+        if new_roles is not None:
+            await _set_user_roles(db, user_id, new_roles)
+        db.add(db_user)
         await db.flush()
         await db.refresh(db_user)
     except IntegrityError:
@@ -122,20 +167,18 @@ async def update_user_service(db: AsyncSession, user_id: int, user_in: UserUpdat
         raise
     return db_user
 
+
 async def delete_user_service(db: AsyncSession, user_id: int) -> Optional[User]:
     """Soft deletes a user by ID."""
     db_user = await get_user_service(db, user_id)
     if not db_user:
         return None
 
-    if db_user.role == 'admin':
-        result = await db.execute(select(User).where(User.role == 'admin', User.deleted_at.is_(None)))
-        admins = result.scalars().all()
-        if len(admins) <= 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='少なくとも1人の管理者アカウントが必要です。',
-            )
+    if 'admin' in db_user.roles and await _count_admins(db) <= 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='少なくとも1人の管理者アカウントが必要です。',
+        )
 
     db_user.deleted_at = func.now()
     db.add(db_user)

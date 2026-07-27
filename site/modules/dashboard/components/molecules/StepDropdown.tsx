@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Step } from '../../../compliance-hub/constants/steps';
+import { Step } from '../../../../base/types/steps';
 import { useTranslation } from 'next-i18next';
 
 export interface StepDropdownProps {

@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.dependencies import get_db
@@ -12,18 +12,22 @@ from app.core.modules.user.models.user import User
 router = APIRouter(prefix='/steps', tags=['[Private] Steps'])
 
 @router.get('/', response_model=List[StepResponse], summary='Get list of steps')
-async def get_steps(db: AsyncSession = Depends(get_db)):
-    """Lấy danh sách tất cả các bước trong Compliance Flow, sắp xếp theo order."""
-    return await step_service.get_steps_service(db=db)
+async def get_steps(
+    category_id: Optional[int] = Query(None, description="Lọc steps theo category_id"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Lấy danh sách các bước trong Compliance Flow, sắp xếp theo order."""
+    return await step_service.get_steps_service(db=db, category_id=category_id)
 
 @router.post('/', response_model=List[StepResponse], summary='Bulk save/reorder steps')
 async def save_steps(
     steps_in: List[StepCreate],
+    category_id: Optional[int] = Query(None, description="Category ID để gắn các step"),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     """Lưu hàng loạt steps (sau khi kéo thả sắp xếp lại). Chỉ admin."""
-    return await step_service.bulk_save_steps_service(db=db, steps_in=steps_in)
+    return await step_service.bulk_save_steps_service(db=db, steps_in=steps_in, category_id=category_id)
 
 @router.get('/{step_id}', response_model=StepResponse, summary='Get step details')
 async def get_step(step_id: int, db: AsyncSession = Depends(get_db)):

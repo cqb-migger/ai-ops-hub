@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
-import { Step } from '../../modules/compliance-hub/constants/steps';
+import { Step } from '../types/steps';
 
 function mapApiStep(s: any): Step {
   return {
@@ -9,11 +9,12 @@ function mapApiStep(s: any): Step {
     icon: s.icon || '📋',
     title: s.title,
     description: s.description,
+    category_id: s.category_id,
   };
 }
 
-export function useSteps(options: { enabled?: boolean } = {}) {
-  const { enabled = true } = options;
+export function useSteps(options: { enabled?: boolean; categoryId?: number } = {}) {
+  const { enabled = true, categoryId } = options;
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState<boolean>(enabled);
   const [error, setError] = useState<Error | null>(null);
@@ -21,7 +22,8 @@ export function useSteps(options: { enabled?: boolean } = {}) {
   const fetchSteps = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch<any[]>('/steps/');
+      const qs = categoryId ? `?category_id=${categoryId}` : '';
+      const data = await apiFetch<any[]>(`/steps/${qs}`);
       setSteps((data || []).map(mapApiStep));
       setError(null);
     } catch (err: any) {
@@ -38,7 +40,7 @@ export function useSteps(options: { enabled?: boolean } = {}) {
       setSteps([]);
       setLoading(false);
     }
-  }, [fetchSteps, enabled]);
+  }, [fetchSteps, enabled, categoryId]);
 
   /** Bulk-save all steps after drag-drop reorder */
   const saveSteps = async (newSteps: Step[]) => {
@@ -51,7 +53,8 @@ export function useSteps(options: { enabled?: boolean } = {}) {
         title: s.title,
         description: s.description,
       }));
-      const data = await apiFetch<any[]>('/steps/', {
+      const qs = categoryId ? `?category_id=${categoryId}` : '';
+      const data = await apiFetch<any[]>(`/steps/${qs}`, {
         method: 'POST',
         body: JSON.stringify(body),
       });
@@ -73,17 +76,23 @@ export function useSteps(options: { enabled?: boolean } = {}) {
       icon: step.icon,
       title: step.title,
       description: step.description,
+      category_id: categoryId,
     };
-    const data = await apiFetch<any>('/steps/', {
+    
+    // For single step creation, send an array of the existing steps + new one
+    const newStepsPayload = [...steps.map((s) => ({
+      id: Number(s.id),
+      order: s.order,
+      icon: s.icon,
+      title: s.title,
+      description: s.description,
+      category_id: categoryId,
+    })), body];
+
+    const qs = categoryId ? `?category_id=${categoryId}` : '';
+    const data = await apiFetch<any>(`/steps/${qs}`, {
       method: 'POST',
-      // For single step creation, send an array of the existing steps + new one
-      body: JSON.stringify([...steps.map((s) => ({
-        id: Number(s.id),
-        order: s.order,
-        icon: s.icon,
-        title: s.title,
-        description: s.description,
-      })), body]),
+      body: JSON.stringify(newStepsPayload),
     });
     const mapped = (data || []).map(mapApiStep);
     setSteps(mapped);

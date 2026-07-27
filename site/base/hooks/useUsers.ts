@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
-import { ROLE_OPTIONS } from '../../modules/manage-tools/constants/roles';
-
-type RoleValue = typeof ROLE_OPTIONS[number]['value'];
+type RoleValue = string;
 
 export interface SSOUser {
   id: number;
   name: string;
   email: string;
   role: RoleValue;
+  roles: string[];
   lastLogin: string;
   is_active?: boolean;
 }
@@ -33,6 +32,7 @@ function mapApiUser(u: any): SSOUser {
     name: u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
     email: u.email,
     role: u.role as RoleValue,
+    roles: Array.isArray(u.roles) ? u.roles : (u.role ? [u.role] : []),
     lastLogin: u.last_login
       ? new Date(u.last_login).toLocaleString('ja-JP', {
           year: 'numeric',
@@ -80,11 +80,11 @@ export function useUsers(options: UseUsersOptions = {}) {
     fetchUsers();
   }, [fetchUsers]);
 
-  const updateUserRole = async (id: number, newRole: RoleValue) => {
+  const updateUserRoles = async (id: number, newRoles: string[]) => {
     try {
       const response = await apiFetch<any>(`/users/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ role: newRole }),
+        body: JSON.stringify({ roles: newRoles }),
       });
       const updated = mapApiUser(response);
       setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
@@ -102,5 +102,5 @@ export function useUsers(options: UseUsersOptions = {}) {
     setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
-  return { users, total, loading, error, refetch: fetchUsers, updateUserRole, deleteUser };
+  return { users, total, loading, error, refetch: fetchUsers, updateUserRoles, deleteUser };
 }

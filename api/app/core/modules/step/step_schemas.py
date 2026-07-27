@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class StepBase(BaseModel):
+    category_id: Optional[int] = None
     order: int
     icon: Optional[str] = None
     title: str

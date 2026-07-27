@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.modules.user.models.user import User
+from app.core.modules.user.models.user_role import UserRole
 
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs'
@@ -174,13 +175,15 @@ async def upsert_google_user(db: AsyncSession, google_user_info: dict) -> User:
         name=name,
         first_name=google_user_info.get('given_name'),
         last_name=google_user_info.get('family_name'),
-        role='sale',
         avatar_url=avatar_url,
         google_id=google_id,
         is_active=1,
         last_login=func.now(),
     )
     db.add(new_user)
+    await db.flush()
+    # New Google users get the default 'sale' role.
+    db.add(UserRole(user_id=new_user.id, role='sale'))
     await db.commit()
     await db.refresh(new_user)
     return new_user

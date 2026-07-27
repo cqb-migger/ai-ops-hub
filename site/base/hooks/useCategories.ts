@@ -3,8 +3,27 @@ import { apiFetch } from '../utils/api';
 
 export interface Category {
   id: number;
-  name: string;
   order: number;
+  name_ja?: string | null;
+  name_en?: string | null;
+  menu_name_ja?: string | null;
+  menu_name_en?: string | null;
+  slug?: string | null;
+  icon?: string | null;
+  has_step_flow?: boolean;
+}
+
+/** Localized category display name, falling back across languages then slug. */
+export function categoryDisplayName(cat: Category, locale?: string): string {
+  const isEn = (locale || 'ja').startsWith('en');
+  const primary = isEn ? cat.name_en : cat.name_ja;
+  return primary || cat.name_ja || cat.name_en || cat.slug || '';
+}
+
+/** Localized sidebar menu label, falling back to the localized name. */
+export function categoryMenuLabel(cat: Category, locale?: string): string {
+  const isEn = (locale || 'ja').startsWith('en');
+  return (isEn ? cat.menu_name_en : cat.menu_name_ja) || categoryDisplayName(cat, locale);
 }
 
 export function useCategories() {
