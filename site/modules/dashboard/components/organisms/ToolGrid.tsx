@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import FilterBar from '../molecules/FilterBar';
 import ToolCard from '../molecules/ToolCard';
 import { useTools } from '../../../../base/hooks/useTools';
+import { useSteps } from '../../../../base/hooks/useSteps';
 import { useRouter } from 'next/router';
 import { useCategories, categoryDisplayName } from '../../../../base/hooks/useCategories';
 import Pagination from '../../../../base/components/molecules/Pagination';
@@ -24,6 +25,7 @@ export default function ToolGrid() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedStep, setSelectedStep] = useState('');
   const [selectedSort, setSelectedSort] = useState('favorite');
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
@@ -38,10 +40,14 @@ export default function ToolGrid() {
   );
 
   // Map the selected display name back to a category id for the API filter.
-  const selectedCategoryId = useMemo(() => {
+  const selectedCategoryObj = useMemo(() => {
     if (!selectedCategory) return undefined;
-    return categories.find((c) => categoryDisplayName(c, router.locale) === selectedCategory)?.id;
+    return categories.find((c) => categoryDisplayName(c, router.locale) === selectedCategory);
   }, [categories, selectedCategory, router.locale]);
+  const selectedCategoryId = selectedCategoryObj?.id;
+  const hasStepFlow = !!selectedCategoryObj?.has_step_flow;
+
+  const { steps } = useSteps({ enabled: hasStepFlow, categoryId: selectedCategoryId });
 
   // Debounce the search input so we don't hit the API on every keystroke
   useEffect(() => {
@@ -52,13 +58,14 @@ export default function ToolGrid() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, selectedCategory, selectedRole, selectedSort]);
+  }, [debouncedSearch, selectedCategory, selectedRole, selectedStep, selectedSort]);
 
   const { tools, total, loading, toggleFavorite } = useTools({
     visibility: 'public',
     search: debouncedSearch || undefined,
     categoryId: selectedCategoryId,
     role: selectedRole || undefined,
+    stepId: selectedStep || undefined,
     sort: selectedSort,
     limit: ITEMS_PER_PAGE,
     skip: (currentPage - 1) * ITEMS_PER_PAGE,
@@ -87,9 +94,12 @@ export default function ToolGrid() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={(val) => { setSelectedCategory(val); setSelectedStep(''); }}
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
+        selectedStep={hasStepFlow ? selectedStep : undefined}
+        onStepChange={hasStepFlow ? setSelectedStep : undefined}
+        steps={hasStepFlow ? steps : undefined}
         selectedSort={selectedSort}
         onSortChange={setSelectedSort}
         showSort

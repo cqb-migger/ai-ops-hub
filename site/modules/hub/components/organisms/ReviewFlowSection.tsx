@@ -9,6 +9,9 @@ import StepConnector from '../../../../base/components/molecules/StepConnector';
 interface ReviewFlowSectionProps {
   steps: Step[];
   saveSteps: (steps: Step[]) => Promise<any>;
+  deleteStep: (id: string) => Promise<any>;
+  createStep: (step: Omit<Step, 'id'>) => Promise<any>;
+  updateStep: (id: string, step: Partial<Step>) => Promise<any>;
   stepsLoading: boolean;
   isAdmin: boolean;
 }
@@ -17,7 +20,7 @@ interface ReviewFlowSectionProps {
  * The compliance-style "Review Flow" — a collapsible, drag-orderable list of steps.
  * Steps are global (one shared set), so this section only needs the shared step state.
  */
-export default function ReviewFlowSection({ steps, saveSteps, stepsLoading, isAdmin }: ReviewFlowSectionProps) {
+export default function ReviewFlowSection({ steps, saveSteps, deleteStep, createStep, updateStep, stepsLoading, isAdmin }: ReviewFlowSectionProps) {
   const { t } = useTranslation('common');
   const [isFlowExpanded, setIsFlowExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,10 +67,8 @@ export default function ReviewFlowSection({ steps, saveSteps, stepsLoading, isAd
   };
   const confirmDeleteStep = async () => {
     if (!deletingStepId) return;
-    const remaining = steps.filter((s) => s.id !== deletingStepId);
-    const updated = remaining.map((s, idx) => ({ ...s, order: idx + 1 }));
     try {
-      await saveSteps(updated);
+      await deleteStep(deletingStepId);
       setDeletingStepId(null);
     } catch (err: any) {
       toast.error(err?.message || t('compliance.deleteStepFailed', 'ステップの削除に失敗しました。'));
@@ -80,31 +81,36 @@ export default function ReviewFlowSection({ steps, saveSteps, stepsLoading, isAd
     setIsModalOpen(true);
   };
   const handleSaveStep = async (data: { title: string; description: string; icon: string }) => {
-    let updatedSteps: Step[] = [];
     if (editingStep) {
-      updatedSteps = steps.map((s) => (s.id === editingStep.id ? { ...s, ...data } : s));
+      await updateStep(editingStep.id, data);
     } else {
       if (steps.length >= 6) {
         alert(t('compliance.maxStepsError', 'ステップは最大6つまでです。'));
         return;
       }
-      const newStep: Step = {
-        id: `step-${Date.now()}`,
-        order: 0,
+      
+      const newStepData = {
         icon: data.icon,
         title: data.title,
         description: data.description,
+        order: 0,
       };
+
       if (insertAtIndex !== null) {
+        // Insert in middle: we need to create it and then reorder
+        newStepData.order = insertAtIndex + 1;
+        const createdStep = await createStep(newStepData);
+        
         const temp = [...steps];
-        temp.splice(insertAtIndex, 0, newStep);
-        updatedSteps = temp;
+        temp.splice(insertAtIndex, 0, createdStep);
+        const updatedSteps = temp.map((s, idx) => ({ ...s, order: idx + 1 }));
+        await saveSteps(updatedSteps);
       } else {
-        updatedSteps = [...steps, newStep];
+        // Append to end
+        newStepData.order = steps.length + 1;
+        await createStep(newStepData);
       }
-      updatedSteps = updatedSteps.map((s, idx) => ({ ...s, order: idx + 1 }));
     }
-    await saveSteps(updatedSteps);
     setIsModalOpen(false);
     setEditingStep(null);
     setInsertAtIndex(null);

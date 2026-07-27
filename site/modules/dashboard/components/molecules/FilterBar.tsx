@@ -109,6 +109,15 @@ export default function FilterBar({
             width={200}
             placeholder={t('filter.allCategories') as string}
           />
+          {steps && steps.length > 0 && onStepChange && (
+            <StepDropdown
+              selectedStep={selectedStep}
+              onStepChange={onStepChange}
+              steps={steps}
+              width={180}
+              placeholder={t('filter.allSteps') as string}
+            />
+          )}
           {isAdmin && (
             <RoleDropdown
               selectedRole={selectedRole}

@@ -29,6 +29,16 @@ async def save_steps(
     """Lưu hàng loạt steps (sau khi kéo thả sắp xếp lại). Chỉ admin."""
     return await step_service.bulk_save_steps_service(db=db, steps_in=steps_in, category_id=category_id)
 
+@router.post('/single', response_model=StepResponse, summary='Create a single step')
+async def create_single_step(
+    step_in: StepCreate,
+    category_id: Optional[int] = Query(None, description="Category ID để gắn step"),
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """Tạo một step mới. Chỉ admin."""
+    return await step_service.create_step_service(db=db, step_in=step_in, category_id=category_id)
+
 @router.get('/{step_id}', response_model=StepResponse, summary='Get step details')
 async def get_step(step_id: int, db: AsyncSession = Depends(get_db)):
     """Lấy chi tiết một step theo ID."""

@@ -10,6 +10,7 @@ import ItemCount from '../../../../base/components/molecules/ItemCount';
 import { ROLE_BADGE_COLORS } from '../../constants/roles';
 import { translateCategory, translateRole } from '../../../../base/utils/labels';
 import { useRoles } from '../../../../base/hooks/useRoles';
+import { useSteps } from '../../../../base/hooks/useSteps';
 import { useTranslation } from 'next-i18next';
 
 interface ManagedTool {
@@ -80,6 +81,7 @@ export default function ToolManagementTable() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedStep, setSelectedStep] = useState('');
   const [deletingTool, setDeletingTool] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation('common');
@@ -88,10 +90,14 @@ export default function ToolManagementTable() {
   const { roles } = useRoles();
 
   // Map selected category name -> id for the API filter
-  const selectedCategoryId = useMemo(() => {
+  const selectedCategoryObj = useMemo(() => {
     if (!selectedCategory) return undefined;
-    return categories.find((c) => categoryDisplayName(c, router.locale) === selectedCategory)?.id;
-  }, [categories, selectedCategory]);
+    return categories.find((c) => categoryDisplayName(c, router.locale) === selectedCategory);
+  }, [categories, selectedCategory, router.locale]);
+  const selectedCategoryId = selectedCategoryObj?.id;
+  const hasStepFlow = !!selectedCategoryObj?.has_step_flow;
+
+  const { steps } = useSteps({ enabled: hasStepFlow, categoryId: selectedCategoryId });
 
   // Debounce the search input so we don't hit the API on every keystroke
   useEffect(() => {
@@ -102,7 +108,7 @@ export default function ToolManagementTable() {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, selectedCategory, selectedRole]);
+  }, [debouncedSearch, selectedCategory, selectedRole, selectedStep]);
 
   const { tools, total, loading, updateTool, deleteTool } = useTools({
     admin: true,
@@ -110,6 +116,7 @@ export default function ToolManagementTable() {
     search: debouncedSearch || undefined,
     categoryId: selectedCategoryId,
     role: selectedRole || undefined,
+    stepId: selectedStep || undefined,
     limit: ITEMS_PER_PAGE,
     skip: (currentPage - 1) * ITEMS_PER_PAGE,
   });
@@ -192,9 +199,12 @@ export default function ToolManagementTable() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={(val) => { setSelectedCategory(val); setSelectedStep(''); }}
         selectedRole={selectedRole}
         onRoleChange={setSelectedRole}
+        selectedStep={hasStepFlow ? selectedStep : undefined}
+        onStepChange={hasStepFlow ? setSelectedStep : undefined}
+        steps={hasStepFlow ? steps : undefined}
         categories={categories.map((c) => categoryDisplayName(c, router.locale))}
         showBothFilters
       />

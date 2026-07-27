@@ -31,7 +31,7 @@ export function useSteps(options: { enabled?: boolean; categoryId?: number } = {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [categoryId]);
 
   useEffect(() => {
     if (enabled) {
@@ -79,23 +79,13 @@ export function useSteps(options: { enabled?: boolean; categoryId?: number } = {
       category_id: categoryId,
     };
     
-    // For single step creation, send an array of the existing steps + new one
-    const newStepsPayload = [...steps.map((s) => ({
-      id: Number(s.id),
-      order: s.order,
-      icon: s.icon,
-      title: s.title,
-      description: s.description,
-      category_id: categoryId,
-    })), body];
-
     const qs = categoryId ? `?category_id=${categoryId}` : '';
-    const data = await apiFetch<any>(`/steps/${qs}`, {
+    const data = await apiFetch<any>(`/steps/single${qs}`, {
       method: 'POST',
-      body: JSON.stringify(newStepsPayload),
+      body: JSON.stringify(body),
     });
-    const mapped = (data || []).map(mapApiStep);
-    setSteps(mapped);
+    const mapped = mapApiStep(data);
+    setSteps((prev) => [...prev, mapped].sort((a, b) => a.order - b.order));
     return mapped;
   };
 

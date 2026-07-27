@@ -297,11 +297,14 @@ export default function CreateToolForm() {
   const [mcpConfig, setMcpConfig] = useState('');
 
 
-  // A tool shows the step selector when it belongs to a step-enabled category.
-  const isComplianceSelected = apiCategories.some(
+  const stepFlowCategory = apiCategories.find(
     (c) => c.has_step_flow && categories.includes(c.id)
   );
-  const { steps: apiSteps, loading: stepsLoading } = useSteps({ enabled: isComplianceSelected });
+  const isComplianceSelected = !!stepFlowCategory;
+  const { steps: apiSteps, loading: stepsLoading } = useSteps({ 
+    enabled: isComplianceSelected, 
+    categoryId: stepFlowCategory?.id 
+  });
 
   useEffect(() => {
     if (!isComplianceSelected) {

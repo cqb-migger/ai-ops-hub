@@ -92,7 +92,14 @@ async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate], 
 
     incoming_ids = {s_in.id for s_in in steps_in if s_in.id is not None}
 
-    # Delete steps that are not in the incoming list
+    # Fetch all incoming steps globally to safely check existence
+    existing_incoming_map = {}
+    if incoming_ids:
+        query = select(Step).where(Step.id.in_(incoming_ids))
+        result = await db.execute(query)
+        existing_incoming_map = {s.id: s for s in result.scalars().all()}
+
+    # Delete steps from THIS category that are not in the incoming list
     for s_id, s_obj in current_map.items():
         if s_id not in incoming_ids:
             await _assert_step_not_in_use(db, s_id)
@@ -101,24 +108,33 @@ async def bulk_save_steps_service(db: AsyncSession, steps_in: List[StepCreate], 
     # Process incoming list: update or create
     saved_steps = []
     for s_in in steps_in:
-        if s_in.id is not None and s_in.id in current_map:
-            db_step = current_map[s_in.id]
+        if s_in.id is not None and s_in.id in existing_incoming_map:
+            # Update existing step (even if it was from a different category)
+            db_step = existing_incoming_map[s_in.id]
             if s_in.category_id is not None:
                 db_step.category_id = s_in.category_id
+            elif category_id is not None:
+                db_step.category_id = category_id
+            
             db_step.order = s_in.order
             db_step.icon = s_in.icon
             db_step.title = s_in.title
             db_step.description = s_in.description
             db.add(db_step)
         else:
+            # Create genuinely new step
+            # Note: We do not set id=s_in.id to avoid sequences desync, unless the ID was specifically requested 
+            # but usually new items shouldn't have an ID in the DB.
             db_step = Step(
-                id=s_in.id,
                 category_id=s_in.category_id if s_in.category_id is not None else category_id,
                 order=s_in.order,
                 icon=s_in.icon,
                 title=s_in.title,
                 description=s_in.description
             )
+            # If the frontend explicitly generated a new ID (not recommended but handled)
+            if s_in.id is not None:
+                db_step.id = s_in.id
             db.add(db_step)
 
         saved_steps.append(db_step)

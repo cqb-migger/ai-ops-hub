@@ -40,9 +40,9 @@ export default function CategoryHubView({ slug }: CategoryHubViewProps) {
   const hasStepFlow = !!category?.has_step_flow;
 
   // 5) Fetch steps if this category has the Review Flow enabled
-  const { steps, saveSteps, loading: stepsLoading } = useSteps({
-    enabled: Boolean(category?.has_step_flow),
-    categoryId: category?.id,
+  const { steps, saveSteps, deleteStep, createStep, updateStep, loading: stepsLoading } = useSteps({
+    enabled: hasStepFlow,
+    categoryId: category?.id ? Number(category.id) : undefined,
   });
 
   const { tools, total, loading, toggleFavorite } = useTools({
@@ -110,6 +110,9 @@ export default function CategoryHubView({ slug }: CategoryHubViewProps) {
         <ReviewFlowSection
           steps={steps}
           saveSteps={saveSteps}
+          deleteStep={deleteStep}
+          createStep={createStep}
+          updateStep={updateStep}
           stepsLoading={stepsLoading}
           isAdmin={isAdmin}
         />
